@@ -11,12 +11,12 @@ This file is the single source of truth for *what has happened*. `plan/03-CHECKL
 ```
    PROJECT STATE   : Checkpointed
    CURRENT PHASE   : P6
-   CURRENT BATCH   : B12 (not yet started)
-   CURRENT TASK    : T-P6-01
-   TASKS COMPLETE  : 66 / 96 (incremental count: 56 @ CP-013 + T-P5-01..09 + GATE G5; not independently re-derived from disk this session)
-   WEIGHTED        : ~62.4% (P0-P5 complete = 4+8+16+14+10+10 = 62% + rounding)
+   CURRENT BATCH   : B13 (not yet started)
+   CURRENT TASK    : T-P6-07
+   TASKS COMPLETE  : 72 / 96 (66 @ CP-014 + T-P6-01..06 this batch)
+   WEIGHTED        : ~68.4% (P0-P5 complete = 62% + P6 6/11 tasks × 12% weight ≈ 6.4%)
    GATES PASSED    : G0, G1, G2, G3, G4, G5
-   LAST CHECKPOINT : CP-014
+   LAST CHECKPOINT : CP-015
    BLOCKED ON      : none
    SESSION         : 5
 ```
@@ -388,6 +388,29 @@ CONTEXT USED : ~68%
 DECISIONS    : None requiring human input this batch. Self-directed scope calls made and documented above: (a) left KaTeX font-asset embedding to the consuming build rather than deciding an asset pipeline unilaterally (T-P5-04); (b) added a render timeout to MermaidDiagram.tsx beyond the roadmap's literal T-P5-08 wording, justified because a hang is functionally a crash for the stated acceptance criterion.
 CORRECTIONS  : none to prior entries.
 DERIVATIONS  : DOMPurify (v3.1.4, already a direct devDependency in package.json) has no shipped `.d.ts` in this version and `@types/dompurify` isn't installed — added a minimal ambient module declaration (src/types/dompurify.d.ts) scoped to only the `sanitize(source, config)` signature actually used, rather than adding a new dependency. Separately: DOMPurify's `svg`/`html` USE_PROFILES presets do not case-normalize before matching a parsed SVG tag name against their (lowercased) internal allowlist, so any correctly-camelCased SVG element absent from that literal lowercase set (`foreignObject` being the practically important one) is stripped outright, taking its entire subtree with it — confirmed via a minimal repro isolating DOMPurify from mermaid entirely.
+─────────────────────────────────────────────
+
+─────────────────────────────────────────────
+CHECKPOINT   : CP-015
+TIMESTAMP    : 2026-08-27T05:00:00+05:30
+TRIGGER      : batch-complete
+SESSION      : 5
+PHASE        : P6 (12% weight; 6/11 P6 tasks done @ ~68.4% cumulative)
+BATCH        : B12 complete (6/6: T-P6-01, T-P6-02, T-P6-03, T-P6-04, T-P6-05, T-P6-06)
+COMPLETED    : T-P6-01 through T-P6-06
+EVIDENCE     : T-P6-01 — created src/pipeline/streaming/detect.ts (`detectPartialConstruct`: open-fence / partial-table / open-emphasis / open-link / none); 24-fixture table in tests/fixtures/streaming/partial-constructs.json, all 24/24 pass via tests/streaming.spec.ts; tsc clean · T-P6-02 — created src/pipeline/streaming/segment.ts (`segmentBuffer`: splits at blank lines outside open fences); 4 tests confirm a fence spanning a blank line stays one segment, only the final segment may end mid-fence, no all-blank segments leak from leading/trailing/consecutive blanks, and multiple fenced blocks with internal blanks stay separate — real bug found and fixed pre-test (consecutive blank lines were leaking a leading blank into the next segment; fixed by always `continue`-ing on a blank line outside a fence rather than conditionally pushing) · T-P6-03 — created src/pipeline/streaming/reconcile.ts (`ReconcileState`, cache keyed by exact segment text); verified across a full document streamed one character at a time: at most 1 segment reparsed per appended character, and a frozen block's parsed tree reference stays byte-for-byte identical (same object) across every subsequent append to a later, still-growing block · T-P6-04 — created src/hooks/useStreamingMarkdown.ts (element cache keyed by tree reference, so React reuses the exact element for any block whose tree object didn't change); tests/useStreamingMarkdown.spec.tsx (3 tests, real DOM via react-dom/client + act): exact element-reference reuse across a full char-by-char stream, monotonically non-decreasing block count reaching exactly 3 for a 3-paragraph doc, final render contains all three paragraphs' text · T-P6-05/06 — created src/pipeline/cache.ts (`LRUCache<V>`: Map-based insertion-order LRU + byte-ceiling guard, `sizeOf` pluggable, FNV-1a `keyFor` helper); verified via tests/cache.spec.ts (4 tests): inserting 101 distinct keys evicts the 1st-inserted key and a `get()` on an unevicted key returns the exact object reference passed to `set()`; a 10,000-iteration soak with 500-byte values never exceeds a 1 MiB byte ceiling; touching an entry via `get()` protects it from eviction as most-recently-used; a single oversized value is still kept (ceiling bounds accumulation, not any one document) · Full-suite regression run after the batch: `pnpm tsc --noEmit` → 0 errors; `npx vitest run` → 8 files, 70/70 tests pass (no regressions across P0–P5 suites)
+PENDING      : B13 = T-P6-07 (subtree memoization) → T-P6-11 (historical corpus backtest), then GATE G6
+VALIDATION   : PASS — all six task VERIFY criteria independently confirmed via real test execution (not code-reading alone); tsc clean; full 70-test suite green
+ISSUES       : none open
+ASSUMPTIONS  : ASM-003 UNVALIDATED (G6, carried forward — the ≥250-document frozen historical corpus required by G6's backtest class does not exist yet in this from-scratch build; deferred to T-P6-11, the task that actually produces/consumes it, not treated as a blocker for T-P6-01..06)
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward from CP-014, unchanged this batch)
+NEXT TASK    : T-P6-07
+CONTEXT USED : ~15% (fresh session after /compact; not tracked precisely)
+DECISIONS    : None requiring human input this batch. Self-directed: `src/pipeline/cache.ts` was written once to satisfy both T-P6-05 and T-P6-06 (roadmap OUTPUT column lists the identical path for both tasks).
+CORRECTIONS  : none to prior entries.
+DERIVATIONS  : GFM delimiter-row adjacency rule confirmed while authoring detect.ts fixtures — a header row (pipe-bearing line) followed by a non-delimiter, non-pipe line is never a partial table, it is simply not a table at all (falls back to plain paragraph); one fixture's expected value was corrected from `'partial-table'` to `'none'` to match this rule, not a code bug. Table-detection logic itself required a rewrite mid-verification: naively checking only "does the immediately-previous line contain a pipe" misclassifies any row beyond the 2nd in an established table (every row has pipes) — fixed by walking backwards to determine actual row position (1st/2nd/3rd+) within the contiguous pipe-bearing run and branching accordingly.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |

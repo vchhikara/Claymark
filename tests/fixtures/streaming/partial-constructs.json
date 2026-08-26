@@ -1,0 +1,29 @@
+[
+  { "label": "fence: open ``` no close", "input": "```js\nconst x = 1;", "expected": "open-fence" },
+  { "label": "fence: open ~~~ no close", "input": "~~~\nplain text", "expected": "open-fence" },
+  { "label": "fence: closed properly", "input": "```js\nconst x = 1;\n```\n", "expected": "none" },
+  { "label": "fence: nested different marker inside open fence", "input": "```js\nsome ~~~ text\nmore", "expected": "open-fence" },
+  { "label": "fence: closed with longer marker", "input": "````\ninner ``` still open\n````\n", "expected": "none" },
+  { "label": "fence: two fences both closed", "input": "```\na\n```\n\n```\nb\n```\n", "expected": "none" },
+
+  { "label": "table: header only, no delimiter row", "input": "| a | b |", "expected": "partial-table" },
+  { "label": "table: header + delimiter + complete row", "input": "| a | b |\n|---|---|\n| 1 | 2 |\n", "expected": "none" },
+  { "label": "table: header + delimiter, no body yet", "input": "| a | b |\n|---|---|\n", "expected": "none" },
+  { "label": "table: mid-row cut off, no trailing pipe", "input": "| a | b |\n|---|---|\n| 1 | wo", "expected": "partial-table" },
+  { "label": "table: row ends cleanly at pipe boundary", "input": "| a | b |\n|---|---|\n| 1 | 2 |", "expected": "none" },
+  { "label": "table: header row followed by non-delimiter text (falls back to paragraph per GFM)", "input": "| a | b |\nnot a delimiter", "expected": "none" },
+
+  { "label": "emphasis: unterminated single star", "input": "this is *bold", "expected": "open-emphasis" },
+  { "label": "emphasis: unterminated double star", "input": "this is **bold", "expected": "open-emphasis" },
+  { "label": "emphasis: unterminated underscore", "input": "this is _italic", "expected": "open-emphasis" },
+  { "label": "emphasis: properly closed", "input": "this is *bold* text", "expected": "none" },
+  { "label": "emphasis: escaped star not counted", "input": "this is \\*not bold", "expected": "none" },
+  { "label": "emphasis: star inside inline code ignored", "input": "this is `a*b` text", "expected": "none" },
+
+  { "label": "link: open paren no close", "input": "see [docs](https://example.com/partial", "expected": "open-link" },
+  { "label": "link: open bracket no close", "input": "see [link text without closing bracket", "expected": "open-link" },
+  { "label": "link: fully closed", "input": "see [docs](https://example.com) done", "expected": "none" },
+  { "label": "link: bracket text closed but no paren yet (valid as shorthand reference)", "input": "see [docs]", "expected": "none" },
+  { "label": "link: escaped bracket ignored", "input": "see \\[not a link", "expected": "none" },
+  { "label": "link: nested brackets balanced", "input": "see [a [b] c](url)", "expected": "none" }
+]

@@ -18,10 +18,10 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 66 / 96 |
-| Weighted progress | ~62.4% |
-| Current phase | P6 (not yet started) |
-| Current batch | B10+B11 complete (P5 fully done, 9/9 + gate) · B12 next: T-P6-01 → T-P6-06 |
+| Tasks complete | 72 / 96 |
+| Weighted progress | ~68.4% |
+| Current phase | P6 (in progress) |
+| Current batch | B12 complete (T-P6-01 → T-P6-06, 6/6) · B13 next: T-P6-07 → T-P6-11 + GATE G6 |
 | Gates passed | 6 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
@@ -114,12 +114,12 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 ## Phase P6 — Streaming, Caching & Performance · 12%
 
-- [ ] T-P6-01 — Incomplete-construct detector
-- [ ] T-P6-02 — Block-boundary segmentation
-- [ ] T-P6-03 — Stable-prefix reconciliation
-- [ ] T-P6-04 — `useStreamingMarkdown` hook
-- [ ] T-P6-05 — LRU cache, capacity 100
-- [ ] T-P6-06 — Bounded-memory guard
+- [x] T-P6-01 — Incomplete-construct detector
+- [x] T-P6-02 — Block-boundary segmentation
+- [x] T-P6-03 — Stable-prefix reconciliation
+- [x] T-P6-04 — `useStreamingMarkdown` hook
+- [x] T-P6-05 — LRU cache, capacity 100
+- [x] T-P6-06 — Bounded-memory guard
 - [ ] T-P6-07 — Subtree memoization
 - [ ] T-P6-08 — Short-message fast path
 - [ ] T-P6-09 — Benchmark harness
