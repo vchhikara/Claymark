@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-08-26T23:30:49.053Z",
+  "results": [
+    {
+      "metric": "First render, 2 KB document",
+      "budget": "< 16ms",
+      "measured": "4.84",
+      "unit": "ms",
+      "pass": true
+    },
+    {
+      "metric": "First render, 100 KB document",
+      "budget": "< 250ms",
+      "measured": "144.85",
+      "unit": "ms",
+      "pass": true
+    },
+    {
+      "metric": "Streaming append, per token",
+      "budget": "< 4ms",
+      "measured": "0.105",
+      "unit": "ms (avg)",
+      "pass": true
+    },
+    {
+      "metric": "Cache hit",
+      "budget": "< 1ms",
+      "measured": "0.0230",
+      "unit": "ms",
+      "pass": true
+    },
+    {
+      "metric": "Memory, 10k-render soak",
+      "budget": "< 150MB steady state",
+      "measured": "19.07",
+      "unit": "MB (cache-accounted, not process RSS)",
+      "pass": true,
+      "note": "Approximated via LRUCache byte accounting, not a real process memory measurement."
+    },
+    {
+      "metric": "Highlighter lazy chunk",
+      "budget": "< 300KB gzipped",
+      "measured": "n/a",
+      "unit": "KB gzipped",
+      "pass": null,
+      "note": "Requires inspecting a real build output (see T-P4-08 bundle-boundary check for the methodology); not measured by this harness."
+    },
+    {
+      "metric": "Initial bundle, core only",
+      "budget": "< 120KB gzipped",
+      "measured": "n/a",
+      "unit": "KB gzipped",
+      "pass": null,
+      "note": "Requires inspecting a real build output; not measured by this harness."
+    },
+    {
+      "metric": "Cumulative layout shift",
+      "budget": "0",
+      "measured": "n/a",
+      "unit": "CLS",
+      "pass": null,
+      "note": "Requires a real browser hydration measurement (candidate: extend tests/__snapshots__/g3-eval.mjs); carried forward as UNVALIDATED since CP-013/CP-014."
+    }
+  ]
+}
