@@ -1,0 +1,1 @@
+<iframe src="javascript:alert(1)"></iframe>

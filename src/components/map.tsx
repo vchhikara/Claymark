@@ -1,0 +1,134 @@
+import { isValidElement } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
+import { Blockquote } from './Blockquote'
+import { Emphasis, Strong } from './Inline'
+import { InlineCode } from './InlineCode'
+import { Link } from './Link'
+import { ListItem } from './List'
+import { Paragraph } from './Paragraph'
+import { Rule } from './Rule'
+import { Heading } from './Heading'
+import { TaskListItem } from './TaskList'
+
+type ElementTag =
+  | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'a' | 'ul' | 'ol' | 'li'
+  | 'blockquote' | 'code' | 'pre' | 'em' | 'strong' | 'del' | 'hr' | 'br'
+  | 'img' | 'table' | 'thead' | 'tbody' | 'tr' | 'th' | 'td' | 'input'
+
+type NodeProps = {
+  children?: ReactNode
+  node?: unknown
+} & Record<string, unknown>
+
+function TaskCheckbox({ checked }: { checked?: boolean }): ReactElement {
+  return (
+    <input
+      type="checkbox"
+      className="claymark-task-checkbox"
+      checked={checked}
+      disabled
+      readOnly
+      aria-checked={checked ? 'true' : 'false'}
+    />
+  )
+}
+
+function Passthrough({ tag, className, children }: { tag: ElementTag; className: string; children?: ReactNode }): ReactElement {
+  const Tag = tag as unknown as ComponentType<{ className?: string; children?: ReactNode }>
+  return <Tag className={className}>{children}</Tag>
+}
+
+function HeadingAdapter({ level, children }: NodeProps & { level: 1 | 2 | 3 | 4 | 5 | 6 }): ReactElement {
+  return <Heading level={level}>{children}</Heading>
+}
+
+function Del({ children }: NodeProps): ReactElement {
+  return <del className="claymark-del">{children}</del>
+}
+
+function Br(): ReactElement {
+  return <br className="claymark-br" />
+}
+
+function Image({ src, alt, title }: NodeProps): ReactElement {
+  return <img className="claymark-img" src={src as string | undefined} alt={alt as string | undefined} title={title as string | undefined} />
+}
+
+function ListAdapter({ ordered, start, children }: NodeProps & { ordered?: boolean | undefined; start?: number | undefined }): ReactElement {
+  if (ordered) {
+    return (
+      <ol className="claymark-list claymark-ol" start={typeof start === 'number' ? start : undefined}>
+        {children}
+      </ol>
+    )
+  }
+  return <ul className="claymark-list claymark-ul">{children}</ul>
+}
+
+function ListItemAdapter({ children }: NodeProps): ReactElement {
+  const kids = Array.isArray(children) ? [...children] : children !== undefined && children !== null ? [children] : []
+  const first = kids[0]
+  if (isValidElement(first)) {
+    const firstType = first.type as unknown
+    if (firstType === TaskCheckbox) {
+      const props = first.props as { checked?: boolean }
+      return (
+        <TaskListItem checked={props.checked === true}>
+          {kids.slice(1)}
+        </TaskListItem>
+      )
+    }
+  }
+  return <ListItem>{children}</ListItem>
+}
+
+function CodeAdapter({ children, className }: NodeProps): ReactElement {
+  const cls = typeof className === 'string' ? className : Array.isArray(className) ? className.join(' ') : undefined
+  if (cls !== undefined && /language-/.test(cls)) {
+    return <code className={`claymark-code-block ${cls}`}>{children}</code>
+  }
+  return <InlineCode>{children}</InlineCode>
+}
+
+export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = {
+  h1: (props) => <HeadingAdapter {...props} level={1} />,
+  h2: (props) => <HeadingAdapter {...props} level={2} />,
+  h3: (props) => <HeadingAdapter {...props} level={3} />,
+  h4: (props) => <HeadingAdapter {...props} level={4} />,
+  h5: (props) => <HeadingAdapter {...props} level={5} />,
+  h6: (props) => <HeadingAdapter {...props} level={6} />,
+  p: (props) => <Paragraph>{props.children}</Paragraph>,
+  a: (props) => (
+    <Link
+      href={typeof props.href === 'string' ? props.href : undefined}
+      title={typeof props.title === 'string' ? props.title : undefined}
+      target={typeof props.target === 'string' ? props.target : undefined}
+      rel={props.rel as string | string[] | undefined}
+    >
+      {props.children}
+    </Link>
+  ),
+  ul: (props) => <ListAdapter {...props} ordered={false} />,
+  ol: (props) => <ListAdapter {...props} ordered start={props.start as number | undefined} />,
+  li: (props) => <ListItemAdapter {...props} />,
+  blockquote: (props) => <Blockquote>{props.children}</Blockquote>,
+  code: (props) => <CodeAdapter {...props} />,
+  pre: (props) => (
+    <Passthrough tag="pre" className="claymark-pre">
+      {props.children}
+    </Passthrough>
+  ),
+  em: (props) => <Emphasis>{props.children}</Emphasis>,
+  strong: (props) => <Strong>{props.children}</Strong>,
+  del: (props) => <Del>{props.children}</Del>,
+  hr: () => <Rule />,
+  br: () => <Br />,
+  img: (props) => <Image {...props} />,
+  table: (props) => <Passthrough tag="table" className="claymark-table">{props.children}</Passthrough>,
+  thead: (props) => <Passthrough tag="thead" className="claymark-thead">{props.children}</Passthrough>,
+  tbody: (props) => <Passthrough tag="tbody" className="claymark-tbody">{props.children}</Passthrough>,
+  tr: (props) => <Passthrough tag="tr" className="claymark-tr">{props.children}</Passthrough>,
+  th: (props) => <Passthrough tag="th" className="claymark-th">{props.children}</Passthrough>,
+  td: (props) => <Passthrough tag="td" className="claymark-td">{props.children}</Passthrough>,
+  input: (props) => <TaskCheckbox checked={Boolean(props.checked)} />,
+}
