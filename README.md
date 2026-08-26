@@ -3,17 +3,185 @@
 **Functional and non-functional specification of the shipped product.**
 This document is the contract. Where the roadmap and this specification disagree, **this document wins** and the roadmap is corrected.
 
----
-
-## 1. Product statement
-
-`claymark` is a Markdown rendering engine for React that renders untrusted and *incomplete* Markdown into a typographically refined, security-hardened document surface. It is designed for streamed LLM output: text arriving token-by-token, containing code, mathematics, diagrams, and tables, which must render progressively without flicker and without ever executing what it renders.
-
-It is a **renderer**, not an editor and not a chat client.
+>For people **using** claymark to read documents. If you are integrating it into an application, read `API.md` instead.
 
 ---
 
-## 2. Users and use cases
+## What it does
+
+claymark turns Markdown into a clean reading surface: serif body type on a comfortable measure, syntax-highlighted code, typeset mathematics, rendered diagrams, and readable tables. It works offline, follows your system theme, and never executes anything a document asks it to.
+
+---
+
+## Supported syntax
+
+### Text
+
+| You write | You get |
+|---|---|
+| `**bold**` | **bold** |
+| `*italic*` | *italic* |
+| `~~struck~~` | ~~struck~~ |
+| `` `code` `` | inline code |
+| `[text](url)` | a link, underlined |
+| `> quoted` | an indented quotation |
+| `---` | a horizontal rule |
+
+### Headings
+
+Six levels, `#` through `######`. Each gets an anchor you can link to.
+
+### Lists
+
+```markdown
+- unordered
+- items
+  - nest with two spaces
+
+1. ordered
+2. items
+
+- [x] completed task
+- [ ] pending task
+```
+
+Task checkboxes are display-only — they show state but are not clickable, because the document is a rendering, not a form.
+
+### Code
+
+Tag the fence with a language for highlighting:
+
+````markdown
+```python
+def greet(name: str) -> str:
+    return f"Hello, {name}"
+```
+````
+
+Thirty-four languages are supported. Anything else renders as plain preformatted text — that is expected, not a failure.
+
+**Highlighting specific lines** — add a range in braces:
+
+````markdown
+```js {2,4-6}
+```
+````
+
+Every code block has a **copy button** in its header. It copies exactly the source, without line numbers or highlighting artifacts.
+
+### Tables
+
+```markdown
+| Left | Center | Right |
+|:-----|:------:|------:|
+| a    |   b    |     c |
+```
+
+Wide tables scroll horizontally inside their own container. The page itself never scrolls sideways.
+
+### Mathematics
+
+Inline with single dollars, display with double:
+
+```markdown
+Euler's identity is $e^{i\pi} + 1 = 0$.
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+```
+
+Malformed TeX shows an error inline rather than breaking the page.
+
+### Diagrams
+
+Use a `mermaid` fence:
+
+````markdown
+```mermaid
+flowchart LR
+    A[Input] --> B[Parse]
+    B --> C[Sanitize]
+    C --> D[Render]
+```
+````
+
+Flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, Gantt charts, and pie charts are supported. Invalid syntax falls back to showing the diagram source as a code block.
+
+### Images
+
+```markdown
+![alt text](image.png "Caption text")
+```
+
+Alt text is used by screen readers; the title becomes a visible caption. Click any image to open it in a lightbox — Escape closes it.
+
+---
+
+## Reading features
+
+**Theme.** Follows your system light/dark setting automatically. Use the toggle to override; your choice is remembered.
+
+**Lightbox.** Click an image to enlarge. Escape or clicking outside closes it and returns focus to where you were.
+
+**Copy.** Every code block copies with one click.
+
+**Offline.** After the first load, everything works without a network connection.
+
+---
+
+## Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` / `Shift+Tab` | Move between links, buttons, and scrollable regions |
+| `Enter` / `Space` | Activate the focused control |
+| `Escape` | Close the lightbox |
+| `←` `→` | Scroll a focused code block or table horizontally |
+
+Everything is reachable without a mouse. Focus is always visible and, after a dialog closes, always restored.
+
+---
+
+## Accessibility
+
+- Conforms to WCAG 2.2 Level AA
+- Semantic HTML throughout — headings, lists, and tables are announced correctly
+- Math is exposed as MathML to screen readers
+- Diagrams carry text alternatives
+- Contrast meets AA in both themes
+- Animations are suppressed when your system requests reduced motion
+
+---
+
+## What it deliberately will not do
+
+Some of these look like missing features. They are decisions.
+
+| Behavior | Why |
+|---|---|
+| Raw HTML in a document is shown as text, not rendered | HTML in untrusted documents is the primary attack surface. It is disabled entirely, without an override. |
+| Task checkboxes are not clickable | This is a renderer, not a form. State lives in the source. |
+| Documents cannot load remote resources | Zero runtime network requests, by design. This is what makes offline reliable and tracking impossible. |
+| Unregistered code languages are not highlighted | Bundling every grammar would multiply the download size. |
+| Documents cannot supply their own styles | A document that can style itself can disguise itself. |
+
+---
+
+## Troubleshooting
+
+| Symptom | Explanation |
+|---|---|
+| Code block is not colored | Language is outside the 34-language registry, or the fence has no language tag |
+| Math shows as raw `$…$` | The math runtime is still loading, or the TeX has a syntax error |
+| Diagram shows as a code block | The Mermaid syntax is invalid — check for a missing diagram-type keyword on the first line |
+| HTML appears as literal text | Working as intended, see §6 |
+| Image does not display | The URL scheme is blocked; only `http`, `https`, and image `data:` URIs are permitted |
+| Theme resets on reload | Browser storage is blocked or cleared — check private-browsing settings |
+
+---
+
+## Users and use cases
 
 | User | Use case | Primary surface |
 |---|---|---|
@@ -24,62 +192,7 @@ It is a **renderer**, not an editor and not a chat client.
 
 ---
 
-## 3. Functional requirements
-
-Requirement IDs are stable and referenced by tests.
-
-### FR-1 Markdown support
-- **FR-1.1** CommonMark 0.31.2 at ≥ 98% suite conformance.
-- **FR-1.2** GFM: tables, strikethrough, task lists, autolinks.
-- **FR-1.3** Fenced code blocks with language identifiers and highlight metadata.
-- **FR-1.4** Inline math (`$…$`) and display math (`$$…$$`).
-- **FR-1.5** Mermaid diagrams via ` ```mermaid ` fences.
-- **FR-1.6** Raw HTML in the input is **inert** — neither rendered nor executed. Escaped and displayed as text.
-
-### FR-2 Rendering
-- **FR-2.1** Output is a React element tree. No `dangerouslySetInnerHTML` on any path.
-- **FR-2.2** Every Markdown node type maps to an overridable component.
-- **FR-2.3** Unknown or malformed constructs degrade to visible source text. Nothing throws to the caller.
-- **FR-2.4** Rendering is pure and referentially transparent: identical input yields an identical tree.
-
-### FR-3 Streaming
-- **FR-3.1** Accepts incremental input and re-renders on each append.
-- **FR-3.2** Incomplete constructs (open fence, partial table, unclosed emphasis or link) render as sensible partial output, never as garbage and never as a thrown error.
-- **FR-3.3** Rendering is **monotonic** — content that has appeared does not disappear or reorder as more input arrives.
-- **FR-3.4** Only the mutated tail is reparsed. Stable prefix blocks are not re-rendered.
-
-### FR-4 Code presentation
-- **FR-4.1** Syntax highlighting across the 34-language registry, with light and dark themes.
-- **FR-4.2** Unregistered languages render as unstyled preformatted text.
-- **FR-4.3** Copy-to-clipboard yields byte-identical source, excluding decorations such as line numbers.
-- **FR-4.4** Optional line numbers and line highlighting via fence metadata.
-- **FR-4.5** Horizontal overflow scrolls within the block; the page never gains horizontal scroll.
-
-### FR-5 Interaction
-- **FR-5.1** Images open in a modal lightbox; captions derive from the Markdown title attribute.
-- **FR-5.2** Tables scroll horizontally within a container with edge indicators.
-- **FR-5.3** Theme follows `prefers-color-scheme` by default and is manually overridable with persistence.
-- **FR-5.4** Every interaction is reachable by keyboard alone.
-
-### FR-6 Theming
-- **FR-6.1** All visual values resolve to CSS custom properties.
-- **FR-6.2** A caller may supply a partial token override; unspecified tokens fall back to defaults.
-- **FR-6.3** Fonts are overridable at runtime by the end user.
-- **FR-6.4** No inline styles originate from document content.
-
----
-
-## 4. Non-functional requirements
-
-### NFR-1 Security — the defining constraint
-- **NFR-1.1** All output is sanitized against a strict allow-list. **There is no bypass.**
-- **NFR-1.2** Zero script execution from document content under any input.
-- **NFR-1.3** URL schemes limited to `http`, `https`, `mailto`, and `data:` for a fixed image type set.
-- **NFR-1.4** External links carry `rel="noopener noreferrer"`.
-- **NFR-1.5** Operates under a CSP without `unsafe-inline` or `unsafe-eval`.
-- **NFR-1.6** **Zero runtime network requests.** All assets are bundled.
-
-### NFR-2 Performance budgets
+## Performance budgets
 
 Measured on a mid-tier 2020 laptop, Chromium, cold cache.
 
@@ -94,53 +207,13 @@ Measured on a mid-tier 2020 laptop, Chromium, cold cache.
 | Memory, 10k-render soak | < 150 MB steady state |
 | Cumulative layout shift | 0 |
 
-### NFR-3 Accessibility
+### Accessibility
 WCAG 2.2 AA. Zero axe-core violations. Body contrast ≥ 4.5:1 and large text ≥ 3:1 in both themes. Text alternatives for math and diagrams. `prefers-reduced-motion` honoured.
 
-### NFR-4 Compatibility
+### Compatibility
 Chromium 120+, Firefox 121+, Safari 17+. React 18.3+ as a peer dependency. ESM and CJS builds with TypeScript declarations.
 
-### NFR-5 Reliability
+### Reliability
 No input crashes the renderer. Malformed math, invalid diagrams, pathological nesting, and truncated streams all degrade gracefully. Error boundaries isolate subsystem failures to the affected block.
 
 ---
-
-## 5. Deliverables
-
-| Artifact | Form | Consumer |
-|---|---|---|
-| `claymark` | npm package: ESM + CJS + `.d.ts` | Developers |
-| `claymark-app` | Installable PWA | End users, mobile |
-| `claymark-desktop` | Tauri binary: macOS, Windows, Linux | Desktop users |
-| Documentation | `docs/` | All |
-
----
-
-## 6. Explicit non-goals
-
-Stated so they are never quietly added:
-
-- Markdown **editing**, WYSIWYG, or live preview authoring
-- Any network client, chat backend, or model integration
-- Authentication, accounts, or persistence beyond a theme preference
-- MDX or JSX execution — arbitrary component execution from documents is a non-goal permanently
-- Raw HTML passthrough
-- Redistribution of proprietary fonts
-- A native React Native implementation
-- Server-side rendering (pending `Q-02`)
-- Plugin API for third-party node types (pending `Q-03`)
-
----
-
-## 7. Acceptance criteria
-
-The product is accepted when, and only when:
-
-1. Every FR has at least one passing test referencing its ID.
-2. Every NFR budget is met and recorded in `bench/results/`.
-3. Gates G0–G9 all record PASS with evidence.
-4. The 250-document backtest corpus replays with zero unexplained diffs.
-5. The stress matrix S-01…S-12 completes with zero crashes and zero budget breaches.
-6. All four artifacts build, install, and launch on a clean machine.
-7. Every documented example in `docs/` executes as written.
-8. A human explicitly accepts delivery.
