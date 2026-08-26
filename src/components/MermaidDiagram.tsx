@@ -74,8 +74,18 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
         // depth stance in sanitize-schema.ts for KaTeX's `href`). Sanitizing
         // again here, explicitly, as an SVG document, is this component's own
         // last line of defense before insertion.
+        //
+        // `ADD_TAGS: ['foreignObject']` works around a DOMPurify quirk: its
+        // built-in `svg`/`html` profiles store the tag name lowercased
+        // ("foreignobject"), which never matches the camelCase `foreignObject`
+        // element mermaid actually emits (SVG tag names are case-sensitive),
+        // so without this the entire node-label subtree — legitimate text
+        // included — gets silently dropped. Verified this still strips every
+        // real injection vector: a raw `<script>`, an `onload`/`onerror`
+        // attribute, and a smuggled second `foreignObject><body onload=…>`.
         const cleaned = DOMPurify.sanitize(rendered, {
-          USE_PROFILES: { svg: true, svgFilters: true },
+          USE_PROFILES: { svg: true, svgFilters: true, html: true },
+          ADD_TAGS: ['foreignObject'],
         })
         if (!cancelled) setSvg(cleaned)
       } catch (err) {
