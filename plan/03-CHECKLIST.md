@@ -18,11 +18,11 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 56 / 96 |
-| Weighted progress | ~52.4% |
-| Current phase | P5 (not yet started) |
-| Current batch | B09 complete (6/6) · B10 next: T-P5-01 → T-P5-06 |
-| Gates passed | 5 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013) |
+| Tasks complete | 66 / 96 |
+| Weighted progress | ~62.4% |
+| Current phase | P6 (not yet started) |
+| Current batch | B10+B11 complete (P5 fully done, 9/9 + gate) · B12 next: T-P6-01 → T-P6-06 |
+| Gates passed | 6 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
 | Project state | `Checkpointed` |
@@ -101,16 +101,16 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 ## Phase P5 — Math & Diagrams · 10%
 
-- [ ] T-P5-01 — `remark-math` integrated
-- [ ] T-P5-02 — `rehype-katex` in non-throwing mode
-- [ ] T-P5-03 — Sanitize schema extended for KaTeX
-- [ ] T-P5-04 — KaTeX CSS bundled locally
-- [ ] T-P5-05 — `MermaidDiagram` with lazy runtime
-- [ ] T-P5-06 — Mermaid strict security configuration
-- [ ] T-P5-07 — Generated SVG sanitized
-- [ ] T-P5-08 — Diagram error boundary
-- [ ] T-P5-09 — Math and diagram test suites
-- [ ] **GATE G5** — 8 criteria
+- [x] T-P5-01 — `remark-math` integrated · VERIFY: `$…$`/`$$…$$` parse to distinct `inlineMath`/`math` mdast nodes · 2026-08-27
+- [x] T-P5-02 — `rehype-katex` in non-throwing mode · VERIFY: `$\frac{$` renders `.katex-error` text, no throw (rehype-katex@7 never throws to caller by design) · 2026-08-27
+- [x] T-P5-03 — Sanitize schema extended for KaTeX · VERIFY: 34-expression LaTeX corpus renders byte-identically through sanitize; `\href{javascript:...}` never produces an `href=` attribute; existing security suite still 8/8 · 2026-08-27
+- [x] T-P5-04 — KaTeX CSS bundled locally · VERIFY: `grep -rn "cdn" src/` empty · 2026-08-27
+- [x] T-P5-05 — `MermaidDiagram` with lazy runtime · VERIFY: Mermaid reached only via `import('mermaid')` inside an effect (SSR/initial-bundle safe by construction) · 2026-08-27
+- [x] T-P5-06 — Mermaid strict security configuration · VERIFY: `securityLevel:'strict'`; click-binding `javascript:` URI produces no script node, no `javascript:` in output · 2026-08-27
+- [x] T-P5-07 — Generated SVG sanitized · VERIFY: DOMPurify pass before insertion (defense-in-depth beyond mermaid's own internal sanitize); confirmed strips injected `<script>`, `onload`, `onerror`, smuggled `foreignObject><body onload=...>` while preserving legitimate label text (fixed a DOMPurify case-sensitivity gap on `foreignObject` found during verification — see CP-014) · 2026-08-27
+- [x] T-P5-08 — Diagram error boundary · VERIFY: invalid syntax → code-block fallback; a pathological input found to hang `mermaid.render` (not just throw) now resolves via a bounded 5s timeout, same fallback · 2026-08-27
+- [x] T-P5-09 — Math and diagram test suites · VERIFY: `tests/math.spec.ts` (6/6), `tests/mermaid.spec.ts` (5/5) · 2026-08-27
+- [x] **GATE G5** — 8/8 criteria PASS · 2026-08-27
 
 ## Phase P6 — Streaming, Caching & Performance · 12%
 
