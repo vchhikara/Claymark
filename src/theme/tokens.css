@@ -15,6 +15,11 @@
   --clay-400: #e29981;
   --clay-500: #d97757;
   --clay-600: #c8542d;
+  /* T-P8-02: same hue/sat as clay-600/clay-500, darkened so the light
+     theme's link (default + hover) clears WCAG AA 4.5:1 as text against
+     --surface (neutral-100) — clay-600 measured 4.23:1, clay-500 2.99:1,
+     both failing; clay-700 measures ~4.73:1. */
+  --clay-700: #bd4d28;
   --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-ui: Inter, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
@@ -64,9 +69,9 @@
   --text-muted: var(--neutral-800);
   --border-subtle: var(--neutral-400);
   --border-default: var(--neutral-500);
-  --link: var(--clay-600);
+  --link: var(--clay-700);
   --quote-rule: var(--neutral-500);
-  --accent-brand: var(--clay-500);
+  --accent-brand: var(--clay-700);
 }
 
 [data-theme='dark'] {

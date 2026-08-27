@@ -18,10 +18,10 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 87 / 96 |
-| Weighted progress | ~79.4% |
+| Tasks complete | 88 / 96 |
+| Weighted progress | ~80.2% |
 | Current phase | P8 in progress |
-| Current batch | B15 in progress (T-P8-01 done · next T-P8-02) |
+| Current batch | B15 in progress (T-P8-01, T-P8-02 done · next T-P8-03) |
 | Gates passed | 8 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016, G7 · CP-017) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
@@ -143,7 +143,7 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 ## Phase P8 — Accessibility & Hardening · 8%
 
 - [x] T-P8-01 — Semantic element audit · VERIFY: new `tests/a11y.spec.ts` renders a reference document exercising every DEFAULT_COMPONENTS element type through the real pipeline into a real DOM and runs axe-core → 0 violations. Two real defects found and fixed: (1) `src/pipeline/to-react.tsx` was missing `passNode: true` on both `toJsxRuntime` calls, so `map.tsx`'s `ParagraphAdapter`/`isSoleImageParagraph` never received the hast node and a standalone captioned image left a `<figure>` nested inside a `<p>` (invalid nesting); (2) `src/components/map.tsx`'s `input:` entry was an inline arrow, so `ListItemAdapter`'s `firstType === TaskCheckbox` identity check never matched (fresh function identity per element) and every task checkbox fell through to an unlabeled `<li>`, failing axe's "form elements must have labels" rule — fixed via a named `InputAdapter` function referenced from both places. `TaskList.tsx`'s native `<label>`-wrap (from T-P7) now actually takes effect end-to-end. Full suite: 95/96 pass, only the pre-existing DEC-019 flaky `stress.spec.ts` S-01 fails · 2026-08-27
-- [ ] T-P8-02 — Contrast verification, both themes
+- [x] T-P8-02 — Contrast verification, both themes · VERIFY: new `tests/contrast.spec.ts` computes WCAG relative-luminance contrast ratios directly from the semantic-token source of truth (`src/theme/tokens/{semantic,dark,neutral,accent}.ts`) for every text/background pair the CSS renders (body, blockquote, figcaption, link default, link hover/accent, inline+block code), both themes, 12 pairs total. Found 2 real AA violations in the light theme: default link color `clay-600` on `surface` measured 4.23:1 (needs 4.5:1), hover/accent color `clay-500` measured 2.99:1 — both below threshold. Fixed by adding `clay-700` (`#bd4d28`, same hue/saturation, darkened) and repointing the light theme's `--link`/`--accent-brand` to it (measured ~4.73:1); dark theme was already compliant, untouched. All 12 pairs now pass · 2026-08-27
 - [ ] T-P8-03 — ARIA labels on all controls
 - [ ] T-P8-04 — Keyboard-reachable scroll regions
 - [ ] T-P8-05 — Text alternatives for math and diagrams

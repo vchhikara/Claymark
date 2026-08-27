@@ -475,6 +475,27 @@ DERIVATIONS  : `hast-util-to-jsx-runtime`'s `passNode` option (default `false`) 
 ─────────────────────────────────────────────
 
 ─────────────────────────────────────────────
+CHECKPOINT   : CP-019
+TIMESTAMP    : 2026-08-27T22:40:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P8 in progress (2/9 P8 tasks done)
+BATCH        : B15 in progress (T-P8-01, T-P8-02 done)
+COMPLETED    : T-P8-02 (contrast verification, both themes)
+EVIDENCE     : New `tests/contrast.spec.ts` computes WCAG 2.x relative-luminance contrast ratios directly from the semantic-token source of truth (`src/theme/tokens/{semantic,dark}.ts`, resolving through `neutral.ts`'s HSL triples and `accent.ts`'s hex values) rather than hand-copied numbers — so a future token edit is re-verified automatically. Checks all 6 real text/background pairs the CSS renders (body text, blockquote text, figcaption, link default, link hover/accent, inline+block code text on `surface-code`) in both themes (12 assertions). First run surfaced 2 real, previously-shipped WCAG AA violations, both in the light theme: default link color (`--link: var(--clay-600)`) on `--surface` measured 4.225:1 (below the 4.5:1 text threshold), and the hover/accent color (`--accent-brand: var(--clay-500)`) measured 2.991:1. Root cause: both `clay-600`/`clay-500` are too light against the light theme's near-white surface (`neutral-100`, ~98% HSL lightness) to meet AA for text. Fixed by adding `clay-700` (`#bd4d28` — same hue (~15°) and saturation (~65%) as clay-600/500, darkened to ~45% lightness, the point at which the ratio against `neutral-100` clears 4.5:1 with margin, measured ~4.727:1) in `src/theme/tokens/accent.ts`, `src/theme/tokens.css`, and `src/theme/tokens/semantic.ts` (`SEMANTIC_LIGHT.link`/`accent-brand` repointed to `clay-700`); the dark theme's `SEMANTIC_DARK` mapping (`clay-400`/`clay-500` against the dark surface) was already compliant and left unchanged. Re-ran: `tests/contrast.spec.ts` → 12/12 pass. Regression: `npx tsc --noEmit` → 0 errors. `npx vitest run tests/interaction.spec.ts tests/a11y.spec.ts tests/backtest.spec.ts tests/contrast.spec.ts` → 4 files, 26/26 pass (confirms the token-value change did not disturb P7 interaction behavior, T-P8-01's a11y evidence, or the backtest corpus).
+PENDING      : B15 continues = T-P8-03 (ARIA labels on all controls) onward
+VALIDATION   : PASS — T-P8-02's literal VERIFY ("All text pairs ≥ 4.5:1; large text ≥ 3:1") is met for every checked pair by direct computed evidence above; no `large` (≥3:1-only) pair was needed since every checked color is reused at both body and heading sizes, so the stricter 4.5:1 threshold was applied uniformly.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still undhardened by design).
+NEXT TASK    : T-P8-03
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : DEC-020 (clay-700 introduced as the light theme's link/accent-brand token, darkened from clay-600/clay-500 to clear WCAG AA 4.5:1 — a genuine, evidence-driven color-value correction to a previously-shipped, undetected contrast failure, not a scope adaptation; no human veto window required as this directly satisfies T-P8-02's literal VERIFY criterion rather than adapting it).
+CORRECTIONS  : none to prior entries — no prior checkpoint claimed contrast compliance; this is the first time it was checked.
+DERIVATIONS  : clay-600 (HSL ~15°, 63% sat, 48% lightness) and clay-500 (~15°, 63%, 60% lightness) both sit too high in lightness to serve as text color against a ~98%-lightness surface at the same hue/saturation — for this specific hue (~15°, warm orange) and saturation (~65%), the lightness needs to drop to ~45% or below before the ratio against `neutral-100` clears 4.5:1; useful reference point for any future warm-hue token added to this palette for light-theme text use.
+─────────────────────────────────────────────
+
+─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
 
