@@ -56,7 +56,7 @@ Requirement IDs are stable and referenced by tests.
 - **FR-4.5** Horizontal overflow scrolls within the block; the page never gains horizontal scroll.
 
 ### FR-5 Interaction
-- **FR-5.1** Images open in a modal lightbox; captions derive from the Markdown title attribute.
+- **FR-5.1** Images open in a modal lightbox; captions derive from the Markdown title attribute. **As-built (T-P9-06): the caption half shipped (`Image.tsx` renders a `<figcaption>` from the title); the lightbox half did not — `Lightbox.tsx` exists but is not wired into image rendering, so images do not currently open in a modal.**
 - **FR-5.2** Tables scroll horizontally within a container with edge indicators.
 - **FR-5.3** Theme follows `prefers-color-scheme` by default and is manually overridable with persistence.
 - **FR-5.4** Every interaction is reachable by keyboard alone.

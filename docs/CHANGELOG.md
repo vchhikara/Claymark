@@ -14,6 +14,8 @@ Nothing yet. Implementation begins at task `T-P0-01`.
 
 First release. Target state at Gate G9.
 
+> **As-built note (T-P9-06):** this "Added" list was written early in planning as a target, not a record of what shipped. Reconciled against `src/` as of T-P9-05: the **LRU document cache with entry and byte ceilings** (`src/pipeline/cache.ts`) exists but is not exported from the public surface (no `configureCache`/`clearCache`) and is unused by the rest of the pipeline. **Image lightbox** (`src/components/Lightbox.tsx`) exists but is not wired into image rendering — clicking an image does not open it. **Runtime font overrides** and **partial token overrides, deep-merged** describe a `<ThemeProvider tokens/fonts>` API that does not exist — `ThemeProvider` takes only `children`. T-P9-07 is the roadmap-designated task to finalize the actual 1.0.0 release notes; this note flags the gap so that task starts from an accurate baseline rather than this aspirational list.
+
 ### Added
 
 **Markdown**
