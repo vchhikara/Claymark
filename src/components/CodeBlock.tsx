@@ -15,7 +15,14 @@ export function CodeBlock({ language, children }: CodeBlockProps): ReactElement 
       <div className="claymark-codeblock-header">
         <span className="claymark-codeblock-lang">{language}</span>
       </div>
-      <div className="claymark-codeblock-scroll">{children}</div>
+      {/* T-P8-04: a horizontally-overflowing region with no interactive
+          descendant (a static <pre>/<code>) is otherwise unreachable by
+          keyboard — Tab skips straight over it, so arrow/PageUp/PageDown
+          scrolling is mouse/touch-only. tabIndex=0 + role="region" makes it
+          a focusable, keyboard-scrollable landmark. */}
+      <div className="claymark-codeblock-scroll" tabIndex={0} role="region" aria-label={`${language} code`}>
+        {children}
+      </div>
     </div>
   )
 }

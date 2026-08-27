@@ -517,6 +517,27 @@ DERIVATIONS  : an optional prop passed directly into `aria-label` without a fall
 ─────────────────────────────────────────────
 
 ─────────────────────────────────────────────
+CHECKPOINT   : CP-021
+TIMESTAMP    : 2026-08-27T22:47:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P8 in progress (4/9 P8 tasks done)
+BATCH        : B15 in progress (T-P8-01 → T-P8-04 done)
+COMPLETED    : T-P8-04 (keyboard-reachable scroll regions)
+EVIDENCE     : `CodeBlock.tsx`'s `.claymark-codeblock-scroll` (wraps a static highlighted `<pre>/<code>`) and `Table.tsx`'s `.claymark-table-scroll` (wraps a plain `<table>`) are both horizontally-overflowing containers with no focusable descendant — confirmed via code read that neither had `tabIndex`/`role` before this change, meaning Tab skipped over them entirely and arrow/PageUp/PageDown scrolling was mouse/touch-only. Fixed by adding `tabIndex={0}` + `role="region"` + a descriptive `aria-label` to each (`` `${language} code` `` for CodeBlock, `"Table (scrolls horizontally)"` for Table) — the standard WCAG keyboard-scrollable-region pattern. Added regression tests: `tests/code.spec.ts` ("CodeBlock scroll region is keyboard-focusable with an accessible name") asserting `tabindex="0"`, `role="region"`, `aria-label="rust code"`; `tests/interaction.spec.ts` ("TableContainer scroll region is keyboard-focusable with an accessible name") asserting the same tabindex/role plus a non-empty `aria-label`. Regression: `npx tsc --noEmit` → 0 errors. `npx vitest run --exclude tests/stress.spec.ts` → 15/15 files, 109/109 pass (up from 107, confirming both new tests collected and passed; `tests/stress.spec.ts`'s pre-existing S-01 flake, DEC-019, deliberately excluded since this task touched no code in its measured path).
+PENDING      : B15 continues = T-P8-05 onward
+VALIDATION   : PASS — T-P8-04's literal VERIFY (scroll regions reachable and operable by keyboard) is met for both overflow containers in the codebase; no other unlabeled/unreachable scroll container was found (grep confirmed these are the only two `overflow-x` containers in `src/components`).
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still undhardened by design); Lightbox's unwired production integration (carried forward from CP-020, still out of scope).
+NEXT TASK    : T-P8-05
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : none new this checkpoint requiring a DEC entry (a direct fix against T-P8-04's literal VERIFY criterion).
+CORRECTIONS  : none to prior entries — no prior checkpoint claimed these scroll regions were keyboard-reachable.
+DERIVATIONS  : a scroll container wrapping only non-interactive content (a `<pre>`, a `<table>` with no links/inputs) is invisible to keyboard-only navigation by default — `overflow-x: auto` alone gives no tab stop; `tabIndex={0}` + `role="region"` + `aria-label` is the minimal fix, generalizable to any future overflow container introduced in the component library.
+─────────────────────────────────────────────
+
+─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
 
