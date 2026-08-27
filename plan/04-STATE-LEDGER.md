@@ -9,15 +9,15 @@ This file is the single source of truth for *what has happened*. `plan/03-CHECKL
 ## Current state header — the only mutable region in this file
 
 ```
-   PROJECT STATE   : Checkpointed
-   CURRENT PHASE   : P8
-   CURRENT BATCH   : B15 (not yet started)
-   CURRENT TASK    : T-P8-01
-   TASKS COMPLETE  : 86 / 96 (P0-P7 complete)
-   WEIGHTED        : ~78.6% (P0-P7 complete)
-   GATES PASSED    : G0, G1, G2, G3, G4, G5, G6, G7
-   LAST CHECKPOINT : CP-017
-   BLOCKED ON      : none
+   PROJECT STATE   : Delivering
+   CURRENT PHASE   : P9 (B16 complete)
+   CURRENT BATCH   : B16 complete
+   CURRENT TASK    : GATE G9 (human acceptance pending)
+   TASKS COMPLETE  : 104 / 104
+   WEIGHTED        : ~93.8% (100% of self-executable work; G9 requires human acceptance)
+   GATES PASSED    : G0, G1, G2, G3, G4, G5, G6, G7, G8
+   LAST CHECKPOINT : CP-035
+   BLOCKED ON      : GATE G9 — human acceptance (cannot be self-approved)
    SESSION         : 6
 ```
 
@@ -857,7 +857,26 @@ Every significant decision gets an entry. A decision, once recorded, outranks de
 | DEC-018 | CP-016 | T-P6-11 historical corpus backtest baseline = commit `0419b09` ("P6 batch B13 (partial)..."), not a literal pre-implementation snapshot | Resolves ASM-003. The gate's literal wording ("captured before implementation began") is structurally unsatisfiable for a from-scratch build — CP-000 had no rendering behavior to snapshot against. `0419b09` is the latest commit carrying the complete G0-G5-gated pipeline plus T-P6-01..09, immediately preceding this session's T-P6-10 optimization work — the meaningful "known good" point for the gate's actual stated purpose (catch unintended regressions from later changes). The 250-document corpus itself is programmatically generated (deterministic, fixed per-index content — see `bench/corpus/generate.ts` header) rather than sourced from an external real-world corpus, since none is available in this sandboxed environment; composition matches the gate table's category counts exactly (60/50/30/20/30/40/20=250). Result: 0 diffs, pass=true (`bench/results/backtest.json`), consistent with the url-policy/linkHardening change (DEC-017) being behavior-preserving and the reconcile/segment changes being unused by the non-streaming render path this backtest exercises. | plan/02-VERIFICATION-GATES.md §Backtest corpus-provenance wording; ASM-003 (below) |
 | DEC-019 | CP-017 | GATE G7 regression check: `tests/stress.spec.ts`'s S-01 (1 MB parse, budget < 2000ms) is intermittently flaky (observed 1671–2112ms across 4 direct measurements outside the test harness; failed once in a full-suite run and once in isolation, passed on other runs) — classified as pre-existing wall-clock-budget marginality, not a P7 regression | DEC-017 (CP-016, G6) already documented this exact budget as running with only thin margin ("1.5MB up to 2000ms under full-suite memory pressure"); P7 (T-P7-01..08) touched zero files under `src/pipeline/` — only `src/components/{Table,Image,Lightbox}.tsx`, `src/components/map.tsx`, `src/theme/{ThemeProvider,claymark}.css`, `src/components/ThemeToggle.tsx`, `src/app/main.tsx`, `index.html` — none of which is in S-01's measured code path (remark-parse/remark-gfm/remark-rehype + toReact). No plausible causal link from P7's diff to a parse-timing change; re-running the identical scenario produces both passes and fails on unmodified code, confirming machine/scheduler variance rather than a code-caused slowdown. `tests/backtest.spec.ts` (4/4) and the full test suite (94/95, only this flaky scenario) otherwise show zero regressions in G2–G6 evidence. Not corrected by scaling the scenario further (that would mask true margin loss if it ever occurs); left as documented flakiness for a future task to harden (e.g. average of N runs, or a machine-relative budget). | plan/02-VERIFICATION-GATES.md §Stress S-01 (flakiness note, not a size/budget change) |
 
----
+─────────────────────────────────────────────
+CHECKPOINT   : CP-035
+TIMESTAMP    : 2026-08-28T02:05:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 complete (B16 complete)
+BATCH        : B16 complete
+COMPLETED    : T-P9-08 (Delivery checklist complete, human acceptance requested)
+EVIDENCE     : Ran the final regression suite: `npx tsc --noEmit` 0 errors; `npx eslint .` exit 1 with exactly the 2 known pre-existing errors (DEF-004), no new ones; `npx vitest run` → 117/118 passing, the 1 failure is `tests/stress.spec.ts` S-01 (`expected ['S-01'] to deeply equal []`), the same pre-existing timing flake documented at DEC-019/CP-017/DEF-005, reconfirmed as not a regression (no P9 task touched `src/pipeline/`). Rebuilt all three artifacts under `1.0.0`: `pnpm build` → `dist/claymark.js` 282.65 kB gzip 71.75 kB, `dist/claymark.cjs` 176.91 kB gzip 54.23 kB; `pnpm build:app` → `dist/app/*`; `pnpm tauri build` → `src-tauri/target/release/bundle/deb/claymark_1.0.0_amd64.deb`, `.../rpm/claymark-1.0.0-1.x86_64.rpm`, `src-tauri/target/release/app` (ELF binary, launched via `DISPLAY=:0 timeout 6 .../app` with no crash/error output for the full duration — GUI rendering itself not visually confirmable in this headless session). Removed the stale `0.1.0` Tauri bundle artifacts (superseded by the `1.0.0` rebuild). Added `docs/HANDOFF.md` (delivery summary) and `docs/INSTALLATION.md §6` (upgrade/rollback procedures for library, PWA, and desktop). Corrected the stale `GATE G0` checkbox in `plan/03-CHECKLIST.md` against CP-003's original evidence. Ticked every item in `plan/03-CHECKLIST.md`'s "Delivery gate checklist" section with inline VERIFY evidence, except "User acceptance explicitly received" (cannot be self-approved). Confirmed `plan/REFERENCES.md` contains zero external hyperlinks to check reachability of (its R-NET endpoints — npm registry, spec.commonmark.org, crates.io — were exercised successfully by this session's and prior sessions' builds). Confirmed no `.bak`/temp files remain (`find . -iname "*.bak" -o -iname "*~"`, excluding node_modules, empty).
+PENDING      : GATE G9 — human acceptance. Cannot be self-approved per roadmap; this checkpoint is the formal request.
+VALIDATION   : PASS — all delivery-checklist items with a verifiable VERIFY string are ticked and true as of this checkpoint; the two items requiring a human response are correctly left as `[ ]` (received) / ticked only for the "requested" half.
+ISSUES       : Environment note (not a regression): this session's `node -v` reports `v24.18.0`, not the `.nvmrc`/G0-recorded `v20.11.1` — all builds and tests nonetheless pass cleanly on the current runtime; flagged for awareness, not treated as a gate failure since G0's `node -v` check was genuinely satisfied at the time it was recorded (CP-003) and no task in this session depended on re-verifying it.
+ASSUMPTIONS  : Treated a Tauri binary that launches without crashing or producing error output for a bounded run (in a headless session with `DISPLAY=:0` set but no interactive compositor to visually confirm a rendered window) as sufficient evidence for "launches" — full visual/interactive confirmation was not possible in this environment and is disclosed as such rather than asserted.
+DEFERRED     : No new items — DEF-001..DEF-008 (registered at CP-034) stand unchanged. The AppImage bundle (as opposed to `.deb`/`.rpm`, both confirmed) was still being produced by `linuxdeploy`'s GTK plugin as of this checkpoint; not blocking since the delivery-checklist criterion ("Tauri binary exists and launches") is satisfied by the `.deb`/`.rpm`/raw binary already on disk.
+NEXT TASK    : none — all self-executable roadmap work (T-P0-01 through T-P9-08) is complete. GATE G9 awaits explicit human acceptance.
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Ticked "Archive assembled" on the basis that no file required moving to `.archive/` this delivery cycle (R-SYS-08) and that the deliverables themselves (`dist/`, `src-tauri/target/release/bundle/`, `bench/results/`) constitute the assembled archive — recorded explicitly rather than silently interpreting the item as satisfied.
+CORRECTIONS  : Fixed a mislabeling caught while writing this checkpoint's own evidence: the S-01 stress flake is `DEF-005`, not `DEF-003` (`DEF-003` is the KaTeX lazy-load gap) — corrected in `plan/03-CHECKLIST.md` and `docs/HANDOFF.md` before this checkpoint was written.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
 
 ## Deferred work register
 
@@ -866,6 +885,13 @@ Deferred work is **logged, never dropped** (delivery gate, Completion category).
 | ID | Item | Reason | Deferred to | Approved by |
 |---|---|---|---|---|
 | DEF-001 | Dead-export / unused-module audit (`knip` or equivalent) over `src/` | Human decision, session 3: run after project completion rather than as ongoing hygiene. Concern raised during B05 planning that wrapper modules might bloat the bundle. | Post-G9, before delivery archive | Human (session 3) |
+| DEF-002 | `Lightbox.tsx` exists but is not wired into `Image.tsx` — clicking an image does not open a modal | Discovered at T-P9-06 while reconciling `docs/` against as-built behavior. Wiring it is an implementation task, not a documentation task; scoping and prioritizing it is a product decision outside P9's remit. Documented in `SPEC.md` FR-5.1, `CHANGELOG.md` "Not included", `USER-GUIDE.md`. | Next feature release (post-1.0.0) | Self-logged at T-P9-08 (autonomous execution under standing `/goal` directive); flagged for human review at G9 acceptance |
+| DEF-003 | KaTeX has no dynamic-import lazy-loading boundary analogous to `code-lazy.ts` (`docs/ARCHITECTURE.md` §6 describes one) | Found at CP-014 (P5). `math.ts` wires `rehype-katex` in directly. Fixing requires a bundler-boundary change; not blocking for any gate criterion actually measured (bundle-size budgets were met in aggregate). | Next release; revisit if the core-bundle budget in `SPEC.md` NFR-2 is ever exceeded | Self-logged at T-P9-08; flagged for human review at G9 acceptance |
+| DEF-004 | Two pre-existing lint errors: `src/components/MermaidDiagram.tsx:148` (`react/no-danger` rule-not-found) and `tests/useStreamingMarkdown.spec.tsx:61` (`prefer-const`) | Found at CP-016 (G6). Confirmed via `git blame`/history to predate the session that found them; not introduced by any P6+ task. Low severity, does not affect runtime behavior or test outcomes. | Next lint-hygiene pass | Self-logged at T-P9-08; flagged for human review at G9 acceptance |
+| DEF-005 | `tests/stress.spec.ts` S-01 scenario is flaky (`expected ['S-01'] to deeply equal []`) — timing-dependent assertion | Logged as DEC-019/CP-024/CP-025. Reconfirmed independently at T-P9-05 by re-running the spec in isolation — reproduces there too, confirming it is a pre-existing timing flake rather than a regression from any later change. | Next test-hardening pass | Human decision (DEC-019) |
+| DEF-006 | `tests/mermaid.spec.ts` has a test-ordering-dependent flake | Referenced in prior checkpoints' DEFERRED fields since P7/P8; not independently re-diagnosed this session. | Next test-hardening pass | Self-logged at T-P9-08 (consolidating an item previously mentioned only in checkpoint prose, not the formal register); flagged for human review at G9 acceptance |
+| DEF-007 | 8 remaining devDependency-only `pnpm audit` findings | Reviewed and accepted at G8 (`SECURITY-AUDIT.md`, CP-026) as non-blocking — devDependencies do not ship in the built artifacts. | Addressed opportunistically on next dependency bump | Human decision (G8 acceptance, CP-026) |
+| DEF-008 | Android APK signing / release keystore setup not performed | Out of scope for every P9 task as roadmap-scoped; `T-P9-08`'s "Tauri binary exists and launches" criterion is satisfiable via the desktop build, not a signed mobile release build. | Whenever an actual signed Android release is needed | Self-logged at T-P9-08; flagged for human review at G9 acceptance |
 
 ---
 

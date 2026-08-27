@@ -157,7 +157,17 @@ See `API.md` for full signatures and `THEMING.md` for the token schema (token/fo
 
 ---
 
-## 6. Troubleshooting
+## 6. Upgrade and rollback
+
+**Library.** Pin exact versions (no range specifiers, per this project's own dependency policy) and read `CHANGELOG.md` before bumping — a **Major** entry per the Version policy means removals, renames, default-behavior changes, or any sanitization change. To roll back, reinstall the prior exact version (`pnpm add claymark@<version>`); no persisted state or schema exists to migrate, since the library holds no storage of its own beyond the caller's own `prefers-color-scheme`/`<ThemeToggle>` preference in the host page.
+
+**PWA.** The service worker is versioned by build hash and updates on next load once the new `dist/app` is deployed; a user on an old cached version keeps working offline until they reload with connectivity. Rollback is redeploying the previous `dist/app` build — there is no server-side state to reconcile.
+
+**Desktop (Tauri).** Rollback is reinstalling the prior binary. Uninstall first on Linux (`sudo dpkg -r claymark` for `.deb`, or delete the AppImage) since Tauri does not manage version coexistence. The app persists only the theme preference; no data migration is required between versions.
+
+---
+
+## 7. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
