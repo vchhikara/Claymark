@@ -4,3 +4,4 @@ coverage/
 .scratch/
 *.log
 .DS_Store
+src-tauri/target/
