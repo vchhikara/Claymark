@@ -63,12 +63,21 @@ function ListAdapter({ ordered, start, children }: NodeProps & { ordered?: boole
   return <ul className="claymark-list claymark-ul">{children}</ul>
 }
 
+function InputAdapter(props: NodeProps): ReactElement {
+  return <TaskCheckbox checked={Boolean(props.checked)} />
+}
+
 function ListItemAdapter({ children }: NodeProps): ReactElement {
   const kids = Array.isArray(children) ? [...children] : children !== undefined && children !== null ? [children] : []
   const first = kids[0]
   if (isValidElement(first)) {
     const firstType = first.type as unknown
-    if (firstType === TaskCheckbox) {
+    // T-P8-01: the "input" DEFAULT_COMPONENTS entry must be this named
+    // function reference — an inline arrow `(props) => <TaskCheckbox .../>`
+    // creates a fresh function identity per element, so this identity check
+    // would silently never match and every task checkbox would fall through
+    // to the unlabeled plain-<li> path below.
+    if (firstType === InputAdapter) {
       const props = first.props as { checked?: boolean }
       return (
         <TaskListItem checked={props.checked === true}>
@@ -88,6 +97,38 @@ function CodeAdapter({ children, className }: NodeProps): ReactElement {
   return <InlineCode>{children}</InlineCode>
 }
 
+interface HastLikeElement {
+  type: string
+  tagName?: string
+  children?: HastLikeElement[]
+  value?: string
+}
+
+// T-P8-01: CommonMark wraps a standalone `![alt](src)` in a `<p>` (an image
+// is inline per the spec). Image.tsx renders a `<figure>` when the markdown
+// supplies a title (caption) — a block-level element, which browsers/jsdom
+// correctly flag as invalid nesting inside `<p>` (validateDOMNesting
+// warning), and which axe-core would eventually treat as broken structure.
+// remark-rehype's hast node for the paragraph carries the original
+// (unconverted) children, so this checks *that* — not the already-mapped
+// React children — for the single-image case and unwraps the `<p>`, same
+// pattern react-markdown itself documents for this exact conflict.
+function isSoleImageParagraph(node: unknown): boolean {
+  const el = node as HastLikeElement | undefined
+  if (!el?.children) return false
+  const meaningful = el.children.filter(
+    (child) => !(child.type === 'text' && (child.value ?? '').trim() === ''),
+  )
+  return meaningful.length === 1 && meaningful[0]?.tagName === 'img'
+}
+
+function ParagraphAdapter(props: NodeProps): ReactElement {
+  if (isSoleImageParagraph(props.node)) {
+    return <>{props.children}</>
+  }
+  return <Paragraph>{props.children}</Paragraph>
+}
+
 export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = {
   h1: (props) => <HeadingAdapter {...props} level={1} />,
   h2: (props) => <HeadingAdapter {...props} level={2} />,
@@ -95,7 +136,7 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   h4: (props) => <HeadingAdapter {...props} level={4} />,
   h5: (props) => <HeadingAdapter {...props} level={5} />,
   h6: (props) => <HeadingAdapter {...props} level={6} />,
-  p: (props) => <Paragraph>{props.children}</Paragraph>,
+  p: (props) => <ParagraphAdapter {...props} />,
   a: (props) => (
     <Link
       href={typeof props.href === 'string' ? props.href : undefined}
@@ -142,5 +183,5 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   tr: (props) => <Passthrough tag="tr" className="claymark-tr">{props.children}</Passthrough>,
   th: (props) => <Passthrough tag="th" className="claymark-th">{props.children}</Passthrough>,
   td: (props) => <Passthrough tag="td" className="claymark-td">{props.children}</Passthrough>,
-  input: (props) => <TaskCheckbox checked={Boolean(props.checked)} />,
+  input: InputAdapter,
 }

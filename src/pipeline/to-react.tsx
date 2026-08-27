@@ -40,6 +40,10 @@ function convertNode(node: RootContent, options: ToReactOptions): ReactElement {
     jsx: jsx as unknown as Jsx,
     jsxs: jsxs as unknown as Jsx,
     components: options.components,
+    // T-P8-01: component-map entries (e.g. the p/img adapter) need the
+    // original hast node to make structural decisions (see map.tsx) that
+    // the already-converted React children don't expose.
+    passNode: true,
   }) as ReactElement
 }
 
@@ -51,6 +55,7 @@ export function toReact(tree: Root, options: ToReactOptions = {}): ReactElement 
       jsx: jsx as unknown as Jsx,
       jsxs: jsxs as unknown as Jsx,
       components: options.components,
+      passNode: true,
     }) as ReactElement
   }
 
