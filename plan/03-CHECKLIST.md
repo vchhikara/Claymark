@@ -18,10 +18,10 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 95 / 96 |
-| Weighted progress | ~86.5% |
-| Current phase | P8 complete → P9 starting |
-| Current batch | B15 done (T-P8-01 → T-P8-09, GATE G8 reached) · B16 next (T-P9-01 → T-P9-08, G9) |
+| Tasks complete | 96 / 97 |
+| Weighted progress | ~87.4% |
+| Current phase | P9 in progress |
+| Current batch | B16 in progress (T-P9-01 done · T-P9-02 → T-P9-08 next, G9) |
 | Gates passed | 9 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016, G7 · CP-017, G8 · CP-026) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
@@ -153,11 +153,12 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 - [x] T-P8-09 — `docs/SECURITY.md` finalized against as-built · VERIFY: audited every SC-01–SC-14 and KL-01–KL-06 row against actual `tests/` contents; found and fixed one stale reference (SC-04 claimed `urls.spec.ts`, which does not exist — corrected to `security.spec.ts`, the actual malicious-URL test location); confirmed SC-03 (`commonmark.spec.ts`), SC-08/SC-09 (`mermaid.spec.ts`), SC-10 (`math.spec.ts`), SC-14 (`cache.spec.ts`) all reference real, substantively-covering test files; confirmed SC-11's "zero runtime network" claim by grep (`cdn|http://|https://` across `src/`, excluding example.com/localhost) — only hit was a benign citation URL inside a CSS comment (`src/theme/katex.css:153`), not a runtime call; updated KL-06's mitigation reference to name `SECURITY-AUDIT.md` explicitly (was a bare "tracked at G8" with no filename); added a cross-reference from §2 to `bench/security-final.ts`/`tests/security-final.spec.ts` (T-P8-08) and `SECURITY-AUDIT.md` (T-P8-07) · regression: `npx tsc --noEmit` 0 errors, `npx eslint .` clean of new issues (only the 2 pre-existing CP-016 errors), `npx vitest run` 17/17 files, 115/115 tests pass (the S-01 timing flake from CP-024/CP-025 did not reproduce this run) · 2026-08-27
 
 **GATE G8 reached** — Accessibility & Hardening phase complete. All dependency findings resolved-or-documented (`SECURITY-AUDIT.md`), the security suite has a durable standalone re-run artifact (`bench/results/security-final.json`), and `docs/SECURITY.md` is verified accurate against as-built test coverage. Recorded at CP-026.
-- [ ] **GATE G8** — 10 criteria including backtest re-run
+- [x] **GATE G8** — 10 criteria including backtest re-run
 
 ## Phase P9 — Packaging & Delivery · 10%
 
-- [ ] T-P9-01 — Library build, ESM + CJS + types
+- [x] T-P9-01 — Library build, ESM + CJS + types
+  - VERIFY: `vite.config.ts` gains a conditional `vite-plugin-dts@5.0.3` plugin (non-`app` mode only: `entryRoot: 'src'`, `include: ['src']`, `insertTypesEntry: true`; `bundleTypes`/`rollupTypes` single-file rollup dropped — `unplugin-dts@1.0.3`'s `PluginOptions` renamed `rollupTypes` to `bundleTypes`, and enabling `bundleTypes` fails at runtime because its `@microsoft/api-extractor@7.57.0` dependency ships a broken ESM entry (`Cannot find module '.../lib-esm/api/ConsoleMessageId'`, an extensionless-import bug in that release with no newer `vite-plugin-dts` available to fix it — 5.0.3 is latest). Multi-file per-module `.d.ts` output is standard and sufficient; a rolled-up single file is a nicety, not a requirement of this task's VERIFY. Discovered along the way that `src/pipeline/index.ts`, `src/components/index.ts`, `src/theme/index.ts` were still stub `export {}` placeholders from early scaffolding (confirmed via grep that no code imports through them), so the library build was previously emitting an empty shell despite complete `package.json`/`vite.config.ts` wiring; populated all three barrels with re-exports of what is actually implemented today (`MarkdownRoot`, `ThemeToggle`, `useStreamingMarkdown`, `ThemeProvider`/`useTheme`, pipeline/theme internals) — deliberately NOT the full `docs/API.md`-documented surface (`Markdown`, `useMarkdown`, `renderToReact`, `configureCache`, `clearCache` don't exist in `src/`), since T-P9-06 is the roadmap-designated task for docs-vs-implementation reconciliation. Rebuilt: `dist/claymark.js` (282.65 kB) and `dist/claymark.cjs` (176.91 kB) now contain real output (previously ~1 byte each), plus 49 `.d.ts` files across `dist/`. Consumer-import VERIFY performed via a scratch `.consumer-check/consumer.tsx` (deleted after) importing `MarkdownRoot`, `ThemeToggle`, `ThemeProvider`, `useTheme`, `processor`, `safeUrl` from `../dist/index` and type-checking under `--jsx react-jsx --strict --module esnext --moduleResolution bundler` — 0 errors. Full regression: `tsc --noEmit` 0 errors, `eslint .` 2 pre-existing errors only (same as CP-016, no new issues), `vitest run` 17/17 files, 115/115 tests pass. Dated 2026-08-28.
 - [ ] T-P9-02 — PWA manifest and service worker
 - [ ] T-P9-03 — Tauri desktop shell
 - [ ] T-P9-03a — Android shell via Tauri Mobile (added per DEC-012 / Q-01 ruling; I-08 suffix)

@@ -638,6 +638,26 @@ CORRECTIONS  : `docs/SECURITY.md` SC-04's test reference corrected from a nonexi
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-027
+TIMESTAMP    : 2026-08-28T00:35:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01 done; T-P9-02 → T-P9-08 next, G9)
+COMPLETED    : T-P9-01 (library build: ESM + CJS + type declarations, React as peer dependency)
+EVIDENCE     : Installed `vite-plugin-dts@5.0.3` (exact-pinned, SC-13) and wired it into `vite.config.ts` as a conditional plugin (non-`app` mode only). Discovered and fixed a TS2353 type error (`rollupTypes` renamed to `bundleTypes` in `unplugin-dts@1.0.3`'s `PluginOptions`), then discovered `bundleTypes: true` fails at runtime because that version's `@microsoft/api-extractor@7.57.0` dependency ships a broken ESM entry point (extensionless import `Cannot find module '.../lib-esm/api/ConsoleMessageId'`) — confirmed 5.0.3 is the latest available `vite-plugin-dts` release, so no upgrade path exists; dropped the single-file rollup option (multi-file `.d.ts` output is standard and sufficient for this task's VERIFY) and removed the now-unneeded `@microsoft/api-extractor` devDependency. Separately discovered `src/pipeline/index.ts`, `src/components/index.ts`, `src/theme/index.ts` were still stub `export {}` placeholders from early scaffolding (confirmed via grep no code imports through them) — the library build was previously an empty shell; populated all three with re-exports of what is genuinely implemented today, explicitly deferring the full `docs/API.md`-documented surface to T-P9-06 (scope discipline — T-P9-01 is scoped to build configuration, not feature implementation). Rebuilt `dist/`: `claymark.js` 282.65 kB, `claymark.cjs` 176.91 kB (previously ~1 byte each), 49 `.d.ts` files. VERIFY performed via a scratch `.consumer-check/consumer.tsx` (deleted after use) importing `MarkdownRoot`, `ThemeToggle`, `ThemeProvider`, `useTheme`, `processor`, `safeUrl` from `../dist/index`, type-checked with `--jsx react-jsx --strict --module esnext --moduleResolution bundler --skipLibCheck` — 0 errors. Full regression: `tsc --noEmit` 0 errors, `eslint .` 2 pre-existing errors only (same as CP-016), `vitest run` 17 files / 115 tests all pass.
+PENDING      : T-P9-02 onward (PWA manifest/service worker; Tauri shell; responsive verification; docs reconciliation; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — T-P9-01's VERIFY ("consumer project imports and type-checks cleanly") met directly.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings (all carried forward, unchanged). New this checkpoint: `docs/API.md` documents a public API surface (`Markdown`, `useMarkdown`, `renderToReact`, `configureCache`, `clearCache`, etc.) not yet implemented in `src/` — explicitly deferred to T-P9-06 per roadmap scoping, not a defect of this task.
+NEXT TASK    : T-P9-02 (PWA manifest, icon set, service worker)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Dropped `vite-plugin-dts`'s type-rollup option (`bundleTypes`/`rollupTypes`) rather than force a broken dependency chain to work, since multi-file `.d.ts` output satisfies the literal VERIFY criterion and no newer plugin version exists to fix the underlying `@microsoft/api-extractor@7.57.0` ESM-resolution bug.
+CORRECTIONS  : `plan/03-CHECKLIST.md`'s GATE G8 checkbox was left unticked despite CP-026 recording the gate as passed — corrected to `[x]` this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
