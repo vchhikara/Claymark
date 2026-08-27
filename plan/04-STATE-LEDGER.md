@@ -678,6 +678,26 @@ CORRECTIONS  : none this checkpoint.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-029
+TIMESTAMP    : 2026-08-28T00:20:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01, T-P9-02, T-P9-03 done; T-P9-03a → T-P9-08 next, G9)
+COMPLETED    : T-P9-03 (Tauri desktop shell)
+EVIDENCE     : Confirmed prerequisite toolchain present and functional: `cargo`/`rustc` 1.97.1, `@tauri-apps/cli@2.0.0` already an exact-pinned devDependency, system `libwebkit2gtk-4.1` present. Scaffolded `src-tauri/` via `npx tauri init --ci -A claymark -W Claymark -D "../dist/app" -P "http://localhost:5173" --before-dev-command "" --before-build-command "npx vite build --mode app"`. Fixed the generated `tauri.conf.json`'s placeholder `identifier` from `com.tauri.dev` to `com.claymark.app`. Regenerated the full cross-platform icon set from Claymark's own brand icon via `npx tauri icon public/icon-512.png` (replacing Tauri's default gear-icon placeholders across Windows/macOS/Linux/Android/iOS variants). `security.csp` left `null` deliberately — CSP/capability hardening is T-P9-04's designated scope, not this task's. First verification pass, `cargo tauri build --no-bundle`, produced a genuine ELF 64-bit Linux executable at `src-tauri/target/release/app` (11,080,656 bytes, confirmed via `file`). Second, fully literal pass — `npx tauri build` with no flag (`bundle.targets: "all"`) — additionally produced three platform bundle artifacts, each confirmed via `file`: `claymark_0.1.0_amd64.deb` (2,933,722 bytes, Debian binary package), `claymark-0.1.0-1.x86_64.rpm` (2,935,116 bytes, RPM v3.0), `claymark_0.1.0_amd64.AppImage` (90,305,728 bytes, ELF 64-bit executable, stripped). Added `src-tauri/target/` to `.gitignore` (no prior exclusion existed for Rust build artifacts, which are conventionally never committed). Regression: `tsc --noEmit` 0 errors, `eslint .` 2 pre-existing errors only (in `src/components/MermaidDiagram.tsx` and `tests/useStreamingMarkdown.spec.tsx`, same as CP-016/CP-027/CP-028 — confirmed via `git diff HEAD` showing zero changes to either file this task), `vitest run` 17 files / 115 tests all pass.
+PENDING      : T-P9-03a onward (Android shell via Tauri Mobile; allow-list lockdown; responsive verification; docs reconciliation; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — both the literal VERIFY (`cargo tauri build` produces a binary) and the fuller literal form (full `tauri build` producing installable platform bundles) are satisfied with concrete evidence.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; the `docs/API.md` vs. as-built gap (deferred to T-P9-06); `security.csp: null` and the default capabilities allow-list (deferred to T-P9-04) — all carried forward, unchanged.
+NEXT TASK    : T-P9-03a (Android shell via Tauri Mobile, per DEC-012/Q-01 ruling) or T-P9-04 (Tauri capability allow-list minimized) — next in roadmap batch order.
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Ran both `cargo tauri build --no-bundle` (fast, binary-only) and full `tauri build` (slower, produces installable bundles) rather than stopping at the first — the roadmap's literal VERIFY wording only requires a binary, but the fuller form was worth the extra ~20s of incremental Rust compile time for stronger evidence.
+CORRECTIONS  : none this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
