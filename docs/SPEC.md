@@ -63,8 +63,8 @@ Requirement IDs are stable and referenced by tests.
 
 ### FR-6 Theming
 - **FR-6.1** All visual values resolve to CSS custom properties.
-- **FR-6.2** A caller may supply a partial token override; unspecified tokens fall back to defaults.
-- **FR-6.3** Fonts are overridable at runtime by the end user.
+- **FR-6.2** A caller may supply a partial token override; unspecified tokens fall back to defaults. **As-built (T-P9-07): not implemented — `<ThemeProvider>` takes only `children`; no `tokens` prop exists. Customization currently requires forking the CSS token files (`THEMING.md`).**
+- **FR-6.3** Fonts are overridable at runtime by the end user. **As-built (T-P9-07): not implemented — no `fonts` prop on `<ThemeProvider>`.**
 - **FR-6.4** No inline styles originate from document content.
 
 ---

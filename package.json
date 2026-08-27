@@ -1,6 +1,6 @@
 {
   "name": "claymark",
-  "version": "0.1.0-plan",
+  "version": "1.0.0",
   "description": "A pixel-faithful, security-hardened Markdown rendering engine in the Claude visual idiom.",
   "type": "module",
   "license": "MIT",
