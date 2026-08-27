@@ -21,7 +21,14 @@ export default defineConfig(({ mode }) => {
       ? {
           outDir: 'dist/app',
           rollupOptions: {
-            input: 'index.html',
+            // T-P9-02: sw.ts is a second entry (not an import of index.html)
+            // so it compiles to a plain, unhashed dist/app/sw.js — a service
+            // worker must be served from a stable top-level path to control
+            // its intended scope.
+            input: { main: 'index.html', sw: 'src/sw.ts' },
+            output: {
+              entryFileNames: (info) => (info.name === 'sw' ? 'sw.js' : 'assets/[name]-[hash].js'),
+            },
           },
         }
       : {

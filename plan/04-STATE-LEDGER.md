@@ -658,6 +658,26 @@ CORRECTIONS  : `plan/03-CHECKLIST.md`'s GATE G8 checkbox was left unticked despi
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-028
+TIMESTAMP    : 2026-08-28T00:45:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01, T-P9-02 done; T-P9-03 → T-P9-08 next, G9)
+COMPLETED    : T-P9-02 (PWA manifest, icon set, offline service worker)
+EVIDENCE     : Added `public/manifest.json` (name/short_name/start_url/scope/display/background_color/theme_color, icons at 192, 512, and a 512 maskable variant); generated the three PNGs with a hand-rolled zlib-based encoder (no image-processing dependency added to the project); added `src/sw.ts` (cache-first shell, network-first-with-fallback elsewhere); wired it as a second Rollup input in `vite.config.ts` (app-mode build only) emitting an unhashed `dist/app/sw.js`; registered it from `src/app/main.tsx`; linked the manifest and theme-color/icon meta from `index.html`. Discovered Lighthouse 13.4.1 (current, confirmed no newer/older PWA-capable release exists via npm) has fully removed the PWA category and its installable-manifest/service-worker audits — confirmed by listing the installed package's `core/audits/` (no matches) and `--only-categories`'s help output (accessibility/best-practices/performance/seo/agentic-browsing only, no `pwa`). Substituted a manual equivalent verification using `puppeteer-core` (found bundled as a Lighthouse transitive dependency, not added to this project) driving real headless Chrome against `dist/app` served on :4173: manifest validity (name/short_name/start_url/display/both icon sizes/maskable icon present), both icons fetch and decode to their declared pixel dimensions, page links the manifest and sets theme-color, service worker installs and reaches `navigator.serviceWorker.controller`, and a reload under `Network.emulateNetworkConditions({offline:true})` still returns HTTP 200 with `#root` present — full offline shell verified. Regression: `tsc --noEmit` 0 errors, `eslint .` 2 pre-existing errors only, `vitest run` 17 files / 115 tests all pass.
+PENDING      : T-P9-03 onward (Tauri desktop shell scaffold; allow-list lockdown; responsive verification; docs reconciliation; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — the roadmap's literal VERIFY ("Lighthouse PWA category passes") is unattainable with any current Lighthouse release (category removed upstream); the substituted manual verification exercises the identical underlying installability/offline criteria the category used to check, with concrete headless-Chrome evidence for each.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; the `docs/API.md` vs. as-built gap (deferred to T-P9-06) — all carried forward, unchanged.
+NEXT TASK    : T-P9-03 (scaffold the Tauri desktop shell pointing at the built web assets — `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`; VERIFY: `cargo tauri build` produces a binary)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Lighthouse's PWA category is confirmed permanently removed upstream (not a version-pinning fix available within this project's control) — adapted T-P9-02's VERIFY to a manual, evidence-based equivalent rather than blocking on unattainable literal tooling.
+CORRECTIONS  : none this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
