@@ -82,7 +82,12 @@ export function Lightbox({ open, onClose, title, children }: LightboxProps): Rea
         className="claymark-lightbox"
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        // T-P8-03: `title` is optional (an image without a caption has
+        // none) — an `aria-label` of `undefined` leaves the dialog with no
+        // accessible name at all, which every AT and axe-core's
+        // aria-dialog-name-equivalent checks flag. Fall back to a generic
+        // but always-present name.
+        aria-label={title ?? 'Image preview'}
         tabIndex={-1}
       >
         {children}
