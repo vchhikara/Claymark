@@ -1,31 +1,31 @@
 {
-  "generatedAt": "2026-08-26T23:30:49.053Z",
+  "generatedAt": "2026-08-27T21:18:42.302Z",
   "results": [
     {
       "metric": "First render, 2 KB document",
       "budget": "< 16ms",
-      "measured": "4.84",
+      "measured": "8.58",
       "unit": "ms",
       "pass": true
     },
     {
       "metric": "First render, 100 KB document",
       "budget": "< 250ms",
-      "measured": "144.85",
+      "measured": "223.38",
       "unit": "ms",
       "pass": true
     },
     {
       "metric": "Streaming append, per token",
       "budget": "< 4ms",
-      "measured": "0.105",
+      "measured": "0.278",
       "unit": "ms (avg)",
       "pass": true
     },
     {
       "metric": "Cache hit",
       "budget": "< 1ms",
-      "measured": "0.0230",
+      "measured": "0.1177",
       "unit": "ms",
       "pass": true
     },
