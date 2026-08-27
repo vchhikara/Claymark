@@ -80,12 +80,29 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
         // ("foreignobject"), which never matches the camelCase `foreignObject`
         // element mermaid actually emits (SVG tag names are case-sensitive),
         // so without this the entire node-label subtree — legitimate text
-        // included — gets silently dropped. Verified this still strips every
-        // real injection vector: a raw `<script>`, an `onload`/`onerror`
-        // attribute, and a smuggled second `foreignObject><body onload=…>`.
+        // included — gets silently dropped.
+        //
+        // T-P8-07 (dependency audit → dompurify 3.1.4 → 3.4.14): newer
+        // DOMPurify hardened cross-namespace mixing (the mXSS class several
+        // of the audited advisories were about) and now drops HTML-namespace
+        // content inside a foreignObject unless the tag is declared an
+        // "HTML integration point" — the same mechanism MathML's
+        // `annotation-xml` already used by default. `foreignobject` (lower-
+        // cased, matching DOMPurify's own internal casing) opts the mermaid
+        // label markup back in. Re-verified this still strips every real
+        // injection vector on the new version: a raw `<script>`, an
+        // `onload`/`onerror` attribute, and a smuggled second
+        // `foreignObject><body onload=…>`.
+        //
+        // `HTML_INTEGRATION_POINTS` is a real, documented DOMPurify option
+        // (verified directly against the installed 3.4.14 runtime — see the
+        // comment above) that the bundled `.d.ts` for this version simply
+        // hasn't caught up to yet; the cast below is scoped to this one
+        // option, not a blanket type-safety opt-out.
         const cleaned = DOMPurify.sanitize(rendered, {
           USE_PROFILES: { svg: true, svgFilters: true, html: true },
           ADD_TAGS: ['foreignObject'],
+          ...({ HTML_INTEGRATION_POINTS: { foreignobject: true } } as Record<string, unknown>),
         })
         if (!cancelled) setSvg(cleaned)
       } catch (err) {
