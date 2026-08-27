@@ -19,7 +19,16 @@ npx vite --mode app --port 5173   # there is no "pnpm dev" script — this is th
 
 Open `http://localhost:5173` in a browser. This serves the same app entry
 (`src/app/main.tsx`) that `pnpm build:app` builds for production, just unbundled and with
-hot reload. **Verified this session:** the server starts and returns HTTP 200.
+hot reload.
+
+**What you should see:** a short sample document (a "claymark" heading, a description, a
+bullet list, a code block, and a table) typing itself out on load — that's the streaming
+renderer in action, not a bug or a delay. A "Paste your own Markdown" button in the
+top-left reveals a plain textarea: type or paste any Markdown there and the rendered
+output below updates live. The theme toggle is in the top-right (sun/moon icon).
+**Verified this session:** the server starts and returns HTTP 200; the sample renders
+correctly in both themes with no console errors, and custom text typed into the textarea
+re-renders live.
 
 ## 2. Trying the packaged apps instead
 

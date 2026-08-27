@@ -67,6 +67,20 @@ export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
     }
   }
 
+  // index.html's anti-FOUC script sets `<html data-theme>` once, synchronously,
+  // before mount — `--surface`/`--text-primary` etc. (src/theme/tokens.css) key
+  // off that attribute rather than `.claymark-root`'s own, so the page
+  // background/global tokens are driven by `<html>`, not by this provider's own
+  // div. Without this, a manual toggle (or a live OS-scheme change while
+  // `manual` is false) only ever updated `.claymark-root`'s `data-theme` —
+  // text color would flip to the new theme's palette while the background
+  // token stayed stuck on whatever `<html>` was set to at load, producing
+  // near-invisible low-contrast text. Keep `<html>` in sync on every change.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <div className="claymark-root" data-theme={theme}>
