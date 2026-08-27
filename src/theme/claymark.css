@@ -143,10 +143,49 @@
   background: none;
 }
 
+.claymark-table-scroll {
+  position: relative;
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+
+/* T-P7-02: scroll-edge shadows, present only while the corresponding
+   data-overflow-* attribute is set (i.e. only while there is unseen
+   content in that direction — see Table.tsx). */
+.claymark-table-scroll::before,
+.claymark-table-scroll::after {
+  content: '';
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 0;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.claymark-table-scroll::before {
+  left: 0;
+  margin-right: -1px;
+  box-shadow: inset 8px 0 8px -8px hsl(var(--shadow-color, 0 0% 0%) / 0.3);
+}
+
+.claymark-table-scroll::after {
+  right: 0;
+  margin-left: -1px;
+  box-shadow: inset -8px 0 8px -8px hsl(var(--shadow-color, 0 0% 0%) / 0.3);
+}
+
+.claymark-table-scroll[data-overflow-left='true']::before,
+.claymark-table-scroll[data-overflow-right='true']::after {
+  opacity: 1;
+}
+
 .claymark-table {
   border-collapse: collapse;
   width: 100%;
-  margin-block: var(--space-4);
+  margin-block: 0;
 }
 
 .claymark-th,
@@ -158,4 +197,45 @@
 
 .claymark-img {
   max-width: 100%;
+  height: auto;
+}
+
+.claymark-figure {
+  margin-block: var(--space-4);
+  margin-inline: 0;
+}
+
+.claymark-figcaption {
+  font-size: var(--text-code);
+  color: hsl(var(--text-muted));
+  text-align: center;
+  margin-block-start: var(--space-2);
+}
+
+.claymark-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(0 0% 0% / 0.7);
+  padding: var(--space-4);
+}
+
+.claymark-lightbox {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  outline: none;
+}
+
+.claymark-theme-toggle {
+  font: inherit;
+  background: none;
+  border: 1px solid hsl(var(--border-default));
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  line-height: 1;
 }
