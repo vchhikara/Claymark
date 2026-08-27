@@ -9,6 +9,8 @@ import { Paragraph } from './Paragraph'
 import { Rule } from './Rule'
 import { Heading } from './Heading'
 import { TaskListItem } from './TaskList'
+import { TableContainer } from './Table'
+import { Image } from './Image'
 
 type ElementTag =
   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'a' | 'ul' | 'ol' | 'li'
@@ -48,10 +50,6 @@ function Del({ children }: NodeProps): ReactElement {
 
 function Br(): ReactElement {
   return <br className="claymark-br" />
-}
-
-function Image({ src, alt, title }: NodeProps): ReactElement {
-  return <img className="claymark-img" src={src as string | undefined} alt={alt as string | undefined} title={title as string | undefined} />
 }
 
 function ListAdapter({ ordered, start, children }: NodeProps & { ordered?: boolean | undefined; start?: number | undefined }): ReactElement {
@@ -123,8 +121,22 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   del: (props) => <Del>{props.children}</Del>,
   hr: () => <Rule />,
   br: () => <Br />,
-  img: (props) => <Image {...props} />,
-  table: (props) => <Passthrough tag="table" className="claymark-table">{props.children}</Passthrough>,
+  img: (props) => (
+    <Image
+      src={props.src as string | undefined}
+      alt={props.alt as string | undefined}
+      title={props.title as string | undefined}
+      width={props.width as number | string | undefined}
+      height={props.height as number | string | undefined}
+    />
+  ),
+  table: (props) => (
+    <TableContainer>
+      <Passthrough tag="table" className="claymark-table">
+        {props.children}
+      </Passthrough>
+    </TableContainer>
+  ),
   thead: (props) => <Passthrough tag="thead" className="claymark-thead">{props.children}</Passthrough>,
   tbody: (props) => <Passthrough tag="tbody" className="claymark-tbody">{props.children}</Passthrough>,
   tr: (props) => <Passthrough tag="tr" className="claymark-tr">{props.children}</Passthrough>,

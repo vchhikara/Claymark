@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claymark</title>
+    <!--
+      T-P7-08: blocking theme-init script. Runs synchronously, before any
+      paint, so `<html>`'s `data-theme` attribute (which `--surface`/
+      `--text-primary` etc. key off, per src/theme/tokens.css) is correct
+      from the very first frame — a cold load on a dark-mode system never
+      shows a flash of the light theme while React boots and ThemeProvider
+      mounts. Kept deliberately tiny and dependency-free (must run before
+      the module script below, which is deferred by `type="module"`).
+    -->
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('claymark-theme')
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          // localStorage/matchMedia can throw (private mode, disabled
+          // storage) — fall back to the light default already in the CSS.
+        }
+      })()
+    </script>
+    <link rel="stylesheet" href="/src/theme/tokens.css" />
+    <link rel="stylesheet" href="/src/theme/claymark.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: hsl(var(--surface));
+        color: hsl(var(--text-primary));
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
+</html>

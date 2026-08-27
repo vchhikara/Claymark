@@ -18,11 +18,11 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 77 / 96 |
-| Weighted progress | ~70.6% |
-| Current phase | P6 complete → P7 next |
-| Current batch | B13 complete (T-P6-07..11 + GATE G6) · next B14 (T-P7-01 …) |
-| Gates passed | 7 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016) |
+| Tasks complete | 86 / 96 |
+| Weighted progress | ~78.6% |
+| Current phase | P7 complete → P8 next |
+| Current batch | B14 complete (T-P7-01..09 + GATE G7) · next B15 (T-P8-01 …) |
+| Gates passed | 8 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016, G7 · CP-017) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
 | Project state | `Checkpointed` |
@@ -129,16 +129,16 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 ## Phase P7 — UI Behaviors · 8%
 
-- [ ] T-P7-01 — `TableContainer` overflow scroll
-- [ ] T-P7-02 — Scroll-edge indicators
-- [ ] T-P7-03 — `Image` with aspect reservation
-- [ ] T-P7-04 — `Lightbox` with focus trap
-- [ ] T-P7-05 — Image captions
-- [ ] T-P7-06 — Theme provider
-- [ ] T-P7-07 — Theme toggle with persistence
-- [ ] T-P7-08 — Flash-of-incorrect-color eliminated
-- [ ] T-P7-09 — Interaction test suite
-- [ ] **GATE G7** — 8 criteria including backtest re-run
+- [x] T-P7-01 — `TableContainer` overflow scroll · VERIFY: tests/interaction.spec.ts (scroll-wrap test) pass · 2026-08-27
+- [x] T-P7-02 — Scroll-edge indicators · VERIFY: tests/interaction.spec.ts (no-overflow-attribute test) pass · 2026-08-27
+- [x] T-P7-03 — `Image` with aspect reservation · VERIFY: tests/interaction.spec.ts (aspect-ratio tests) pass · 2026-08-27
+- [x] T-P7-04 — `Lightbox` with focus trap · VERIFY: tests/interaction.spec.ts (focus-trap/Escape/focus-restore test) pass · 2026-08-27
+- [x] T-P7-05 — Image captions · VERIFY: tests/interaction.spec.ts (figcaption-from-title test) pass · 2026-08-27
+- [x] T-P7-06 — Theme provider · VERIFY: tests/interaction.spec.ts (system-change-without-remount test) pass · 2026-08-27
+- [x] T-P7-07 — Theme toggle with persistence · VERIFY: tests/interaction.spec.ts (manual-override-persists test) pass · 2026-08-27
+- [x] T-P7-08 — Flash-of-incorrect-color eliminated · VERIFY: tests/interaction.spec.ts (blocking-script test) pass · npx vite build --mode app exit 0 · 2026-08-27
+- [x] T-P7-09 — Interaction test suite · VERIFY: npx vitest run tests/interaction.spec.ts → 9/9 pass · 2026-08-27
+- [x] **GATE G7** — no regression in G2–G6 evidence · VERIFY: tsc --noEmit 0 errors; full suite 94/95 (1 pre-existing flaky, DEC-019, not a P7 regression); backtest 4/4; eslint 2 pre-existing errors only · 2026-08-27
 
 ## Phase P8 — Accessibility & Hardening · 8%
 
