@@ -23,14 +23,28 @@ yarn add claymark
 
 ### Minimal integration
 
+> **As-built note (T-P9-06):** there is no `<Markdown>` convenience component in the shipped package (see `API.md`). Rendering a document is a two-step call into `processor`/`toReact`, mounted inside `<MarkdownRoot>`:
+
 ```tsx
-import { Markdown, ThemeProvider } from 'claymark';
+import { processor, toReact, MarkdownRoot, ThemeProvider } from 'claymark';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import 'claymark/styles.css';
 
 export function App() {
+  const [content, setContent] = useState<ReactNode>(null);
+
+  useEffect(() => {
+    (async () => {
+      const tree = processor.parse('# Hello\n\nRendered with **claymark**.');
+      const hastTree = await processor.run(tree);
+      setContent(toReact(hastTree));
+    })();
+  }, []);
+
   return (
     <ThemeProvider>
-      <Markdown>{'# Hello\n\nRendered with **claymark**.'}</Markdown>
+      <MarkdownRoot>{content}</MarkdownRoot>
     </ThemeProvider>
   );
 }
@@ -45,10 +59,10 @@ export function App() {
 **Next.js App Router** — the renderer is a client component:
 ```tsx
 'use client';
-import { Markdown } from 'claymark';
+import { MarkdownRoot, processor, toReact } from 'claymark';
 ```
 
-**webpack 5** — ensure `experiments.topLevelAwait` is enabled if you import the pipeline directly rather than through the component.
+**webpack 5** — ensure `experiments.topLevelAwait` is enabled where `processor.run(tree)` is awaited.
 
 **Jest** — Jest does not natively resolve ESM-only dependencies. Either migrate to Vitest, or add:
 ```js
@@ -137,17 +151,9 @@ pnpm bench:backtest # 250-document corpus replay
 
 ## 5. Configuration
 
-Zero configuration is required. Available options:
+Zero configuration is required — and, as-built (T-P9-06), none is currently exposed: `<ThemeProvider>` takes only `children` (theme itself always follows `prefers-color-scheme` until the user clicks `<ThemeToggle>`), `toReact` takes a `components` override and an optional `subtreeCache`, and there is no runtime token override, font override, or cache-capacity configuration function.
 
-| Option | Where | Default |
-|---|---|---|
-| Theme | `<ThemeProvider defaultTheme>` | `'system'` |
-| Component overrides | `<Markdown components={…}>` | Built-in map |
-| Token overrides | `<ThemeProvider tokens={…}>` | Built-in tokens |
-| Font overrides | `<ThemeProvider fonts={…}>` | Bundled open fonts |
-| Cache capacity | `configureCache({ maxEntries })` | 100 |
-
-See `API.md` for full signatures and `THEMING.md` for the token schema.
+See `API.md` for full signatures and `THEMING.md` for the token schema (token/font customization currently requires forking the CSS token files, not a runtime API).
 
 ---
 

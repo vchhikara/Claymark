@@ -111,15 +111,15 @@ Flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, Gant
 ![alt text](image.png "Caption text")
 ```
 
-Alt text is used by screen readers; the title becomes a visible caption. Click any image to open it in a lightbox — Escape closes it.
+Alt text is used by screen readers; the title becomes a visible caption.
+
+> **As-built note (T-P9-06):** a `Lightbox` component exists in the source tree but is not wired into the image-rendering path — clicking an image does not currently open a lightbox. Lazy loading, a responsive `max-width` clamp, and CLS-free aspect-ratio reservation (when the source provides `width`/`height`) are the image behaviors actually shipped.
 
 ---
 
 ## 3. Reading features
 
 **Theme.** Follows your system light/dark setting automatically. Use the toggle to override; your choice is remembered.
-
-**Lightbox.** Click an image to enlarge. Escape or clicking outside closes it and returns focus to where you were.
 
 **Copy.** Every code block copies with one click.
 
@@ -133,7 +133,6 @@ Alt text is used by screen readers; the title becomes a visible caption. Click a
 |---|---|
 | `Tab` / `Shift+Tab` | Move between links, buttons, and scrollable regions |
 | `Enter` / `Space` | Activate the focused control |
-| `Escape` | Close the lightbox |
 | `←` `→` | Scroll a focused code block or table horizontally |
 
 Everything is reachable without a mouse. Focus is always visible and, after a dialog closes, always restored.

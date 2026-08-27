@@ -81,7 +81,9 @@ Nothing bypasses the sanitize stage. This is verified statically at Gate G2 crit
 | Cache | `src/pipeline/cache.ts` | LRU with byte ceiling | — |
 | Components | `src/components/` | Node → React mapping and presentation | theme |
 | Theme | `src/theme/` | Tokens, CSS vars, provider, motion | — |
-| Hooks | `src/hooks/` | `useMarkdown`, `useStreamingMarkdown`, `useTheme` | pipeline, theme |
+| Hooks | `src/hooks/` | `useStreamingMarkdown` | pipeline |
+
+> **As-built note (T-P9-06):** there is no `useMarkdown` hook — only `useStreamingMarkdown` lives under `src/hooks/`. `useTheme` is exported from `src/theme/ThemeProvider.tsx`, not `src/hooks/`. `src/pipeline/cache.ts` exists but is not re-exported from `src/pipeline/index.ts` — it is an internal module, not part of the public surface documented in `API.md`.
 
 **Dependency rule.** `theme` depends on nothing. `pipeline` may not import from `components`. `components` may not import from `pipeline` internals — only from its public types. Cycles are a build failure.
 
