@@ -718,6 +718,26 @@ CORRECTIONS  : none this checkpoint.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-031
+TIMESTAMP    : 2026-08-28T00:14:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01, T-P9-02, T-P9-03, T-P9-03a, T-P9-04 done; T-P9-05 → T-P9-08 next, G9)
+COMPLETED    : T-P9-04 (Tauri capability allow-list minimized)
+EVIDENCE     : Confirmed `src-tauri/Cargo.toml` has no `tauri-plugin-fs`/`shell`/`dialog`/`process` dependency — only `tauri` core + debug-only `tauri-plugin-log` — so filesystem/shell/dialog/process permission namespaces do not exist in this build regardless of allow-list content (VERIFY's literal wording, "no filesystem or shell capability enabled," was already true by construction). Read the generated `permissions/default.toml` to confirm `core:default` expands to `core:path/event/window/webview/app/image/resources/menu/tray:default`. Confirmed via `grep` that the frontend calls zero Tauri JS APIs (no `@tauri-apps/api` import, no `invoke()` anywhere in `src/`) and `src-tauri/src/lib.rs` registers no tray/menu/image/resource handling. Narrowed `src-tauri/capabilities/default.json`'s `permissions` from `["core:default"]` to an explicit `["core:window:default", "core:webview:default", "core:app:default", "core:event:default"]`, dropping the unused image/resources/menu/tray defaults. Verified the narrowed ACL is valid by rebuilding (`npx tauri build --no-bundle`) — exit 0, binary produced (an invalid permission identifier fails at the manifest-generation build step, so a successful build is affirmative evidence the ACL parses and resolves). Regression: `tsc --noEmit` 0 errors, `vitest run` 17 files / 115 tests all pass.
+PENDING      : T-P9-05 onward (responsive verification at 320/768/1024px; docs reconciliation; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — no filesystem, shell, dialog, or process capability exists in either the dependency graph or the allow-list; the allow-list itself was additionally narrowed to the 4 core permissions actually needed for a plain single-window webview shell with no IPC surface.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; the `docs/API.md` vs. as-built gap (deferred to T-P9-06); APK signing/release-keystore setup (out of scope for any P9 task as currently scoped) — all carried forward, unchanged.
+NEXT TASK    : T-P9-05 (verify mobile installability and responsive layout at 320px/768px/1024px — `tests/responsive.spec.ts`; VERIFY: no horizontal overflow at any breakpoint)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Narrowed the allow-list beyond the roadmap's literal VERIFY wording (which only required absence of fs/shell) to the actual minimum set the app uses, since the task's title ("capability allow-list minimized") calls for active narrowing, not just confirming an already-absent capability.
+CORRECTIONS  : none this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
