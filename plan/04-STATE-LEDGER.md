@@ -598,6 +598,26 @@ CORRECTIONS  : none to prior entries.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-025
+TIMESTAMP    : 2026-08-27T23:50:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P8 in progress (8/9 P8 tasks done)
+BATCH        : B15 in progress (T-P8-01 → T-P8-08 done)
+COMPLETED    : T-P8-08 (full security suite re-run against `bench/results/security-final.json`)
+EVIDENCE     : Wrote `bench/security-final.ts`, re-implementing the four checks `tests/security.spec.ts` (T-P2-12) already enforces — the 92-fixture XSS corpus, the 14-case malicious-URL fixture set, external-link `rel="noopener noreferrer"` hardening, and the no-`<script>`-node-anywhere check — against the same public pipeline entry points (`processor`, `safeUrl`), so a real regression here means the vitest suite would also fail; this file's purpose is a durable, git-trackable, CI-independent artifact per the roadmap's G8 gate rather than a second implementation of the security logic. Ran it directly (`npx tsx bench/security-final.ts`) against the as-built pipeline (post T-P8-07's dompurify/katex/mermaid/vite bumps): 92/92 XSS corpus, 14/14 malicious-URL, 1/1 rel hardening, 4/4 no-script — wrote `bench/results/security-final.json` with `overallPass: true`. Added `tests/security-final.spec.ts` (2 tests, following the same "emits a machine-readable result file" + "every category passes, no regression" pattern already established for `tests/stress.spec.ts`) so this doesn't silently rot on a future pipeline change. Regression: `npx tsc --noEmit` → 0 errors. `npx vitest run --exclude tests/stress.spec.ts` → 16/16 files, 113/113 pass (up from 15/111, the 2 new tests). `npx eslint bench/security-final.ts tests/security-final.spec.ts` → clean.
+PENDING      : B15 continues = T-P8-09 onward
+VALIDATION   : PASS — T-P8-08's literal VERIFY ("100% pass, no regression") is met: every category in `bench/results/security-final.json` is 100%, and the full suite (minus the pre-existing, unrelated S-01 timing flake) is green.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still undhardened by design); Lightbox's unwired production integration (carried forward from CP-020, still out of scope); the mermaid.spec.ts test-ordering flake (carried forward from CP-022, still unfixed at its root cause); the 8 remaining devDependency-only pnpm-audit findings (carried forward from CP-024, documented in `SECURITY-AUDIT.md`).
+NEXT TASK    : T-P8-09 (finalize `docs/SECURITY.md` against as-built behavior — every documented control must have a corresponding passing test)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : none new this checkpoint requiring a formal DEC entry — a direct implementation of T-P8-08's literal deliverable spec.
+CORRECTIONS  : none to prior entries.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |

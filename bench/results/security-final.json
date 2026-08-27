@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-08-27T17:46:01.850Z",
+  "overallPass": true,
+  "results": [
+    {
+      "category": "XSS corpus (NFR-1.2 · G2-C2)",
+      "total": 92,
+      "passed": 92,
+      "pass": true
+    },
+    {
+      "category": "Malicious-URL fixtures (G2-C5)",
+      "total": 14,
+      "passed": 14,
+      "pass": true
+    },
+    {
+      "category": "External link rel hardening (NFR-1.4 · G2-C6)",
+      "total": 1,
+      "passed": 1,
+      "pass": true
+    },
+    {
+      "category": "No <script> nodes in any output path (G2-C3)",
+      "total": 4,
+      "passed": 4,
+      "pass": true
+    }
+  ]
+}
