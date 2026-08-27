@@ -738,6 +738,26 @@ CORRECTIONS  : none this checkpoint.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-032
+TIMESTAMP    : 2026-08-28T01:40:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01 through T-P9-05 done; T-P9-06 → T-P9-08 next, G9)
+COMPLETED    : T-P9-05 (Responsive verification at three breakpoints)
+EVIDENCE     : Confirmed `pnpm test:visual` (`playwright test`) remains a non-functional entry point (Advisory AD-005 — `@playwright/test` not installed, only bare `playwright@1.44.0`; no `playwright.config.*` anywhere in the repo; existing `tests/*.spec.ts` all import from `vitest`, none from `@playwright/test`). Followed the established resolution precedent (`tests/__snapshots__/g3-eval.mjs`): wrote `tests/responsive.spec.ts`, driving real headless chromium via the bare `playwright` package directly, run under vitest (the project's actual working test runner). The spec starts a plain `node:http` static file server over the already-built `dist/app` (from T-P9-01/02/03), then for each of 320px/768px/1024px opens a fresh browser context at that viewport, loads the app, waits for mount, and asserts `document.documentElement.scrollWidth <= document.documentElement.clientWidth` — the roadmap's literal "no horizontal overflow at any breakpoint" VERIFY wording. `npx vitest run tests/responsive.spec.ts` — 3/3 pass. Full regression: `tsc --noEmit` 0 errors; `eslint .` 2 pre-existing errors only (`MermaidDiagram.tsx` unknown-rule `react/no-danger`, `useStreamingMarkdown.spec.tsx` prefer-const — both flagged since CP-016, confirmed via `git diff` unrelated to this change); `vitest run` 17/18 files pass, 117/118 tests — the sole failure is `tests/stress.spec.ts`'s S-01 scenario (`expected ['S-01'] to deeply equal []`), the pre-existing timing flake documented at DEC-019/CP-024/CP-025; re-ran `tests/stress.spec.ts` in isolation and it reproduced there too, confirming this is the known flake, not a regression introduced by the new responsive spec's server/browser usage.
+PENDING      : T-P9-06 onward (docs reconciliation against as-built; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — all three breakpoints (320px/768px/1024px) show zero horizontal overflow against the real built app shell.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness (reconfirmed reproducing in isolation this checkpoint); Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; the `docs/API.md` vs. as-built gap (deferred to T-P9-06); APK signing/release-keystore setup (out of scope for any P9 task as currently scoped) — all carried forward, unchanged.
+NEXT TASK    : T-P9-06 (reconcile every file in `docs/` against as-built behavior — resolve the `docs/API.md` vs. actual-implementation gap discovered at T-P9-01: `Markdown`, `useMarkdown`, `renderToReact`, `configureCache`, `clearCache` are documented but don't exist in `src/`)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Ran the responsive check under vitest driving bare `playwright` directly (matching the `g3-eval.mjs` precedent) rather than attempting to newly wire up the `@playwright/test` runner — installing that dependency and authoring a `playwright.config.*` would be a larger, out-of-scope infrastructure change for a task whose VERIFY only requires the overflow check itself. Served `dist/app` via a minimal hand-rolled `node:http` server (no new devDependency) rather than adding a `preview`/static-server script, since the project has no existing HTTP-serving convention to extend and the server is only needed transiently inside the test.
+CORRECTIONS  : none this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
