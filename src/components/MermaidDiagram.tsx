@@ -119,6 +119,15 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
   return (
     <div
       className="claymark-mermaid"
+      // T-P8-05: the rendered SVG is a rasterized graph with no inherent
+      // text alternative — mermaid does not emit a <title>/<desc>, so
+      // without this a screen reader announces nothing at all for the
+      // diagram. The raw diagram source (the fence content) is the only
+      // description available to this component; it's what a sighted user
+      // would fall back to reading anyway if the diagram failed to render
+      // (see the `error` branch above), so it's used verbatim here too.
+      role="img"
+      aria-label={source}
       // eslint-disable-next-line react/no-danger -- svg is produced by this
       // component's own render path and sanitized before being stored (T-P5-07).
       dangerouslySetInnerHTML={{ __html: svg }}

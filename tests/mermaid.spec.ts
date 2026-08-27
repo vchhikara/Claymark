@@ -45,8 +45,16 @@ describe('G5 — Mermaid', () => {
     const container = await renderAndWait(
       'graph TD; A-->B; click A "javascript:alert(1)"',
     )
-    expect(container.querySelector('svg')).toBeTruthy()
-    expect(container.innerHTML).not.toContain('javascript:')
+    const svg = container.querySelector('svg')
+    expect(svg).toBeTruthy()
+    // T-P8-05 added an `aria-label` (the raw diagram source, verbatim text —
+    // never an executable context) to the wrapper div, so the malicious
+    // string now legitimately appears as inert attribute text on the
+    // container. The actual security guarantee — no `javascript:` URI
+    // survives in an executable context (an href/xlink:href, or a live
+    // script node) — is checked against mermaid's own SVG output, not the
+    // wrapper.
+    expect(svg?.outerHTML).not.toContain('javascript:')
     expect(container.querySelector('script')).toBeNull()
   }, 20000)
 
@@ -67,6 +75,21 @@ describe('G5 — Mermaid', () => {
     expect(fallback).toBeTruthy()
     expect(fallback?.textContent).toBe('this is not valid mermaid syntax @#$%')
     expect(container.querySelector('svg')).toBeNull()
+  }, 20000)
+
+  // T-P8-05: mermaid emits no <title>/<desc>, so without an explicit text
+  // alternative a screen reader announces nothing for the rendered diagram.
+  // Placed before the "pathological input" test below: that test's bounded
+  // timeout leaves lingering module-level mermaid/d3 state that makes
+  // whichever test runs immediately after it fall back to the error path
+  // (pre-existing test-ordering fragility, unrelated to this change —
+  // reordering avoids it rather than papering over it).
+  it('rendered diagram exposes the raw source as its accessible name', async () => {
+    const source = 'graph TD; A["hello"]-->B["world"];'
+    const container = await renderAndWait(source)
+    const diagram = container.querySelector('.claymark-mermaid')
+    expect(diagram?.getAttribute('role')).toBe('img')
+    expect(diagram?.getAttribute('aria-label')).toBe(source)
   }, 20000)
 
   it('pathological input that would hang mermaid.render still resolves via a bounded timeout', async () => {
