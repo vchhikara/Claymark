@@ -8,6 +8,11 @@ const FENCE_RE = /^(\s{0,3})(`{3,}|~{3,})/
 
 export interface Segment {
   text: string
+  // Character offsets of this segment within the `text` passed to
+  // segmentBuffer (not necessarily the full document — see
+  // reconcile.ts, which calls this on a tail slice and rebases these).
+  start: number
+  end: number
 }
 
 // Tracks fence open/close state across a run of lines using the same
@@ -30,8 +35,10 @@ export function segmentBuffer(text: string): Segment[] {
   const lines = text.split('\n')
   const segments: Segment[] = []
   let current: string[] = []
+  let currentStart = 0
   let openChar: string | null = null
   let openLen = 0
+  let offset = 0
 
   for (const line of lines) {
     ;[openChar, openLen] = fenceTransition(line, openChar, openLen)
@@ -39,15 +46,21 @@ export function segmentBuffer(text: string): Segment[] {
 
     if (isBlank && openChar === null) {
       if (current.length > 0) {
-        segments.push({ text: current.join('\n') })
+        const joined = current.join('\n')
+        segments.push({ text: joined, start: currentStart, end: currentStart + joined.length })
         current = []
       }
+      offset += line.length + 1
+      currentStart = offset
       continue // blank lines are pure separators, never leading content
     }
+    if (current.length === 0) currentStart = offset
     current.push(line)
+    offset += line.length + 1
   }
   if (current.length > 0) {
-    segments.push({ text: current.join('\n') })
+    const joined = current.join('\n')
+    segments.push({ text: joined, start: currentStart, end: currentStart + joined.length })
   }
   return segments
 }

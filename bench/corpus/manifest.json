@@ -1,0 +1,1255 @@
+{
+  "total": 250,
+  "entries": [
+    {
+      "id": "long-form-prose-000",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/000.md"
+    },
+    {
+      "id": "long-form-prose-001",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/001.md"
+    },
+    {
+      "id": "long-form-prose-002",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/002.md"
+    },
+    {
+      "id": "long-form-prose-003",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/003.md"
+    },
+    {
+      "id": "long-form-prose-004",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/004.md"
+    },
+    {
+      "id": "long-form-prose-005",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/005.md"
+    },
+    {
+      "id": "long-form-prose-006",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/006.md"
+    },
+    {
+      "id": "long-form-prose-007",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/007.md"
+    },
+    {
+      "id": "long-form-prose-008",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/008.md"
+    },
+    {
+      "id": "long-form-prose-009",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/009.md"
+    },
+    {
+      "id": "long-form-prose-010",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/010.md"
+    },
+    {
+      "id": "long-form-prose-011",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/011.md"
+    },
+    {
+      "id": "long-form-prose-012",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/012.md"
+    },
+    {
+      "id": "long-form-prose-013",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/013.md"
+    },
+    {
+      "id": "long-form-prose-014",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/014.md"
+    },
+    {
+      "id": "long-form-prose-015",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/015.md"
+    },
+    {
+      "id": "long-form-prose-016",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/016.md"
+    },
+    {
+      "id": "long-form-prose-017",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/017.md"
+    },
+    {
+      "id": "long-form-prose-018",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/018.md"
+    },
+    {
+      "id": "long-form-prose-019",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/019.md"
+    },
+    {
+      "id": "long-form-prose-020",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/020.md"
+    },
+    {
+      "id": "long-form-prose-021",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/021.md"
+    },
+    {
+      "id": "long-form-prose-022",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/022.md"
+    },
+    {
+      "id": "long-form-prose-023",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/023.md"
+    },
+    {
+      "id": "long-form-prose-024",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/024.md"
+    },
+    {
+      "id": "long-form-prose-025",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/025.md"
+    },
+    {
+      "id": "long-form-prose-026",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/026.md"
+    },
+    {
+      "id": "long-form-prose-027",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/027.md"
+    },
+    {
+      "id": "long-form-prose-028",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/028.md"
+    },
+    {
+      "id": "long-form-prose-029",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/029.md"
+    },
+    {
+      "id": "long-form-prose-030",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/030.md"
+    },
+    {
+      "id": "long-form-prose-031",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/031.md"
+    },
+    {
+      "id": "long-form-prose-032",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/032.md"
+    },
+    {
+      "id": "long-form-prose-033",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/033.md"
+    },
+    {
+      "id": "long-form-prose-034",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/034.md"
+    },
+    {
+      "id": "long-form-prose-035",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/035.md"
+    },
+    {
+      "id": "long-form-prose-036",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/036.md"
+    },
+    {
+      "id": "long-form-prose-037",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/037.md"
+    },
+    {
+      "id": "long-form-prose-038",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/038.md"
+    },
+    {
+      "id": "long-form-prose-039",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/039.md"
+    },
+    {
+      "id": "long-form-prose-040",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/040.md"
+    },
+    {
+      "id": "long-form-prose-041",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/041.md"
+    },
+    {
+      "id": "long-form-prose-042",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/042.md"
+    },
+    {
+      "id": "long-form-prose-043",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/043.md"
+    },
+    {
+      "id": "long-form-prose-044",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/044.md"
+    },
+    {
+      "id": "long-form-prose-045",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/045.md"
+    },
+    {
+      "id": "long-form-prose-046",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/046.md"
+    },
+    {
+      "id": "long-form-prose-047",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/047.md"
+    },
+    {
+      "id": "long-form-prose-048",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/048.md"
+    },
+    {
+      "id": "long-form-prose-049",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/049.md"
+    },
+    {
+      "id": "long-form-prose-050",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/050.md"
+    },
+    {
+      "id": "long-form-prose-051",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/051.md"
+    },
+    {
+      "id": "long-form-prose-052",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/052.md"
+    },
+    {
+      "id": "long-form-prose-053",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/053.md"
+    },
+    {
+      "id": "long-form-prose-054",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/054.md"
+    },
+    {
+      "id": "long-form-prose-055",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/055.md"
+    },
+    {
+      "id": "long-form-prose-056",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/056.md"
+    },
+    {
+      "id": "long-form-prose-057",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/057.md"
+    },
+    {
+      "id": "long-form-prose-058",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/058.md"
+    },
+    {
+      "id": "long-form-prose-059",
+      "category": "long-form-prose",
+      "path": "bench/corpus/docs/long-form-prose/059.md"
+    },
+    {
+      "id": "code-heavy-000",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/000.md"
+    },
+    {
+      "id": "code-heavy-001",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/001.md"
+    },
+    {
+      "id": "code-heavy-002",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/002.md"
+    },
+    {
+      "id": "code-heavy-003",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/003.md"
+    },
+    {
+      "id": "code-heavy-004",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/004.md"
+    },
+    {
+      "id": "code-heavy-005",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/005.md"
+    },
+    {
+      "id": "code-heavy-006",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/006.md"
+    },
+    {
+      "id": "code-heavy-007",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/007.md"
+    },
+    {
+      "id": "code-heavy-008",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/008.md"
+    },
+    {
+      "id": "code-heavy-009",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/009.md"
+    },
+    {
+      "id": "code-heavy-010",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/010.md"
+    },
+    {
+      "id": "code-heavy-011",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/011.md"
+    },
+    {
+      "id": "code-heavy-012",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/012.md"
+    },
+    {
+      "id": "code-heavy-013",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/013.md"
+    },
+    {
+      "id": "code-heavy-014",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/014.md"
+    },
+    {
+      "id": "code-heavy-015",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/015.md"
+    },
+    {
+      "id": "code-heavy-016",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/016.md"
+    },
+    {
+      "id": "code-heavy-017",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/017.md"
+    },
+    {
+      "id": "code-heavy-018",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/018.md"
+    },
+    {
+      "id": "code-heavy-019",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/019.md"
+    },
+    {
+      "id": "code-heavy-020",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/020.md"
+    },
+    {
+      "id": "code-heavy-021",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/021.md"
+    },
+    {
+      "id": "code-heavy-022",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/022.md"
+    },
+    {
+      "id": "code-heavy-023",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/023.md"
+    },
+    {
+      "id": "code-heavy-024",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/024.md"
+    },
+    {
+      "id": "code-heavy-025",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/025.md"
+    },
+    {
+      "id": "code-heavy-026",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/026.md"
+    },
+    {
+      "id": "code-heavy-027",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/027.md"
+    },
+    {
+      "id": "code-heavy-028",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/028.md"
+    },
+    {
+      "id": "code-heavy-029",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/029.md"
+    },
+    {
+      "id": "code-heavy-030",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/030.md"
+    },
+    {
+      "id": "code-heavy-031",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/031.md"
+    },
+    {
+      "id": "code-heavy-032",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/032.md"
+    },
+    {
+      "id": "code-heavy-033",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/033.md"
+    },
+    {
+      "id": "code-heavy-034",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/034.md"
+    },
+    {
+      "id": "code-heavy-035",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/035.md"
+    },
+    {
+      "id": "code-heavy-036",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/036.md"
+    },
+    {
+      "id": "code-heavy-037",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/037.md"
+    },
+    {
+      "id": "code-heavy-038",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/038.md"
+    },
+    {
+      "id": "code-heavy-039",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/039.md"
+    },
+    {
+      "id": "code-heavy-040",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/040.md"
+    },
+    {
+      "id": "code-heavy-041",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/041.md"
+    },
+    {
+      "id": "code-heavy-042",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/042.md"
+    },
+    {
+      "id": "code-heavy-043",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/043.md"
+    },
+    {
+      "id": "code-heavy-044",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/044.md"
+    },
+    {
+      "id": "code-heavy-045",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/045.md"
+    },
+    {
+      "id": "code-heavy-046",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/046.md"
+    },
+    {
+      "id": "code-heavy-047",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/047.md"
+    },
+    {
+      "id": "code-heavy-048",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/048.md"
+    },
+    {
+      "id": "code-heavy-049",
+      "category": "code-heavy",
+      "path": "bench/corpus/docs/code-heavy/049.md"
+    },
+    {
+      "id": "math-papers-000",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/000.md"
+    },
+    {
+      "id": "math-papers-001",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/001.md"
+    },
+    {
+      "id": "math-papers-002",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/002.md"
+    },
+    {
+      "id": "math-papers-003",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/003.md"
+    },
+    {
+      "id": "math-papers-004",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/004.md"
+    },
+    {
+      "id": "math-papers-005",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/005.md"
+    },
+    {
+      "id": "math-papers-006",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/006.md"
+    },
+    {
+      "id": "math-papers-007",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/007.md"
+    },
+    {
+      "id": "math-papers-008",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/008.md"
+    },
+    {
+      "id": "math-papers-009",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/009.md"
+    },
+    {
+      "id": "math-papers-010",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/010.md"
+    },
+    {
+      "id": "math-papers-011",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/011.md"
+    },
+    {
+      "id": "math-papers-012",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/012.md"
+    },
+    {
+      "id": "math-papers-013",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/013.md"
+    },
+    {
+      "id": "math-papers-014",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/014.md"
+    },
+    {
+      "id": "math-papers-015",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/015.md"
+    },
+    {
+      "id": "math-papers-016",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/016.md"
+    },
+    {
+      "id": "math-papers-017",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/017.md"
+    },
+    {
+      "id": "math-papers-018",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/018.md"
+    },
+    {
+      "id": "math-papers-019",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/019.md"
+    },
+    {
+      "id": "math-papers-020",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/020.md"
+    },
+    {
+      "id": "math-papers-021",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/021.md"
+    },
+    {
+      "id": "math-papers-022",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/022.md"
+    },
+    {
+      "id": "math-papers-023",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/023.md"
+    },
+    {
+      "id": "math-papers-024",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/024.md"
+    },
+    {
+      "id": "math-papers-025",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/025.md"
+    },
+    {
+      "id": "math-papers-026",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/026.md"
+    },
+    {
+      "id": "math-papers-027",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/027.md"
+    },
+    {
+      "id": "math-papers-028",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/028.md"
+    },
+    {
+      "id": "math-papers-029",
+      "category": "math-papers",
+      "path": "bench/corpus/docs/math-papers/029.md"
+    },
+    {
+      "id": "diagram-bearing-000",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/000.md"
+    },
+    {
+      "id": "diagram-bearing-001",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/001.md"
+    },
+    {
+      "id": "diagram-bearing-002",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/002.md"
+    },
+    {
+      "id": "diagram-bearing-003",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/003.md"
+    },
+    {
+      "id": "diagram-bearing-004",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/004.md"
+    },
+    {
+      "id": "diagram-bearing-005",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/005.md"
+    },
+    {
+      "id": "diagram-bearing-006",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/006.md"
+    },
+    {
+      "id": "diagram-bearing-007",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/007.md"
+    },
+    {
+      "id": "diagram-bearing-008",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/008.md"
+    },
+    {
+      "id": "diagram-bearing-009",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/009.md"
+    },
+    {
+      "id": "diagram-bearing-010",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/010.md"
+    },
+    {
+      "id": "diagram-bearing-011",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/011.md"
+    },
+    {
+      "id": "diagram-bearing-012",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/012.md"
+    },
+    {
+      "id": "diagram-bearing-013",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/013.md"
+    },
+    {
+      "id": "diagram-bearing-014",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/014.md"
+    },
+    {
+      "id": "diagram-bearing-015",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/015.md"
+    },
+    {
+      "id": "diagram-bearing-016",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/016.md"
+    },
+    {
+      "id": "diagram-bearing-017",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/017.md"
+    },
+    {
+      "id": "diagram-bearing-018",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/018.md"
+    },
+    {
+      "id": "diagram-bearing-019",
+      "category": "diagram-bearing",
+      "path": "bench/corpus/docs/diagram-bearing/019.md"
+    },
+    {
+      "id": "table-heavy-000",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/000.md"
+    },
+    {
+      "id": "table-heavy-001",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/001.md"
+    },
+    {
+      "id": "table-heavy-002",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/002.md"
+    },
+    {
+      "id": "table-heavy-003",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/003.md"
+    },
+    {
+      "id": "table-heavy-004",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/004.md"
+    },
+    {
+      "id": "table-heavy-005",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/005.md"
+    },
+    {
+      "id": "table-heavy-006",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/006.md"
+    },
+    {
+      "id": "table-heavy-007",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/007.md"
+    },
+    {
+      "id": "table-heavy-008",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/008.md"
+    },
+    {
+      "id": "table-heavy-009",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/009.md"
+    },
+    {
+      "id": "table-heavy-010",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/010.md"
+    },
+    {
+      "id": "table-heavy-011",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/011.md"
+    },
+    {
+      "id": "table-heavy-012",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/012.md"
+    },
+    {
+      "id": "table-heavy-013",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/013.md"
+    },
+    {
+      "id": "table-heavy-014",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/014.md"
+    },
+    {
+      "id": "table-heavy-015",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/015.md"
+    },
+    {
+      "id": "table-heavy-016",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/016.md"
+    },
+    {
+      "id": "table-heavy-017",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/017.md"
+    },
+    {
+      "id": "table-heavy-018",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/018.md"
+    },
+    {
+      "id": "table-heavy-019",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/019.md"
+    },
+    {
+      "id": "table-heavy-020",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/020.md"
+    },
+    {
+      "id": "table-heavy-021",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/021.md"
+    },
+    {
+      "id": "table-heavy-022",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/022.md"
+    },
+    {
+      "id": "table-heavy-023",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/023.md"
+    },
+    {
+      "id": "table-heavy-024",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/024.md"
+    },
+    {
+      "id": "table-heavy-025",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/025.md"
+    },
+    {
+      "id": "table-heavy-026",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/026.md"
+    },
+    {
+      "id": "table-heavy-027",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/027.md"
+    },
+    {
+      "id": "table-heavy-028",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/028.md"
+    },
+    {
+      "id": "table-heavy-029",
+      "category": "table-heavy",
+      "path": "bench/corpus/docs/table-heavy/029.md"
+    },
+    {
+      "id": "chat-transcripts-000",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/000.md"
+    },
+    {
+      "id": "chat-transcripts-001",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/001.md"
+    },
+    {
+      "id": "chat-transcripts-002",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/002.md"
+    },
+    {
+      "id": "chat-transcripts-003",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/003.md"
+    },
+    {
+      "id": "chat-transcripts-004",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/004.md"
+    },
+    {
+      "id": "chat-transcripts-005",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/005.md"
+    },
+    {
+      "id": "chat-transcripts-006",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/006.md"
+    },
+    {
+      "id": "chat-transcripts-007",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/007.md"
+    },
+    {
+      "id": "chat-transcripts-008",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/008.md"
+    },
+    {
+      "id": "chat-transcripts-009",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/009.md"
+    },
+    {
+      "id": "chat-transcripts-010",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/010.md"
+    },
+    {
+      "id": "chat-transcripts-011",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/011.md"
+    },
+    {
+      "id": "chat-transcripts-012",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/012.md"
+    },
+    {
+      "id": "chat-transcripts-013",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/013.md"
+    },
+    {
+      "id": "chat-transcripts-014",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/014.md"
+    },
+    {
+      "id": "chat-transcripts-015",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/015.md"
+    },
+    {
+      "id": "chat-transcripts-016",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/016.md"
+    },
+    {
+      "id": "chat-transcripts-017",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/017.md"
+    },
+    {
+      "id": "chat-transcripts-018",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/018.md"
+    },
+    {
+      "id": "chat-transcripts-019",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/019.md"
+    },
+    {
+      "id": "chat-transcripts-020",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/020.md"
+    },
+    {
+      "id": "chat-transcripts-021",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/021.md"
+    },
+    {
+      "id": "chat-transcripts-022",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/022.md"
+    },
+    {
+      "id": "chat-transcripts-023",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/023.md"
+    },
+    {
+      "id": "chat-transcripts-024",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/024.md"
+    },
+    {
+      "id": "chat-transcripts-025",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/025.md"
+    },
+    {
+      "id": "chat-transcripts-026",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/026.md"
+    },
+    {
+      "id": "chat-transcripts-027",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/027.md"
+    },
+    {
+      "id": "chat-transcripts-028",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/028.md"
+    },
+    {
+      "id": "chat-transcripts-029",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/029.md"
+    },
+    {
+      "id": "chat-transcripts-030",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/030.md"
+    },
+    {
+      "id": "chat-transcripts-031",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/031.md"
+    },
+    {
+      "id": "chat-transcripts-032",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/032.md"
+    },
+    {
+      "id": "chat-transcripts-033",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/033.md"
+    },
+    {
+      "id": "chat-transcripts-034",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/034.md"
+    },
+    {
+      "id": "chat-transcripts-035",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/035.md"
+    },
+    {
+      "id": "chat-transcripts-036",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/036.md"
+    },
+    {
+      "id": "chat-transcripts-037",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/037.md"
+    },
+    {
+      "id": "chat-transcripts-038",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/038.md"
+    },
+    {
+      "id": "chat-transcripts-039",
+      "category": "chat-transcripts",
+      "path": "bench/corpus/docs/chat-transcripts/039.md"
+    },
+    {
+      "id": "adversarial-000",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/000.md"
+    },
+    {
+      "id": "adversarial-001",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/001.md"
+    },
+    {
+      "id": "adversarial-002",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/002.md"
+    },
+    {
+      "id": "adversarial-003",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/003.md"
+    },
+    {
+      "id": "adversarial-004",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/004.md"
+    },
+    {
+      "id": "adversarial-005",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/005.md"
+    },
+    {
+      "id": "adversarial-006",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/006.md"
+    },
+    {
+      "id": "adversarial-007",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/007.md"
+    },
+    {
+      "id": "adversarial-008",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/008.md"
+    },
+    {
+      "id": "adversarial-009",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/009.md"
+    },
+    {
+      "id": "adversarial-010",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/010.md"
+    },
+    {
+      "id": "adversarial-011",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/011.md"
+    },
+    {
+      "id": "adversarial-012",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/012.md"
+    },
+    {
+      "id": "adversarial-013",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/013.md"
+    },
+    {
+      "id": "adversarial-014",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/014.md"
+    },
+    {
+      "id": "adversarial-015",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/015.md"
+    },
+    {
+      "id": "adversarial-016",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/016.md"
+    },
+    {
+      "id": "adversarial-017",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/017.md"
+    },
+    {
+      "id": "adversarial-018",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/018.md"
+    },
+    {
+      "id": "adversarial-019",
+      "category": "adversarial",
+      "path": "bench/corpus/docs/adversarial/019.md"
+    }
+  ]
+}
