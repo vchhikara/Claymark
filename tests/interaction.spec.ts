@@ -48,6 +48,28 @@ describe('P7 — Interaction behaviors', () => {
     host.remove()
   })
 
+  // T-P8-04: a static <table> has no focusable descendant, so the scroll
+  // container itself must be a keyboard-reachable, arrow/PageUp-PageDown
+  // scrollable region.
+  it('TableContainer scroll region is keyboard-focusable with an accessible name', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+    act(() => {
+      root.render(
+        createElement(TableContainer, null, createElement('table', { className: 'claymark-table' })),
+      )
+    })
+
+    const scrollDiv = host.querySelector('.claymark-table-scroll')
+    expect(scrollDiv?.getAttribute('tabindex')).toBe('0')
+    expect(scrollDiv?.getAttribute('role')).toBe('region')
+    expect(scrollDiv?.getAttribute('aria-label')).toBeTruthy()
+
+    act(() => root.unmount())
+    host.remove()
+  })
+
   // T-P7-02 criterion: "Indicator appears only when content overflows"
   it('sets no overflow-shadow data attribute when the table does not overflow', () => {
     const host = document.createElement('div')

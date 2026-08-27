@@ -115,6 +115,22 @@ describe('G4 — Code Blocks', () => {
     expect(container.querySelector('.claymark-codeblock-lang')?.textContent).toBe('rust')
     container.remove()
   })
+
+  // T-P8-04: the highlighted <pre>/<code> has no focusable descendant, so
+  // the scroll container itself must be keyboard-reachable.
+  it('CodeBlock scroll region is keyboard-focusable with an accessible name', () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    act(() => {
+      root.render(createElement(CodeBlock, { language: 'rust', children: 'body' }))
+    })
+    const scrollDiv = container.querySelector('.claymark-codeblock-scroll')
+    expect(scrollDiv?.getAttribute('tabindex')).toBe('0')
+    expect(scrollDiv?.getAttribute('role')).toBe('region')
+    expect(scrollDiv?.getAttribute('aria-label')).toBe('rust code')
+    container.remove()
+  })
 })
 
 describe('G4 — Copy button', () => {

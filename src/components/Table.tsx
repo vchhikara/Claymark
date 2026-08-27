@@ -52,6 +52,11 @@ export function TableContainer({ children }: TableContainerProps): ReactElement 
       className="claymark-table-scroll"
       data-overflow-left={overflowLeft ? 'true' : undefined}
       data-overflow-right={overflowRight ? 'true' : undefined}
+      // T-P8-04: same rationale as CodeBlock.tsx — a wide table with no
+      // interactive descendant is otherwise unreachable by keyboard.
+      tabIndex={0}
+      role="region"
+      aria-label="Table (scrolls horizontally)"
     >
       {children}
     </div>
