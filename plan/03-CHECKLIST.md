@@ -18,11 +18,11 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 
 | Metric | Value |
 |---|---|
-| Tasks complete | 94 / 96 |
-| Weighted progress | ~85.4% |
-| Current phase | P8 in progress |
-| Current batch | B15 in progress (T-P8-01 → T-P8-08 done · next T-P8-09) |
-| Gates passed | 8 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016, G7 · CP-017) |
+| Tasks complete | 95 / 96 |
+| Weighted progress | ~86.5% |
+| Current phase | P8 complete → P9 starting |
+| Current batch | B15 done (T-P8-01 → T-P8-09, GATE G8 reached) · B16 next (T-P9-01 → T-P9-08, G9) |
+| Gates passed | 9 / 10 (G0 · CP-003, G1 · CP-005, G2 · CP-008, G3 · CP-012, G4 · CP-013, G5 · CP-014, G6 · CP-016, G7 · CP-017, G8 · CP-026) |
 | Open issues | 0 (ISS-001, ISS-002 resolved) |
 | Deferred items | 1 (DEF-001) |
 | Project state | `Checkpointed` |
@@ -150,7 +150,9 @@ A tick without evidence is invalid and must be reverted to `[ ]`.
 - [x] T-P8-06 — `prefers-reduced-motion` honoured · VERIFY: audited every theme stylesheet (`claymark.css`, `tokens.css`, `katex.css`) via `grep -n 'transition|animation|@keyframes'` — exactly one animated property exists in the whole codebase, `transition: opacity 0.15s ease;` on `.claymark-table-scroll::before`/`::after` (the T-P7-02 scroll-edge shadow indicators). Added a `@media (prefers-reduced-motion: reduce)` override in `src/theme/claymark.css` setting `transition: none` on that same selector pair — the indicator itself still appears/disappears (it's informational, not decorative), only the fade motion is removed. Added a regression test (`tests/interaction.spec.ts`, "claymark.css disables the scroll-shadow transition under prefers-reduced-motion") that reads the real stylesheet source directly and asserts the media block exists and targets the right selectors, following the same source-reading pattern already used in this file for `index.html`'s inline script. Regression: `npx tsc --noEmit` 0 errors; `npx vitest run --exclude tests/stress.spec.ts` → 15/15 files, 111/111 pass (up from 110).
 - [x] T-P8-07 — Dependency vulnerability audit · VERIFY: `pnpm audit` baseline 50 advisories (7 low/37 moderate/4 high/2 critical) → bumped dompurify 3.1.4→3.4.14, katex 0.16.10→0.16.47, mermaid 10.9.1→10.9.8, vitest+@vitest/coverage-v8 1.6.0→1.6.1, vite 5.2.11→5.4.21, @vitejs/plugin-react 4.2.1→4.3.4 (all same-major patches, exact-pinned per SC-13) → 50→8 advisories (5 moderate/2 high/1 critical), remainder is devDependency-only build/test tooling (never shipped in dist/), documented in `SECURITY-AUDIT.md` per the KL-06 tracked-risk pattern · collateral fix: dompurify 3.4.14 hardened cross-namespace mXSS handling of SVG foreignObject, requiring `HTML_INTEGRATION_POINTS: { foreignobject: true }` added to `src/components/MermaidDiagram.tsx`'s sanitize call (re-verified script/onerror/onload smuggling still stripped) · tsc 0 errors · pnpm test 112/113 (sole failure is the pre-existing DEC-017 stress.spec.ts S-01 timing-margin flake under full-suite load, confirmed passing 2/2 in isolation) · eslint clean of new issues (only the 2 pre-existing CP-016 errors) · 2026-08-27
 - [x] T-P8-08 — Full security suite re-run · VERIFY: created `bench/security-final.ts` re-running the T-P2-12 security suite's checks (XSS corpus, malicious-URL fixtures, rel hardening, no-script-node) against the as-built pipeline (`processor`/`safeUrl`), writing `bench/results/security-final.json`; result: 92/92 XSS corpus, 14/14 malicious-URL, 1/1 rel hardening, 4/4 no-script — 100% pass, `overallPass: true`, no regression · new regression test `tests/security-final.spec.ts` (2/2 pass) pins this against future pipeline changes · tsc 0 errors · full suite (excl. the pre-existing S-01 timing flake) 16/16 files, 113/113 pass · eslint clean · 2026-08-27
-- [ ] T-P8-09 — `docs/SECURITY.md` finalized against as-built
+- [x] T-P8-09 — `docs/SECURITY.md` finalized against as-built · VERIFY: audited every SC-01–SC-14 and KL-01–KL-06 row against actual `tests/` contents; found and fixed one stale reference (SC-04 claimed `urls.spec.ts`, which does not exist — corrected to `security.spec.ts`, the actual malicious-URL test location); confirmed SC-03 (`commonmark.spec.ts`), SC-08/SC-09 (`mermaid.spec.ts`), SC-10 (`math.spec.ts`), SC-14 (`cache.spec.ts`) all reference real, substantively-covering test files; confirmed SC-11's "zero runtime network" claim by grep (`cdn|http://|https://` across `src/`, excluding example.com/localhost) — only hit was a benign citation URL inside a CSS comment (`src/theme/katex.css:153`), not a runtime call; updated KL-06's mitigation reference to name `SECURITY-AUDIT.md` explicitly (was a bare "tracked at G8" with no filename); added a cross-reference from §2 to `bench/security-final.ts`/`tests/security-final.spec.ts` (T-P8-08) and `SECURITY-AUDIT.md` (T-P8-07) · regression: `npx tsc --noEmit` 0 errors, `npx eslint .` clean of new issues (only the 2 pre-existing CP-016 errors), `npx vitest run` 17/17 files, 115/115 tests pass (the S-01 timing flake from CP-024/CP-025 did not reproduce this run) · 2026-08-27
+
+**GATE G8 reached** — Accessibility & Hardening phase complete. All dependency findings resolved-or-documented (`SECURITY-AUDIT.md`), the security suite has a durable standalone re-run artifact (`bench/results/security-final.json`), and `docs/SECURITY.md` is verified accurate against as-built test coverage. Recorded at CP-026.
 - [ ] **GATE G8** — 10 criteria including backtest re-run
 
 ## Phase P9 — Packaging & Delivery · 10%

@@ -618,6 +618,26 @@ CORRECTIONS  : none to prior entries.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-026
+TIMESTAMP    : 2026-08-28T00:05:00+05:30
+TRIGGER      : task-complete + gate-passage
+SESSION      : 6 (continued)
+PHASE        : P8 complete → P9 starting
+BATCH        : B15 complete (T-P8-01 → T-P8-09, GATE G8 reached)
+COMPLETED    : T-P8-09 (`docs/SECURITY.md` finalized against as-built behavior); GATE G8
+EVIDENCE     : Audited every row of `docs/SECURITY.md` §2 (SC-01–SC-14) and §4 (KL-01–KL-06) against the actual `tests/` directory. Found one stale reference: SC-04 claimed a test file `urls.spec.ts` that does not exist — the real malicious-URL coverage lives in `tests/security.spec.ts`'s 14-fixture test; corrected. Confirmed accurate: SC-03 (`commonmark.spec.ts`'s dedicated "no dangerouslySetInnerHTML" test), SC-08/SC-09 (`mermaid.spec.ts`), SC-10 (`math.spec.ts`), SC-14 (`cache.spec.ts`). Verified SC-11 ("zero runtime network") by grep (`cdn|http://|https://` across `src/`, excluding example.com/localhost) — the only hit was a plain-text citation URL inside a CSS comment at `src/theme/katex.css:153`, not an actual runtime call; SC-11 stands as documented. Updated KL-06's mitigation column to name `SECURITY-AUDIT.md` explicitly (was a bare "tracked in the dependency audit at G8" with no filename, now that the file exists from T-P8-07). Added a cross-reference note after the §2 table pointing to `bench/security-final.ts`/`tests/security-final.spec.ts` (T-P8-08) and `SECURITY-AUDIT.md` (T-P8-07) as the two supporting artifacts for GATE G8. Regression, run after all doc edits: `npx tsc --noEmit` → 0 errors; `npx eslint .` → 2 errors (both the pre-existing CP-016 findings, no new issues); `npx vitest run` (full suite, backgrounded due to the ~150s runtime, confirmed actively CPU-bound via `ps -o etimes=,pcpu=` while waiting rather than assumed hung) → **17 files / 115 tests, all passed, exit 0** — the S-01 timing-margin flake (DEC-017/CP-022/CP-024/CP-025) did not reproduce this run.
+PENDING      : Phase P9 (T-P9-01 onward)
+VALIDATION   : PASS — T-P8-09's literal VERIFY ("every documented control has a corresponding passing test") is met: every SC-xx/KL-xx row now names a test file (or an explicit non-test verification method, e.g. "Static scan"/"grep") that actually exists and actually covers the claim. GATE G8 criteria (per `plan/02-VERIFICATION-GATES.md`) satisfied: dependency audit resolved-or-documented (`SECURITY-AUDIT.md`, T-P8-07), security suite has a durable standalone re-run artifact (`bench/results/security-final.json`, T-P8-08), and `docs/SECURITY.md` verified accurate against as-built test coverage (T-P8-09). GATE G8 — PASSED.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still unhardened by design); Lightbox's unwired production integration (carried forward from CP-020, still out of scope); the mermaid.spec.ts test-ordering flake (carried forward from CP-022, still unfixed at its root cause); the 8 remaining devDependency-only pnpm-audit findings (carried forward from CP-024, documented in `SECURITY-AUDIT.md`).
+NEXT TASK    : T-P9-01 (configure the library build: ESM + CJS, type declarations, React as a peer dependency — `vite.config.ts`, `package.json`; VERIFY: consumer project imports and type-checks cleanly)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : none new this checkpoint requiring a formal DEC entry — a direct implementation of T-P8-09's literal deliverable spec, plus the routine gate-passage recording already established at CP-003/005/008/012/013/014/016/017 for G0–G7.
+CORRECTIONS  : `docs/SECURITY.md` SC-04's test reference corrected from a nonexistent `urls.spec.ts` to the actual `tests/security.spec.ts`.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |

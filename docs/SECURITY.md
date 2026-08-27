@@ -49,7 +49,7 @@ Every control below has at least one passing test. A control without a test is n
 | SC-01 | Raw HTML disabled | `allowDangerousHtml: false`; HTML escaped to text | `security.spec.ts` |
 | SC-02 | Allow-list sanitization | `rehype-sanitize` with an explicit schema; no wildcard attributes | `security.spec.ts` |
 | SC-03 | No `dangerouslySetInnerHTML` | Tree-level materialization via `hast-util-to-jsx-runtime` | Static scan, G2 c.7 |
-| SC-04 | URL scheme policy | `http`, `https`, `mailto`, and `data:` limited to png/jpeg/gif/webp | `urls.spec.ts` |
+| SC-04 | URL scheme policy | `http`, `https`, `mailto`, and `data:` limited to png/jpeg/gif/webp | `security.spec.ts` |
 | SC-05 | Reverse-tabnabbing prevention | `rel="noopener noreferrer"` on all external anchors | `security.spec.ts` |
 | SC-06 | No inline styles from content | `style` attribute stripped by schema | `security.spec.ts` |
 | SC-07 | No event handlers | All `on*` attributes stripped | `security.spec.ts` |
@@ -60,6 +60,8 @@ Every control below has at least one passing test. A control without a test is n
 | SC-12 | CSP compatible | No `unsafe-inline`, no `unsafe-eval` required | Manual, G8 |
 | SC-13 | Pinned dependencies | No range specifiers anywhere | G0 c.3 |
 | SC-14 | Bounded memory | LRU with entry and byte ceilings | `cache.spec.ts`, S-09 |
+
+Final security re-run for GATE G8: `bench/security-final.ts` re-exercises the SC-01–SC-07 corpus (XSS corpus, malicious-URL fixtures, rel hardening, no-`<script>`-nodes) against the as-built pipeline and pins the result to `bench/results/security-final.json`, enforced by `tests/security-final.spec.ts` (T-P8-08). Dependency vulnerability disposition is tracked in `SECURITY-AUDIT.md` (T-P8-07).
 
 ---
 
@@ -101,7 +103,7 @@ Disclosed rather than hidden.
 | KL-03 | A pathological document can consume CPU during parse | Low | Stress matrix S-01…S-03 bound the worst observed cases; callers should render untrusted documents off the critical path |
 | KL-04 | Component-map overrides run in the host application's context | Medium | Overrides receive already-sanitized props; the risk is host code, not claymark. Documented in `API.md`. |
 | KL-05 | Shiki grammars are third-party regex sets | Low | Sandboxed to tokenization; output constrained by the schema |
-| KL-06 | Fonts and themes are vendored, so upstream security fixes require a release | Low | Tracked in the dependency audit at G8 |
+| KL-06 | Fonts and themes are vendored, so upstream security fixes require a release | Low | Tracked in `SECURITY-AUDIT.md` (G8) |
 
 ---
 
