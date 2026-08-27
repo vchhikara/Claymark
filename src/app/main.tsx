@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { cloneElement, useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { MarkdownRoot } from '../components/MarkdownRoot'
@@ -45,8 +46,29 @@ Try replacing this text in the box below — see [\`docs/API.md\`](https://githu
 function Reader() {
   const [source, setSource] = useState('')
   const [editing, setEditing] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
   const { elements } = useStreamingMarkdown(source)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  const stopStreamingDemo = (): void => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  // Loads a dropped/selected .md/.markdown/.txt file's text into the editor,
+  // stopping the sample-streaming timer the same way manual typing does.
+  const loadFile = (file: File): void => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      stopStreamingDemo()
+      setSource(typeof reader.result === 'string' ? reader.result : '')
+      setEditing(true)
+    }
+    reader.readAsText(file)
+  }
 
   useEffect(() => {
     let i = 0
@@ -78,13 +100,33 @@ function Reader() {
             marginBottom: '1rem',
           }}
         >
-          <button
-            type="button"
-            onClick={() => setEditing((v) => !v)}
-            style={{ font: 'inherit', cursor: 'pointer' }}
-          >
-            {editing ? 'Hide editor' : 'Paste your own Markdown'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              style={{ font: 'inherit', cursor: 'pointer' }}
+            >
+              {editing ? 'Hide editor' : 'Paste your own Markdown'}
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{ font: 'inherit', cursor: 'pointer' }}
+            >
+              Open a .md file…
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.markdown,.txt,text/markdown,text/plain"
+              style={{ display: 'none' }}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const file = event.target.files?.[0]
+                if (file) loadFile(file)
+                event.target.value = '' // allow re-selecting the same file
+              }}
+            />
+          </div>
           <ThemeToggle />
         </div>
 
@@ -93,18 +135,32 @@ function Reader() {
             aria-label="Markdown source"
             value={source}
             onChange={(event) => {
-              if (timerRef.current) {
-                clearInterval(timerRef.current)
-                timerRef.current = null
-              }
+              stopStreamingDemo()
               setSource(event.target.value)
             }}
+            onDragOver={(event: DragEvent<HTMLTextAreaElement>) => {
+              event.preventDefault()
+              setDragOver(true)
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(event: DragEvent<HTMLTextAreaElement>) => {
+              event.preventDefault()
+              setDragOver(false)
+              const file = event.dataTransfer.files?.[0]
+              if (file) loadFile(file)
+            }}
+            placeholder="Type, paste, or drop a .md file here…"
             style={{
               width: '100%',
               minHeight: '10rem',
               marginBottom: '1.5rem',
               font: 'inherit',
               boxSizing: 'border-box',
+              background: dragOver ? 'hsl(var(--surface))' : 'hsl(var(--surface-raised))',
+              color: 'hsl(var(--text-primary))',
+              border: `1px solid hsl(var(--border-${dragOver ? 'default' : 'subtle'}))`,
+              borderRadius: '0.25rem',
+              padding: '0.5rem',
             }}
           />
         )}
