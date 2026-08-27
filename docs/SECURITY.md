@@ -98,7 +98,7 @@ Disclosed rather than hidden.
 
 | ID | Limitation | Risk | Mitigation |
 |---|---|---|---|
-| KL-01 | Mermaid is a large third-party runtime with its own history of SVG injection findings | Medium | Strict mode, `htmlLabels: false`, DOMPurify on output, error boundary. Diagrams can be disabled entirely via `options.diagrams: false`. |
+| KL-01 | Mermaid is a large third-party runtime with its own history of SVG injection findings | Medium | Strict mode, `htmlLabels: false`, DOMPurify on output, error boundary. **As-built (T-P9-07): there is no `options.diagrams: false` toggle — `PipelineOptions` is fixed (`mode` only) and diagrams cannot be disabled at runtime; a caller wanting this must override the `pre`/`code` component for `language-mermaid` instead.** |
 | KL-02 | KaTeX renders a MathML subset that must be allowed through the schema | Low | Subset is explicit and minimal; the XSS suite is re-run after the schema is widened (G5 c.3) |
 | KL-03 | A pathological document can consume CPU during parse | Low | Stress matrix S-01…S-03 bound the worst observed cases; callers should render untrusted documents off the critical path |
 | KL-04 | Component-map overrides run in the host application's context | Medium | Overrides receive already-sanitized props; the risk is host code, not claymark. Documented in `API.md`. |

@@ -10,11 +10,9 @@ Nothing yet. Implementation begins at task `T-P0-01`.
 
 ---
 
-## [1.0.0] — planned
+## [1.0.0] — 2026-08-28
 
-First release. Target state at Gate G9.
-
-> **As-built note (T-P9-06):** this "Added" list was written early in planning as a target, not a record of what shipped. Reconciled against `src/` as of T-P9-05: the **LRU document cache with entry and byte ceilings** (`src/pipeline/cache.ts`) exists but is not exported from the public surface (no `configureCache`/`clearCache`) and is unused by the rest of the pipeline. **Image lightbox** (`src/components/Lightbox.tsx`) exists but is not wired into image rendering — clicking an image does not open it. **Runtime font overrides** and **partial token overrides, deep-merged** describe a `<ThemeProvider tokens/fonts>` API that does not exist — `ThemeProvider` takes only `children`. T-P9-07 is the roadmap-designated task to finalize the actual 1.0.0 release notes; this note flags the gap so that task starts from an accurate baseline rather than this aspirational list.
+First release. Gate G9 pending explicit human acceptance (T-P9-08).
 
 ### Added
 
@@ -26,23 +24,20 @@ First release. Target state at Gate G9.
 - Syntax highlighting across a 34-language registry, dual-themed
 
 **Rendering**
-- React element tree output with a fully overridable component map
-- Streaming renderer with partial-construct handling and monotonic output
+- React element tree output with a fully overridable component map (`DEFAULT_COMPONENTS`, HTML-tag keys only)
+- Streaming renderer (`useStreamingMarkdown`) with partial-construct handling and monotonic output
 - Stable-prefix reconciliation — only the mutated tail reparses
-- LRU document cache with entry and byte ceilings
-- Fast path bypassing the parser for syntax-free strings
+- Fast path (`isFastPathEligible`/`fastPathRender`) bypassing the parser for syntax-free strings
 
 **Interface**
 - Copy-to-clipboard on every code block, with an insecure-context fallback
-- Image lightbox with focus trap and focus restoration
+- Image captions derived from the Markdown title attribute (see Not included, below)
 - Horizontally scrollable tables with edge indicators
-- Light and dark themes following `prefers-color-scheme`, manually overridable and persisted
+- Light and dark themes following `prefers-color-scheme`, manually overridable via `<ThemeToggle>` and persisted
 - Flash-of-incorrect-color eliminated via a blocking init script
 
 **Theming**
 - Three-layer token system: system, primitive, semantic
-- Partial token overrides, deep-merged
-- Runtime font overrides for user-licensed typefaces
 - Open-licensed default fonts: Source Serif 4, Inter, JetBrains Mono
 
 **Security**
@@ -64,6 +59,15 @@ First release. Target state at Gate G9.
 - npm library: ESM, CJS, TypeScript declarations
 - Installable PWA with offline support
 - Tauri desktop binaries for macOS, Windows, Linux
+
+### Not included
+
+Present in earlier planning drafts of this section but not implemented as of this release; not carried into 1.0.0's "Added" list above (see `API.md`, `SPEC.md` FR-5.1/FR-6.2/FR-6.3 for the as-built detail):
+
+- **Image lightbox** — `src/components/Lightbox.tsx` exists but is not wired into `Image.tsx`; clicking an image does not open a modal. Tracked for a follow-up release.
+- **LRU document cache** (`src/pipeline/cache.ts`) — implemented but not exported from the public surface (no `configureCache`/`clearCache`) and unused by the rendering pipeline.
+- **Runtime token overrides** and **runtime font overrides** — `<ThemeProvider>` takes only `children`; there is no `tokens`/`fonts` prop. Customization currently requires forking the CSS token files (see `THEMING.md`).
+- **`options.diagrams: false` toggle** — `PipelineOptions` has no such flag; Mermaid rendering cannot be disabled at runtime (see `SECURITY.md` KL-01).
 
 ### Verification at release
 

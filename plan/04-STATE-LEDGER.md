@@ -779,6 +779,27 @@ DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
 ─────────────────────────────────────────────
+CHECKPOINT   : CP-034
+TIMESTAMP    : 2026-08-28T02:20:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01 through T-P9-07 done; T-P9-08 next, G9)
+COMPLETED    : T-P9-07 (Release notes and `1.0.0` version bump)
+EVIDENCE     : Bumped version to `1.0.0` in all four version-bearing manifests: `package.json` (`0.1.0-plan` → `1.0.0`), `src-tauri/tauri.conf.json` (`0.1.0` → `1.0.0`), `src-tauri/Cargo.toml` (`0.1.0` → `1.0.0`), and `src-tauri/gen/android/app/build.gradle.kts`'s `versionName` fallback default (`1.0` → `1.0.0` — confirmed no `tauri.properties` override file exists under `src-tauri/gen/android/app/`, so the gradle default is the live value). Verified consistency via grep on all four files post-edit. Finalized `docs/CHANGELOG.md`'s `[1.0.0]` section per CP-033's deferred disposition decision: moved the four unimplemented items (image lightbox, LRU document cache export, runtime token override, runtime font override) out of the "Added" list into a new "Not included" subsection naming each gap and pointing to `API.md`/`SPEC.md`/`THEMING.md`; changed the section header from "planned" to a dated release `2026-08-28` with gate G9 noted as pending human acceptance. While finalizing, found and fixed one further as-built gap T-P9-06 had missed: `docs/SECURITY.md` KL-01 claimed an `options.diagrams: false` toggle to disable Mermaid rendering — verified via grep across `src/pipeline/` that no such option exists in `PipelineOptions` (`mode` is the only field) — annotated with an as-built note and a real workaround (component-map override on `language-mermaid`). Added matching as-built notes to `SPEC.md` FR-6.2 and FR-6.3 (runtime token/font overrides), which had claimed the same unimplemented `<ThemeProvider>` capability but were not caught at T-P9-06. Regression: `npx tsc --noEmit` → 0 errors (docs/version-only change, confirms nothing in `src/` was touched).
+PENDING      : T-P9-08 (delivery checklist complete, explicit human acceptance requested); GATE G9 (8 criteria, requires human sign-off, cannot be self-approved).
+VALIDATION   : PASS — version string identical (`1.0.0`) across `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and the Android gradle default; `docs/CHANGELOG.md`'s `[1.0.0]` section now accurately separates shipped features from planned-but-unimplemented ones with no aspirational item left silently inside "Added".
+ISSUES       : none open
+ASSUMPTIONS  : Treated the Android gradle `versionName` fallback default as the authoritative version value since no `tauri.properties` override file exists in this repo — if such a file is later added for a real signed release build, it must be set to `1.0.0` explicitly rather than relying on the code default.
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration (documented, not fixed — a product decision outside this task's scope); the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; APK signing/release-keystore setup (out of scope for any P9 task as currently scoped). The CHANGELOG.md "Added" list vs. as-built gap flagged at CP-033 is now RESOLVED (this checkpoint).
+NEXT TASK    : T-P9-08 (delivery checklist complete + explicit human acceptance request — the final task before GATE G9, which requires human sign-off and cannot be self-approved)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Struck the four unimplemented items from CHANGELOG's "Added" list rather than leaving them in with only an inline note, since this is the actual 1.0.0 release-notes document (not a requirements record like SPEC.md) — a release note claiming a shipped feature that doesn't exist is a direct correctness defect in the one document most likely to be read verbatim by an external consumer.
+CORRECTIONS  : Fixed `docs/SECURITY.md` KL-01 and `docs/SPEC.md` FR-6.2/FR-6.3 — as-built gaps in the same family as CP-033's findings that were missed during the T-P9-06 audit pass.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
+─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
 
