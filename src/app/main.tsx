@@ -14,3 +14,15 @@ if (container) {
     createElement(ThemeProvider, null, createElement(ThemeToggle)),
   )
 }
+
+// T-P9-02: register the offline service worker (built only for the
+// `app`-mode demo build — see vite.config.ts's second rollup input).
+// Registration is safe to attempt in dev too: the fetch fails harmlessly
+// (404 on /sw.js under the library's dev server) and is swallowed below.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // no-op: absent under `vite dev`/lib-mode builds where sw.js isn't emitted
+    })
+  })
+}
