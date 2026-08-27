@@ -22,6 +22,7 @@
   "scripts": {
     "build": "vite build",
     "build:app": "vite build --mode app",
+    "tauri": "tauri",
     "test": "vitest run",
     "test:commonmark": "vitest run tests/commonmark.spec.ts",
     "test:security": "vitest run tests/security.spec.ts",
