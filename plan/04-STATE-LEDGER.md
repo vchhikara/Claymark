@@ -496,6 +496,27 @@ DERIVATIONS  : clay-600 (HSL ~15°, 63% sat, 48% lightness) and clay-500 (~15°,
 ─────────────────────────────────────────────
 
 ─────────────────────────────────────────────
+CHECKPOINT   : CP-020
+TIMESTAMP    : 2026-08-27T22:45:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P8 in progress (3/9 P8 tasks done)
+BATCH        : B15 in progress (T-P8-01, T-P8-02, T-P8-03 done)
+COMPLETED    : T-P8-03 (ARIA labels on all controls)
+EVIDENCE     : Audited every `src/components/*.tsx` file for interactive controls, grepping for `aria-`/`<button`/`<input`/`role=`/`tabIndex` across all files, then reading the full source of every file the grep flagged (`CopyButton.tsx`, `ThemeToggle.tsx`, `map.tsx`, `MermaidDiagram.tsx`, `Lightbox.tsx`, `TaskList.tsx`). `CopyButton.tsx` has a dynamic `aria-label` for idle/copied/error states; `ThemeToggle.tsx` has a dynamic `aria-label` + `aria-pressed`; `map.tsx`'s task-list checkbox `<input>` carries `aria-checked`; `MermaidDiagram.tsx`'s `aria-busy="true"` is on a non-interactive pending placeholder `<div>`, not a control — all already correct. One genuine gap found: `Lightbox.tsx`'s `role="dialog"` element used `aria-label={title}`, but `LightboxProps.title` is `string | undefined` (an image with no caption has none) — an untitled image's lightbox rendered with `aria-label={undefined}`, leaving the dialog with zero accessible name, an ARIA/axe-core dialog-name violation. Fixed: `aria-label={title ?? 'Image preview'}`. Added a dedicated test to `tests/interaction.spec.ts` — "Lightbox falls back to a generic accessible name when no title is given" — rendering `Lightbox` with no `title` prop and asserting `aria-label` equals `'Image preview'`. Regression: `npx tsc --noEmit` → 0 errors. `npx vitest run tests/interaction.spec.ts` → 10/10 pass (up from 9). `npx vitest run --exclude tests/stress.spec.ts` → 15/15 files, 107/107 tests pass (stress.spec.ts's pre-existing S-01 flake, DEC-019, deliberately excluded — unrelated to this change, not re-run since no code in its measured path was touched).
+PENDING      : B15 continues = T-P8-04 (keyboard-reachable scroll regions) onward
+VALIDATION   : PASS — T-P8-03's literal VERIFY (every interactive control has an accessible name) is met: the only defect found (Lightbox) is fixed and covered by a regression test; all other controls were already compliant.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still undhardened by design); NEW — `Lightbox.tsx` is not currently wired into `DEFAULT_COMPONENTS`/`Image.tsx` (no click handler triggers it; confirmed via grep that it's referenced nowhere else in `src` besides itself and an unrelated z-index token in `layout.ts`) — it is reachable only via direct unit test. This wiring gap is explicitly out of scope for T-P8-03 (an ARIA-labeling audit of existing controls, not a component-integration task) and is left for a future task to address if Image-click-to-enlarge is ever required.
+NEXT TASK    : T-P8-04
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : none new this checkpoint requiring a DEC entry (the Lightbox fix is a direct bug correction against T-P8-03's literal VERIFY criterion, not a scope adaptation).
+CORRECTIONS  : none to prior entries — no prior checkpoint claimed Lightbox's accessible-name behavior was verified; this is the first time it was checked.
+DERIVATIONS  : an optional prop passed directly into `aria-label` without a fallback is a latent accessible-name gap that produces no compile error and no visually obvious defect — it only surfaces when the optional value is actually absent, so it must be checked by exercising that code path directly (a test with the prop omitted), not just by reading the "happy path" usage.
+─────────────────────────────────────────────
+
+─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
 

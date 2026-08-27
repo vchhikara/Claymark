@@ -183,6 +183,29 @@ describe('P7 — Interaction behaviors', () => {
     trigger.remove()
   })
 
+  // T-P8-03: a dialog with no accessible name is an ARIA violation an
+  // undefined `title` (an image with no caption) must not produce.
+  it('Lightbox falls back to a generic accessible name when no title is given', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+
+    act(() => {
+      root.render(
+        createElement(Lightbox, {
+          open: true,
+          onClose: () => {},
+          children: createElement('span', null, 'x'),
+        }),
+      )
+    })
+
+    expect(host.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('Image preview')
+
+    act(() => root.unmount())
+    host.remove()
+  })
+
   // T-P7-05 criterion: `![alt](src "title")` renders a visible caption
   it('Image renders a visible figcaption from title, and nothing extra without one', () => {
     const host = document.createElement('div')
