@@ -698,6 +698,26 @@ CORRECTIONS  : none this checkpoint.
 DERIVATIONS  : none new this checkpoint.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-030
+TIMESTAMP    : 2026-08-28T00:12:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P9 in progress
+BATCH        : B16 in progress (T-P9-01, T-P9-02, T-P9-03, T-P9-03a done; T-P9-04 → T-P9-08 next, G9)
+COMPLETED    : T-P9-03a (Android shell via Tauri Mobile, per DEC-012/Q-01 ruling)
+EVIDENCE     : `~/Android/Sdk` existed (platforms, build-tools, emulator) but had no NDK and no `sdkmanager`/`cmdline-tools`. Downloaded Android NDK r27 directly from `dl.google.com/android/repository/android-ndk-r27-linux.zip` (633 MB) and installed to `~/Android/Sdk/ndk/27.0.0`. Selected JDK 21 (present alongside system-default JDK 25) as `JAVA_HOME` for better Gradle/AGP compatibility. Ran `npx tauri android init`, generating `src-tauri/gen/android/` (Gradle project + Kotlin glue). First build (`npx tauri android build --apk`) failed: `Missing script: "tauri"` — the Gradle `rustBuildArm64Release` task shells out to `npm run tauri`, but `package.json` had no `"tauri"` script (the conventional entry Tauri's own build hooks expect). Added `"tauri": "tauri"` to `package.json`'s scripts. Rebuild succeeded: `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk` (36,558,721 bytes), confirmed via `file` and `unzip -l` to be a genuine Android package containing `AndroidManifest.xml` and `classes.dex`. Unsigned/universal is expected without a configured release keystore — signing/distribution is out of this task's scope. Added Android's regenerable build output (`app/build/`, `.gradle/`, `app/.cxx/`, `local.properties` — 174 MB) to `src-tauri/.gitignore`, keeping the generated project source tracked. Regression: `tsc --noEmit` 0 errors, `vitest run` 17 files / 115 tests all pass.
+PENDING      : T-P9-04 onward (allow-list lockdown; responsive verification; docs reconciliation; release notes/1.0.0; delivery checklist; GATE G9)
+VALIDATION   : PASS — `tauri android build` produces a genuine installable APK, matching the spirit of T-P9-03's binary-build VERIFY extended to the Android target per DEC-012.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001; KaTeX lazy-loading boundary gap; the two pre-existing lint errors flagged at CP-016; DEC-019's S-01 flakiness; Lightbox's unwired production integration; the mermaid.spec.ts test-ordering flake; the 8 remaining devDependency-only pnpm-audit findings; the `docs/API.md` vs. as-built gap (deferred to T-P9-06); `security.csp: null` and the default capabilities allow-list, now covering both the desktop and Android `AndroidManifest.xml` permission sets (deferred to T-P9-04); APK signing/release-keystore setup (a distribution concern, out of scope for any P9 task as currently scoped) — all carried forward, unchanged.
+NEXT TASK    : T-P9-04 (lock down the Tauri capability allow-list — `src-tauri/capabilities/default.json`; VERIFY: no filesystem or shell capability enabled)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : Installed the Android NDK via direct download from Google's own distribution host rather than via `sdkmanager` (absent from the existing SDK install) — same artifact, no new tooling dependency introduced beyond what Tauri Mobile itself requires.
+CORRECTIONS  : none this checkpoint.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |
