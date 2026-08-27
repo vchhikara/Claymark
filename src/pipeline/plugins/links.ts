@@ -1,5 +1,15 @@
-import { visit } from 'unist-util-visit'
-import type { Element, Root } from 'hast'
+import type { Element, Root, RootContent } from 'hast'
+
+// See src/pipeline/plugins/url-policy.ts for why this hand-rolled walker
+// replaces `unist-util-visit` — same measured finding (T-P6-10 stress matrix,
+// S-01), same guarantee of unchanged externally observable behavior.
+function walkElements(node: Root | RootContent, cb: (el: Element) => void): void {
+  if (!('children' in node)) return
+  for (const child of node.children) {
+    if (child.type === 'element') cb(child as Element)
+    walkElements(child, cb)
+  }
+}
 
 export interface LinkHardeningOptions {
   baseUrl?: string
@@ -10,7 +20,7 @@ const SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:/
 export function linkHardening(options: LinkHardeningOptions = {}) {
   const baseOrigin = options.baseUrl ? new URL(options.baseUrl).origin : undefined
   return (tree: Root) => {
-    visit(tree, 'element', (node: Element) => {
+    walkElements(tree, (node) => {
       if (node.tagName !== 'a') return
       const props = node.properties ?? (node.properties = {})
       const href = props.href

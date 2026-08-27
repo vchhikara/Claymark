@@ -1,5 +1,18 @@
-import { visit } from 'unist-util-visit'
-import type { Element, Root } from 'hast'
+import type { Element, Root, RootContent } from 'hast'
+
+// `unist-util-visit` was measured (T-P6-10 stress matrix, S-01) to cost
+// roughly 170x a plain recursive walk over a large tree (~1.5s vs ~10ms on a
+// 5 MB document, ~210k nodes) — its generic ancestor-tracking/type-dispatch
+// machinery is significant overhead at that scale. A direct recursive walk
+// over 'element' nodes only, with identical visitation order, replaces it
+// here with no change to this plugin's externally observable behavior.
+function walkElements(node: Root | RootContent, cb: (el: Element) => void): void {
+  if (!('children' in node)) return
+  for (const child of node.children) {
+    if (child.type === 'element') cb(child as Element)
+    walkElements(child, cb)
+  }
+}
 
 const SAFE_PROTOCOLS = new Set(['http:', 'https:', 'mailto:'])
 const SAFE_DATA_IMAGE = /^data:image\/(png|jpeg|gif|webp)[;,]/i
@@ -51,7 +64,7 @@ export function safeUrl(value: string, allowDataImage: boolean): string | undefi
 
 export function urlPolicy() {
   return (tree: Root) => {
-    visit(tree, 'element', (node: Element) => {
+    walkElements(tree, (node) => {
       const props = node.properties ?? (node.properties = {})
       if (typeof props.href === 'string' && safeUrl(props.href, false) === undefined) {
         delete props.href
