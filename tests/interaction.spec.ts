@@ -395,4 +395,22 @@ describe('P7 — Interaction behaviors', () => {
 
     expect(setAttrCalls).toEqual([['data-theme', 'dark']])
   })
+
+  // T-P8-06: the only animated CSS property in the stylesheet (the
+  // scroll-edge-shadow fade, T-P7-02) must be neutralized under
+  // prefers-reduced-motion. This is pure CSS with no React component
+  // surface, so — following the pattern used above for index.html's inline
+  // script — it's verified by reading the real stylesheet source directly
+  // rather than via a DOM/jsdom media-query simulation.
+  it('claymark.css disables the scroll-shadow transition under prefers-reduced-motion', () => {
+    const css = readFileSync(join(process.cwd(), 'src/theme/claymark.css'), 'utf8')
+    const mediaMatch = css.match(
+      /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/,
+    )
+    expect(mediaMatch).not.toBeNull()
+    const body = mediaMatch![1]!
+    expect(body).toContain('.claymark-table-scroll::before')
+    expect(body).toContain('.claymark-table-scroll::after')
+    expect(body).toMatch(/transition:\s*none/)
+  })
 })

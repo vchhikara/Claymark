@@ -558,6 +558,26 @@ CORRECTIONS  : none to prior entries — no prior checkpoint claimed Mermaid dia
 DERIVATIONS  : a substring-based security assertion over an entire container's `innerHTML` is fragile against future additions that legitimately echo untrusted input as inert text (an `aria-label`, a `title` attribute, a rendered code sample) — such assertions should scope to the specific element/subtree that is the actual executable-context risk (here, mermaid's own `<svg>` output) rather than the whole DOM subtree, so a later accessibility or display feature doesn't silently invalidate the guarantee's precision.
 ─────────────────────────────────────────────
 
+CHECKPOINT   : CP-023
+TIMESTAMP    : 2026-08-27T23:00:00+05:30
+TRIGGER      : task-complete
+SESSION      : 6 (continued)
+PHASE        : P8 in progress (6/9 P8 tasks done)
+BATCH        : B15 in progress (T-P8-01 → T-P8-06 done)
+COMPLETED    : T-P8-06 (`prefers-reduced-motion` honoured)
+EVIDENCE     : Audited every theme stylesheet (`src/theme/claymark.css`, `tokens.css`, `katex.css`) via `grep -n 'transition|animation|@keyframes'` before touching anything — confirmed exactly one animated CSS property exists in the entire codebase: `transition: opacity 0.15s ease;` on `.claymark-table-scroll::before`/`::after` (the T-P7-02 scroll-edge shadow indicators, which fade in/out based on `data-overflow-left`/`data-overflow-right`). Added a `@media (prefers-reduced-motion: reduce)` block in `src/theme/claymark.css` immediately after the existing opacity-trigger rule, setting `transition: none` on that same selector pair — the indicator's visibility logic (whether unseen scrollable content exists) is unchanged and still informs the user; only the animated fade is removed for a user who has requested reduced motion. Added a regression test in `tests/interaction.spec.ts` ("claymark.css disables the scroll-shadow transition under prefers-reduced-motion") that reads the real stylesheet source directly via `readFileSync` and asserts the media block exists, targets both pseudo-elements, and sets `transition: none` — following the same source-reading verification pattern already established in that file for `index.html`'s inline theme-detection script (no CSSOM/jsdom media-query simulation exists elsewhere in this suite for pure-CSS behavior, so this matches the codebase's own idiom rather than inventing a new one). Regression: `npx tsc --noEmit` → 0 errors. `npx vitest run tests/interaction.spec.ts` → 12/12 pass (isolated, up from 11). `npx vitest run --exclude tests/stress.spec.ts` → 15/15 files, 111/111 pass (up from 110).
+PENDING      : B15 continues = T-P8-07 onward
+VALIDATION   : PASS — T-P8-06's literal VERIFY (`prefers-reduced-motion` honoured) is met: the sole animated property in the codebase is neutralized under the media query, and a regression test pins this against future stylesheet edits.
+ISSUES       : none open
+ASSUMPTIONS  : none new this checkpoint
+DEFERRED     : DEF-001 (carried forward); KaTeX lazy-loading boundary gap (carried forward); the two pre-existing lint errors flagged at CP-016 (still unfixed, still out of scope); DEC-019's S-01 flakiness (carried forward, still undhardened by design); Lightbox's unwired production integration (carried forward from CP-020, still out of scope); the mermaid.spec.ts test-ordering flake (carried forward from CP-022, still unfixed at its root cause).
+NEXT TASK    : T-P8-07 (dependency vulnerability audit)
+CONTEXT USED : not tracked precisely this session
+DECISIONS    : none new this checkpoint requiring a DEC entry — a direct, minimal fix against T-P8-06's literal VERIFY criterion, with no scope adaptation.
+CORRECTIONS  : none to prior entries.
+DERIVATIONS  : none new this checkpoint.
+─────────────────────────────────────────────
+
 ─────────────────────────────────────────────
 | ISS-001 | High | CP-000 | Source brief specified a financial-data domain; the supplied research report specifies a Markdown rendering engine. No financial source material exists in the inputs. Resolved by treating the report as the domain of record and the brief as the structural template. **Requires human confirmation before T-P0-01.** | RESOLVED | Human confirmed in session `ses_fc333195fffeVMqBXheMQeMeNF` (exported transcript, message 8→9: "ISS-001 confirmed by human decision"); ledger update missed at session death — recorded retroactively at CP-001 |
 | ISS-002 | High | CP-001 | Plan-ordering defect in P0: T-P0-04/05/06 VERIFY commands (`pnpm tsc --noEmit`, `pnpm build`, `pnpm test`) cannot pass at their sequence positions because tsconfig `include` paths (`src/`, `tests/`, `bench/`, `*.config.ts`) gain no files until T-P0-05–T-P0-08 outputs exist. Evidence: TS18003 at T-P0-04. Per I-07 the acceptance is not weakened unilaterally; remedy requires human decision. | RESOLVED | DEC-006 — human approved pull-forward within P0 (CP-002) |

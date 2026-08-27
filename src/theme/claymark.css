@@ -186,6 +186,17 @@
   opacity: 1;
 }
 
+/* T-P8-06: this is the only animated property in the whole stylesheet — a
+   fade on the scroll-edge shadow indicators (T-P7-02). A user who has
+   requested reduced motion still gets the indicator (it's informational,
+   not decorative), just without the transition's motion. */
+@media (prefers-reduced-motion: reduce) {
+  .claymark-table-scroll::before,
+  .claymark-table-scroll::after {
+    transition: none;
+  }
+}
+
 .claymark-table {
   border-collapse: collapse;
   width: 100%;
