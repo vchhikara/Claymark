@@ -14,12 +14,12 @@ You don't need to build anything to look at rendered output — the dev server i
 cd claymark
 nvm use              # match .nvmrc, currently 20.11.1
 pnpm install --frozen-lockfile
-pnpm dev              # starts at http://localhost:5173
+npx vite --mode app --port 5173   # there is no "pnpm dev" script — this is the equivalent
 ```
 
-Open `http://localhost:5173` in a browser. What you should see is a Markdown-rendered
-document with code blocks, and you can edit the sample source (wherever the dev harness
-exposes it) to try your own Markdown.
+Open `http://localhost:5173` in a browser. This serves the same app entry
+(`src/app/main.tsx`) that `pnpm build:app` builds for production, just unbundled and with
+hot reload. **Verified this session:** the server starts and returns HTTP 200.
 
 ## 2. Trying the packaged apps instead
 
