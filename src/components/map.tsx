@@ -12,6 +12,7 @@ import { Heading } from './Heading'
 import { TaskListItem } from './TaskList'
 import { TableContainer } from './Table'
 import { Image } from './Image'
+import { MermaidDiagram } from './MermaidDiagram'
 
 type ElementTag =
   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'a' | 'ul' | 'ol' | 'li'
@@ -106,6 +107,34 @@ interface HastLikeElement {
   value?: string
 }
 
+// The `code` element's own hast children (never the already-converted React
+// children) — the fence content as authored, no highlighting spans to strip
+// back out. Used for MermaidDiagram, which renders from raw diagram source.
+function extractRawText(node: HastLikeElement | undefined): string {
+  if (!node?.children) return ''
+  return node.children
+    .map((child) => (child.type === 'text' ? (child.value ?? '') : extractRawText(child)))
+    .join('')
+}
+
+function hasLanguageClass(node: HastLikeElement, language: string): boolean {
+  const className = node.properties?.className
+  const classes = Array.isArray(className) ? className : typeof className === 'string' ? [className] : []
+  return classes.includes(`language-${language}`)
+}
+
+// T-P5-xx: a ```mermaid fence renders via MermaidDiagram, not as a code
+// block — checked against the `pre` node's own hast child (not the `code`
+// DEFAULT_COMPONENTS entry) so the diagram replaces the whole `<pre>`
+// wrapper instead of nesting a `<div>` inside it (invalid: `pre`'s content
+// model is phrasing content only).
+function findMermaidSource(node: unknown): string | null {
+  const el = node as HastLikeElement | undefined
+  const codeChild = el?.children?.find((child) => child.tagName === 'code')
+  if (!codeChild || !hasLanguageClass(codeChild, 'mermaid')) return null
+  return extractRawText(codeChild)
+}
+
 // FR-4.4/T-P4-05: CopyButton needs the exact fence source text, not the
 // highlighted HTML the `code`/`pre` adapters render as `children` — walk the
 // hast tree (still available as `node` before it becomes React) and
@@ -145,6 +174,22 @@ function isSoleImageParagraph(node: unknown): boolean {
   return meaningful.length === 1 && meaningful[0]?.tagName === 'img'
 }
 
+function PreAdapter({ children, node }: NodeProps): ReactElement {
+  const mermaidSource = findMermaidSource(node)
+  if (mermaidSource !== null) {
+    return <MermaidDiagram source={mermaidSource} />
+  }
+  const preNode = node as HastLikeElement | undefined
+  const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
+  return (
+    <CodeBlock language={getCodeLanguage(preNode)} text={hastToText(codeChild)}>
+      <Passthrough tag="pre" className="claymark-pre">
+        {children}
+      </Passthrough>
+    </CodeBlock>
+  )
+}
+
 function ParagraphAdapter(props: NodeProps): ReactElement {
   if (isSoleImageParagraph(props.node)) {
     return <>{props.children}</>
@@ -175,17 +220,7 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   li: (props) => <ListItemAdapter {...props} />,
   blockquote: (props) => <Blockquote>{props.children}</Blockquote>,
   code: (props) => <CodeAdapter {...props} />,
-  pre: (props) => {
-    const preNode = props.node as HastLikeElement | undefined
-    const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
-    return (
-      <CodeBlock language={getCodeLanguage(preNode)} text={hastToText(codeChild)}>
-        <Passthrough tag="pre" className="claymark-pre">
-          {props.children}
-        </Passthrough>
-      </CodeBlock>
-    )
-  },
+  pre: (props) => <PreAdapter {...props} />,
   em: (props) => <Emphasis>{props.children}</Emphasis>,
   strong: (props) => <Strong>{props.children}</Strong>,
   del: (props) => <Del>{props.children}</Del>,

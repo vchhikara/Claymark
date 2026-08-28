@@ -7,6 +7,44 @@ import { DEFAULT_THEMES, getShikiHighlighter, SUPPORTED_LANGUAGES } from './shik
 
 const SUPPORTED_LANGUAGE_SET: ReadonlySet<string> = new Set(SUPPORTED_LANGUAGES)
 
+// Mermaid fences route to MermaidDiagram (src/components/map.tsx's `pre`
+// adapter), never to Shiki — "mermaid" is deliberately absent from R-LANG
+// (shiki-config.ts) since it isn't a highlighted grammar. Without this pair
+// of plugins, `language-mermaid` would hit the same fate as any other
+// unregistered language: unknownLanguageFallback strips the class before
+// rehype-pretty-code ever runs, and the component-mapping layer downstream
+// loses the one signal it needs to route to MermaidDiagram instead of a
+// plain code block.
+const MERMAID_LANGUAGE_CLASS = 'language-mermaid'
+const MERMAID_HIDDEN_MARKER = 'dataClaymarkMermaid'
+
+// Runs before unknownLanguageFallback: hides the class from both it and
+// rehype-pretty-code (which would otherwise try to load a "mermaid" grammar
+// from the pinned 34-language Shiki bundle and throw) by renaming it to a
+// non-`language-*` marker attribute.
+const hideMermaidFromHighlighter: Plugin<[], Root> = () => (tree) => {
+  visit(tree, 'element', (node: Element) => {
+    if (node.tagName !== 'code') return
+    const className = node.properties?.className
+    if (!Array.isArray(className) || !className.includes(MERMAID_LANGUAGE_CLASS)) return
+    node.properties.className = className.filter((name) => name !== MERMAID_LANGUAGE_CLASS)
+    node.properties[MERMAID_HIDDEN_MARKER] = ''
+  })
+}
+
+// Runs after rehype-pretty-code: restores `language-mermaid` now that the
+// highlighter has safely skipped the block (rehype-pretty-code leaves a
+// `code` element with no `language-*` class completely untouched, per the
+// comment on unknownLanguageFallback below).
+const restoreMermaidLanguageClass: Plugin<[], Root> = () => (tree) => {
+  visit(tree, 'element', (node: Element) => {
+    if (node.tagName !== 'code' || node.properties?.[MERMAID_HIDDEN_MARKER] === undefined) return
+    const className = Array.isArray(node.properties.className) ? node.properties.className : []
+    node.properties.className = [...className, MERMAID_LANGUAGE_CLASS]
+    delete node.properties[MERMAID_HIDDEN_MARKER]
+  })
+}
+
 // FR-4.2: unregistered languages must never throw and must render as unstyled
 // preformatted text — not Shiki's own "plaintext" fallback, which still wraps
 // output in themed spans. rehype-pretty-code skips a code block entirely
@@ -51,6 +89,8 @@ const codeHighlightOptions: RehypePrettyCodeOptions = {
 }
 
 export const codeHighlight: PluggableList = [
+  hideMermaidFromHighlighter,
   unknownLanguageFallback,
   [rehypePrettyCode, codeHighlightOptions],
+  restoreMermaidLanguageClass,
 ]
