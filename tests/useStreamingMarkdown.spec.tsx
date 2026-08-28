@@ -94,4 +94,45 @@ describe('G6 — useStreamingMarkdown (T-P6-04)', () => {
     expect(text).toContain('para two')
     expect(text).toContain('para three')
   })
+
+  // Regression for the hydration wiring gap: processor.ts runs codeSkeleton
+  // on every parsed block (a fenced code block starts as an unstyled,
+  // `data-code-pending` `pre`), and useStreamingMarkdown must call
+  // hydrateCodeHighlighting client-side so it swaps in real Shiki output —
+  // without this wiring, a code block stays bare `data-code-pending` forever.
+  it('hydrates a fenced code block into real Shiki-highlighted output after mount', async () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    const source = ['```python', 'print(1)', '```'].join('\n')
+    act(() => {
+      root.render(createElement(Capture, { source, onElements: () => {} }))
+    })
+
+    // Immediately after the first render, the block is still the plain
+    // skeleton — hydration happens asynchronously (dynamic import + Shiki).
+    expect(container.querySelector('pre[data-code-pending]')).not.toBeNull()
+    expect(container.querySelector('pre')?.className ?? '').not.toContain('shiki')
+
+    // Flush the dynamic import + hydrateCodeHighlighting's async work, then
+    // the effect's setState that re-renders with the hydrated tree. Bumped
+    // from 10 to 50 iterations (Batch B/prettify-code.ts): loadCodeHighlight
+    // now awaits one more dynamic import('./prettify-code') before codeHighlight
+    // resolves, adding extra microtask/macrotask ticks before hydration
+    // settles — 10×setTimeout(0) was intermittently too tight a budget.
+    for (let i = 0; i < 50 && container.querySelector('pre[data-code-pending]'); i++) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+    }
+
+    const pre = container.querySelector('pre')
+    expect(pre?.hasAttribute('data-code-pending')).toBe(false)
+    // rehype-pretty-code's Shiki output: per-line spans with inline
+    // `--shiki-light`/`--shiki-dark` CSS custom properties, not just the
+    // raw `language-python` class the skeleton/plain pre would carry.
+    expect(pre?.innerHTML).toContain('--shiki-light')
+    expect(container.querySelectorAll('[data-line]').length).toBeGreaterThan(0)
+  })
 })

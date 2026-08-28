@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactElement } from 'react'
 import DOMPurify from 'dompurify'
+import { Alert, AlertDescription, AlertTitle } from './Alert'
+import { Skeleton } from './Skeleton'
 
 export interface MermaidDiagramProps {
   // Raw diagram source (the fence content) — never pre-parsed HTML.
@@ -117,12 +119,19 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
   }, [source])
 
   if (error) {
-    // T-P5-08: invalid diagram source degrades to a plain code block, never
-    // a crash — the raw source is shown verbatim, unstyled.
+    // T-P5-08: invalid diagram source degrades to a visible error, never a
+    // crash — the raw source stays available underneath it (never lost, per
+    // the original fallback's intent), just no longer silent.
     return (
-      <pre className="claymark-mermaid-fallback">
-        <code>{source}</code>
-      </pre>
+      <Alert variant="destructive" className="claymark-mermaid-fallback-alert">
+        <AlertTitle>Diagram failed to render</AlertTitle>
+        <AlertDescription>
+          <p>{error}</p>
+          <pre className="claymark-mermaid-fallback">
+            <code>{source}</code>
+          </pre>
+        </AlertDescription>
+      </Alert>
     )
   }
 
@@ -130,7 +139,13 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
     // Reserves final layout height is out of scope here (no fixed aspect
     // ratio is knowable before render); a neutral placeholder avoids a blank
     // gap while the lazy import and render are in flight.
-    return <div className="claymark-mermaid claymark-mermaid-pending" aria-busy="true" />
+    return (
+      <Skeleton
+        className="claymark-mermaid claymark-mermaid-pending"
+        style={{ height: '8rem', width: '100%' }}
+        aria-busy="true"
+      />
+    )
   }
 
   return (

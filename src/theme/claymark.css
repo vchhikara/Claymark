@@ -195,6 +195,29 @@
   color: hsl(var(--text-primary));
 }
 
+/* rehype-pretty-code (code.ts, keepBackground: false) marks each highlighted
+   `pre`/`code` with `data-theme` and emits every token as
+   <span style="--shiki-light:#..;--shiki-dark:#..">, but never sets `color`
+   itself — that's left to the consumer (see rehype-pretty-code's dist/index.js,
+   the two-theme branch). Without this rule the custom properties sit on the
+   DOM unused and every highlighted line renders in the surrounding text
+   color, i.e. completely uncolored, regardless of platform/device. Themed
+   off the app's own [data-theme] attribute (ThemeProvider.tsx), not
+   rehype-pretty-code's same-named attribute on pre/code (which always holds
+   "light dark", both theme names at once, and is not what to switch on). */
+.claymark-root[data-theme='light'] .claymark-pre code[data-theme] span,
+[data-theme='light'] .claymark-root .claymark-pre code[data-theme] span {
+  color: var(--shiki-light);
+}
+.claymark-root[data-theme='dark'] .claymark-pre code[data-theme] span,
+[data-theme='dark'] .claymark-root .claymark-pre code[data-theme] span {
+  color: var(--shiki-dark);
+}
+
+.claymark-code-figure {
+  margin: 0;
+}
+
 .claymark-table-scroll {
   position: relative;
   overflow-x: auto;
@@ -293,12 +316,253 @@
   outline: none;
 }
 
+/* Defensive fallback: a fenced code block that hasn't been highlighted yet
+   (pipeline/plugins/code-lazy.ts's skeleton state — a bare, unclassed
+   `pre`) has no scroll container of its own. Without this, a long line in
+   that placeholder forces the whole page to scroll horizontally instead of
+   just the block. Scoped to descendants of the render root so it never
+   leaks into a consumer's own unrelated `pre` elements. */
+.claymark-root pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 .claymark-theme-toggle {
   font: inherit;
-  background: none;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: hsl(var(--surface-raised));
   border: 1px solid hsl(var(--border-default));
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  padding: 0;
   cursor: pointer;
   line-height: 1;
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.claymark-theme-toggle:hover {
+  background: hsl(var(--surface));
+  border-color: hsl(var(--accent-brand));
+  box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
+}
+
+.claymark-theme-toggle:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* App shell (src/app/main.tsx): toolbar buttons and the source textarea.
+   Base appearance is set via inline style (matches this file's existing
+   inline-style convention for main.tsx) — these classes only add the
+   interactive states (:hover/:focus-visible/:active) inline style can't
+   express, plus reset the UA default button/textarea chrome. */
+.cm-toolbar-btn {
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.cm-toolbar-btn:hover {
+  background: hsl(var(--surface)) !important;
+  border-color: hsl(var(--accent-brand)) !important;
+  box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
+}
+
+.cm-toolbar-btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.cm-toolbar-btn:focus-visible,
+.claymark-theme-toggle:focus-visible,
+.cm-source-textarea:focus-visible {
+  outline: 2px solid hsl(var(--accent-brand));
+  outline-offset: 2px;
+}
+
+.cm-source-textarea {
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06) inset;
+}
+
+.cm-source-textarea::placeholder {
+  color: hsl(var(--text-muted));
+}
+
+/* ---- Button / Alert / Skeleton / Tooltip ----
+   Ported from scratch/shadcn-prototype/prototype.css (see FINDINGS.md) and
+   renamed pb-* -> claymark-* to match this file's naming convention. Every
+   value is a tokens.css custom property, no Tailwind/cva. */
+
+.claymark-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
+}
+
+.claymark-button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.claymark-button:focus-visible {
+  outline: 2px solid var(--accent-brand);
+  outline-offset: 2px;
+}
+
+.claymark-button:active {
+  transform: translateY(1px);
+}
+
+.claymark-button[data-variant='default'] {
+  background: var(--accent-brand);
+  color: hsl(var(--surface));
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+}
+.claymark-button[data-variant='default']:hover {
+  background: color-mix(in srgb, var(--accent-brand) 90%, transparent);
+}
+
+.claymark-button[data-variant='destructive'] {
+  background: hsl(var(--danger, 0 65% 50%));
+  color: hsl(var(--surface));
+}
+.claymark-button[data-variant='destructive']:hover {
+  background: hsl(var(--danger, 0 65% 50%) / 0.9);
+}
+
+/* variant="outline" — mirrors .cm-toolbar-btn's existing look */
+.claymark-button[data-variant='outline'] {
+  background: hsl(var(--surface-raised));
+  color: hsl(var(--text-primary));
+  border-color: hsl(var(--border-default));
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+}
+.claymark-button[data-variant='outline']:hover {
+  background: hsl(var(--surface));
+  border-color: var(--accent-brand);
+}
+
+.claymark-button[data-variant='secondary'] {
+  background: hsl(var(--surface-code));
+  color: hsl(var(--text-primary));
+}
+.claymark-button[data-variant='secondary']:hover {
+  background: hsl(var(--surface-code) / 0.8);
+}
+
+.claymark-button[data-variant='ghost'] {
+  background: transparent;
+  color: hsl(var(--text-primary));
+}
+.claymark-button[data-variant='ghost']:hover {
+  background: hsl(var(--surface-raised));
+}
+
+.claymark-button[data-variant='link'] {
+  background: transparent;
+  color: var(--link);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.claymark-button[data-variant='link']:hover {
+  color: var(--accent-brand);
+}
+
+.claymark-button[data-size='sm'] {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8125rem;
+}
+.claymark-button[data-size='lg'] {
+  padding: var(--space-3) var(--space-5);
+  font-size: 0.9375rem;
+}
+.claymark-button[data-size='icon'] {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* ---- Alert ---- */
+
+.claymark-alert {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.125rem;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid hsl(var(--border-default));
+  background: hsl(var(--surface-raised));
+  padding: var(--space-4);
+  font-size: 0.875rem;
+}
+.claymark-alert[data-variant='destructive'] {
+  color: hsl(var(--danger, 0 65% 50%));
+  border-color: hsl(var(--danger, 0 65% 50%) / 0.4);
+}
+.claymark-alert-title {
+  font-weight: 600;
+  color: hsl(var(--text-primary));
+}
+.claymark-alert[data-variant='destructive'] .claymark-alert-title {
+  color: inherit;
+}
+.claymark-alert-description {
+  color: hsl(var(--text-secondary));
+}
+.claymark-alert-description p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Skeleton ---- */
+
+.claymark-skeleton {
+  border-radius: var(--radius-md);
+  background: hsl(var(--surface-code));
+  animation: claymark-skeleton-pulse 1.5s ease-in-out infinite;
+}
+@keyframes claymark-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .claymark-skeleton { animation: none; opacity: 0.75; }
+}
+
+/* ---- Tooltip ----
+   Reuses --z-lightbox (only z-index token in tokens.css) for the portal
+   layer — no dedicated tooltip layer token exists (see FINDINGS.md). */
+
+.claymark-tooltip {
+  z-index: var(--z-lightbox);
+  width: fit-content;
+  max-width: 16rem;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--text-primary));
+  color: hsl(var(--surface));
+  padding: var(--space-1) var(--space-3);
+  font: var(--font-ui);
+  font-size: 0.75rem;
+}
+.claymark-tooltip-arrow {
+  fill: hsl(var(--text-primary));
 }
