@@ -4,6 +4,8 @@ import type { ChangeEvent, DragEvent } from 'react'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { MarkdownRoot } from '../components/MarkdownRoot'
+import { Button } from '../components/Button'
+import { Alert, AlertDescription, AlertTitle } from '../components/Alert'
 import { useStreamingMarkdown } from '../hooks/useStreamingMarkdown'
 
 // A short, hand-written sample (not a bench/corpus/ fixture — those are
@@ -20,7 +22,7 @@ A Markdown renderer built for **streamed, untrusted LLM output**.
 - Syntax-highlighted code
 - Math and Mermaid diagrams
 
-\`\`\`ts
+\`\`\`typescript
 import { processor, toReact } from 'claymark'
 
 const tree = processor.parse(source)
@@ -47,6 +49,7 @@ function Reader() {
   const [source, setSource] = useState('')
   const [editing, setEditing] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const { elements } = useStreamingMarkdown(source)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -63,9 +66,15 @@ function Reader() {
   const loadFile = (file: File): void => {
     const reader = new FileReader()
     reader.onload = () => {
+      setLoadError(null)
       stopStreamingDemo()
       setSource(typeof reader.result === 'string' ? reader.result : '')
       setEditing(true)
+    }
+    // Previously unhandled: a read failure (permission error, file removed
+    // mid-drag, unreadable encoding) left the UI silently doing nothing.
+    reader.onerror = () => {
+      setLoadError(`Couldn't read "${file.name}" — ${reader.error?.message ?? 'unknown error'}.`)
     }
     reader.readAsText(file)
   }
@@ -91,48 +100,94 @@ function Reader() {
 
   return (
     <ThemeProvider>
-      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '1.5rem' }}>
+      <div
+        style={{
+          maxWidth: 'var(--measure)',
+          margin: '0 auto',
+          padding: 'var(--space-6) var(--space-5)',
+          boxSizing: 'border-box',
+        }}
+      >
+        <header
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 'var(--space-4)',
+            marginBottom: 'var(--space-6)',
+            paddingBottom: 'var(--space-4)',
+            borderBottom: '1px solid hsl(var(--border-subtle))',
+          }}
+        >
+          <div>
+            <p
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.75rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--text-muted))',
+              }}
+            >
+              Claymark
+            </p>
+            <p
+              style={{
+                margin: 0,
+                marginTop: 'var(--space-1)',
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.875rem',
+                color: 'hsl(var(--text-secondary))',
+              }}
+            >
+              A live reader for streamed, untrusted Markdown.
+            </p>
+          </div>
+          <ThemeToggle />
+        </header>
+
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1rem',
+            flexWrap: 'wrap',
+            gap: 'var(--space-2)',
+            marginBottom: 'var(--space-5)',
           }}
         >
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => setEditing((v) => !v)}
-              style={{ font: 'inherit', cursor: 'pointer' }}
-            >
-              {editing ? 'Hide editor' : 'Paste your own Markdown'}
-            </button>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              style={{ font: 'inherit', cursor: 'pointer' }}
-            >
-              Open a .md file…
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".md,.markdown,.txt,text/markdown,text/plain"
-              style={{ display: 'none' }}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                const file = event.target.files?.[0]
-                if (file) loadFile(file)
-                event.target.value = '' // allow re-selecting the same file
-              }}
-            />
-          </div>
-          <ThemeToggle />
+          <Button type="button" variant="outline" onClick={() => setEditing((v) => !v)}>
+            {editing ? 'Hide editor' : 'Paste your own Markdown'}
+          </Button>
+          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+            Open a .md file…
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".md,.markdown,.txt,text/markdown,text/plain"
+            style={{ display: 'none' }}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              const file = event.target.files?.[0]
+              if (file) loadFile(file)
+              event.target.value = '' // allow re-selecting the same file
+            }}
+          />
         </div>
+
+        {loadError && (
+          <Alert variant="destructive" style={{ marginBottom: 'var(--space-5)' }}>
+            <AlertTitle>Couldn't load file</AlertTitle>
+            <AlertDescription>
+              <p>{loadError}</p>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {editing && (
           <textarea
             aria-label="Markdown source"
+            className="cm-source-textarea"
             value={source}
             onChange={(event) => {
               stopStreamingDemo()
@@ -153,14 +208,16 @@ function Reader() {
             style={{
               width: '100%',
               minHeight: '10rem',
-              marginBottom: '1.5rem',
-              font: 'inherit',
+              marginBottom: 'var(--space-6)',
+              font: 'var(--text-code)/1.5 var(--font-mono)',
               boxSizing: 'border-box',
               background: dragOver ? 'hsl(var(--surface))' : 'hsl(var(--surface-raised))',
               color: 'hsl(var(--text-primary))',
               border: `1px solid hsl(var(--border-${dragOver ? 'default' : 'subtle'}))`,
-              borderRadius: '0.25rem',
-              padding: '0.5rem',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)',
+              resize: 'vertical',
+              transition: 'background 0.15s ease, border-color 0.15s ease',
             }}
           />
         )}

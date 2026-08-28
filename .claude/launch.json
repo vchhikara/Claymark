@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "claymark-app",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--mode", "app"],
+      "port": 5190,
+      "autoPort": true
+    }
+  ]
+}

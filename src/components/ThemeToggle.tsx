@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react'
 import { useTheme } from '../theme/ThemeProvider'
+import { Button } from './Button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip'
 
 // T-P7-07: manual override of the detected theme, persisted via
 // ThemeProvider (localStorage) so it survives a reload; setting it also
@@ -8,16 +10,26 @@ import { useTheme } from '../theme/ThemeProvider'
 export function ThemeToggle(): ReactElement {
   const { theme, setTheme } = useTheme()
   const next: 'light' | 'dark' = theme === 'dark' ? 'light' : 'dark'
+  const label = `Switch to ${next} theme`
 
   return (
-    <button
-      type="button"
-      className="claymark-theme-toggle"
-      aria-label={`Switch to ${next} theme`}
-      aria-pressed={theme === 'dark'}
-      onClick={() => setTheme(next)}
-    >
-      {theme === 'dark' ? '🌙' : '☀️'}
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="claymark-theme-toggle"
+            aria-label={label}
+            aria-pressed={theme === 'dark'}
+            onClick={() => setTheme(next)}
+          >
+            {theme === 'dark' ? '🌙' : '☀️'}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
