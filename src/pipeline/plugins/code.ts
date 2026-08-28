@@ -66,6 +66,17 @@ const unknownLanguageFallback: Plugin<[], Root> = () => (tree) => {
     const lang = langClass.slice('language-'.length)
     if (SUPPORTED_LANGUAGE_SET.has(lang)) return
     codeElement.properties.className = className.filter((name) => name !== langClass)
+    // codeSkeleton (code-lazy.ts) marks this `pre` data-code-pending + a
+    // min-height style expecting rehype-pretty-code to replace it — but an
+    // unsupported language never reaches rehype-pretty-code (it only touches
+    // `pre`s that still carry a `language-*` class), so without this the
+    // marker survives forever: useStreamingMarkdown's hasPendingCode(tree)
+    // keeps reporting the block pending and re-invoking hydration on every
+    // render, and the CLS-guard min-height never gets released.
+    if (node.properties) {
+      delete node.properties['data-code-pending']
+      delete node.properties.style
+    }
   })
 }
 

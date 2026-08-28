@@ -11,7 +11,10 @@ import { visit } from 'unist-util-visit'
 // exports. Nothing above this comment imports `./code`.
 async function loadCodeHighlight(): Promise<PluggableList> {
   const { codeHighlight } = await import('./code')
-  return codeHighlight
+  const { prettifyCode } = await import('./prettify-code')
+  // D10: prettify runs before codeHighlight so rehype-pretty-code always
+  // tokenizes the canonically-formatted source, not the author's original.
+  return [prettifyCode, ...codeHighlight]
 }
 
 function countLines(text: string): number {
