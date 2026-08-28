@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { ReactElement } from 'react'
+import { Button } from './Button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip'
 
 export interface CopyButtonProps {
   // FR-4.4/T-P4-05: exact source text to copy, excluding any line-number
@@ -52,18 +54,28 @@ export function CopyButton({ text }: CopyButtonProps): ReactElement {
     setTimeout(() => setState('idle'), 2000)
   }
 
+  const label = state === 'copied' ? 'Copied to clipboard' : 'Copy code to clipboard'
+
   return (
-    <button
-      type="button"
-      className="claymark-copy-button"
-      data-state={state}
-      title={state === 'copied' ? 'Copied to clipboard' : 'Copy code to clipboard'}
-      aria-label={state === 'copied' ? 'Copied to clipboard' : 'Copy code to clipboard'}
-      onClick={() => {
-        void handleClick()
-      }}
-    >
-      {state === 'copied' ? 'Copied' : state === 'error' ? 'Failed' : 'Copy'}
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="claymark-copy-button"
+            data-state={state}
+            aria-label={label}
+            onClick={() => {
+              void handleClick()
+            }}
+          >
+            {state === 'copied' ? 'Copied' : state === 'error' ? 'Failed' : 'Copy'}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }

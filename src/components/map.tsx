@@ -17,7 +17,7 @@ import { MermaidDiagram } from './MermaidDiagram'
 type ElementTag =
   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'a' | 'ul' | 'ol' | 'li'
   | 'blockquote' | 'code' | 'pre' | 'em' | 'strong' | 'del' | 'hr' | 'br'
-  | 'img' | 'table' | 'thead' | 'tbody' | 'tr' | 'th' | 'td' | 'input'
+  | 'img' | 'table' | 'thead' | 'tbody' | 'tr' | 'th' | 'td' | 'input' | 'figure'
 
 type NodeProps = {
   children?: ReactNode
@@ -91,10 +91,17 @@ function ListItemAdapter({ children }: NodeProps): ReactElement {
   return <ListItem>{children}</ListItem>
 }
 
-function CodeAdapter({ children, className }: NodeProps): ReactElement {
+function CodeAdapter({ children, className, ...rest }: NodeProps): ReactElement {
   const cls = typeof className === 'string' ? className : Array.isArray(className) ? className.join(' ') : undefined
-  if (cls !== undefined && /language-/.test(cls)) {
-    return <code className={`claymark-code-block ${cls}`}>{children}</code>
+  // Pre-hydration (codeSkeleton's raw remark-rehype output) carries a plain
+  // `language-*` class. Post-hydration, rehype-pretty-code (code-lazy.ts)
+  // discards that entire code element and splices in Shiki's own <pre><code>
+  // output instead — which carries no `language-*` class at all, only a
+  // `data-language` property — so the substring check alone stops matching
+  // the moment hydration finishes.
+  const isBlockCode = (cls !== undefined && /language-/.test(cls)) || 'data-language' in rest
+  if (isBlockCode) {
+    return <code className={cls ? `claymark-code-block ${cls}` : 'claymark-code-block'} {...rest}>{children}</code>
   }
   return <InlineCode>{children}</InlineCode>
 }
@@ -174,18 +181,29 @@ function isSoleImageParagraph(node: unknown): boolean {
   return meaningful.length === 1 && meaningful[0]?.tagName === 'img'
 }
 
-function PreAdapter({ children, node }: NodeProps): ReactElement {
+function PreAdapter(props: NodeProps): ReactElement {
+  const { children, node } = props
   const mermaidSource = findMermaidSource(node)
   if (mermaidSource !== null) {
     return <MermaidDiagram source={mermaidSource} />
   }
+  // codeSkeleton (src/pipeline/plugins/code-lazy.ts) marks a pending code
+  // block's `pre` with `data-code-pending` + an inline `min-height` style —
+  // both must survive onto the rendered element, or the skeleton's CLS guard
+  // and useStreamingMarkdown's pending-block detection silently stop working.
+  const pending = 'data-code-pending' in props
+  const style = typeof props.style === 'string' ? props.style : undefined
   const preNode = node as HastLikeElement | undefined
   const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
   return (
     <CodeBlock language={getCodeLanguage(preNode)} text={hastToText(codeChild)}>
-      <Passthrough tag="pre" className="claymark-pre">
+      <pre
+        className="claymark-pre"
+        style={style ? ({ minHeight: style.replace(/^min-height:/, '') } as never) : undefined}
+        {...(pending ? { 'data-code-pending': '' } : {})}
+      >
         {children}
-      </Passthrough>
+      </pre>
     </CodeBlock>
   )
 }
@@ -248,4 +266,10 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   th: (props) => <Passthrough tag="th" className="claymark-th">{props.children}</Passthrough>,
   td: (props) => <Passthrough tag="td" className="claymark-td">{props.children}</Passthrough>,
   input: InputAdapter,
+  // rehype-pretty-code (code-lazy.ts's hydrateCodeHighlighting) rewrites a
+  // hydrated fenced code block's own `pre` node into a `figure` carrying
+  // `data-rehype-pretty-code-figure`, wrapping its (still-mapped) `pre`/`code`
+  // children — without this entry it falls through to a bare native
+  // `<figure>`, picking up the browser's default figure margin/indent.
+  figure: (props) => <Passthrough tag="figure" className="claymark-code-figure">{props.children}</Passthrough>,
 }
