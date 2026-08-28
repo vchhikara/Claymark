@@ -1,6 +1,7 @@
 import { isValidElement } from 'react'
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { Blockquote } from './Blockquote'
+import { CodeBlock } from './CodeBlock'
 import { Emphasis, Strong } from './Inline'
 import { InlineCode } from './InlineCode'
 import { Link } from './Link'
@@ -100,8 +101,30 @@ function CodeAdapter({ children, className }: NodeProps): ReactElement {
 interface HastLikeElement {
   type: string
   tagName?: string
+  properties?: { className?: unknown } & Record<string, unknown>
   children?: HastLikeElement[]
   value?: string
+}
+
+// FR-4.4/T-P4-05: CopyButton needs the exact fence source text, not the
+// highlighted HTML the `code`/`pre` adapters render as `children` — walk the
+// hast tree (still available as `node` before it becomes React) and
+// concatenate its text leaves back into the original source.
+function hastToText(node: HastLikeElement | undefined): string {
+  if (!node) return ''
+  if (node.type === 'text') return node.value ?? ''
+  if (!node.children) return ''
+  return node.children.map(hastToText).join('')
+}
+
+function getCodeLanguage(preNode: HastLikeElement | undefined): string {
+  const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
+  const className = codeChild?.properties?.className
+  const classes = Array.isArray(className) ? className : typeof className === 'string' ? [className] : []
+  const languageClass = classes.find(
+    (name): name is string => typeof name === 'string' && name.startsWith('language-'),
+  )
+  return languageClass ? languageClass.slice('language-'.length) : ''
 }
 
 // T-P8-01: CommonMark wraps a standalone `![alt](src)` in a `<p>` (an image
@@ -152,11 +175,17 @@ export const DEFAULT_COMPONENTS: Record<ElementTag, ComponentType<NodeProps>> = 
   li: (props) => <ListItemAdapter {...props} />,
   blockquote: (props) => <Blockquote>{props.children}</Blockquote>,
   code: (props) => <CodeAdapter {...props} />,
-  pre: (props) => (
-    <Passthrough tag="pre" className="claymark-pre">
-      {props.children}
-    </Passthrough>
-  ),
+  pre: (props) => {
+    const preNode = props.node as HastLikeElement | undefined
+    const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
+    return (
+      <CodeBlock language={getCodeLanguage(preNode)} text={hastToText(codeChild)}>
+        <Passthrough tag="pre" className="claymark-pre">
+          {props.children}
+        </Passthrough>
+      </CodeBlock>
+    )
+  },
   em: (props) => <Emphasis>{props.children}</Emphasis>,
   strong: (props) => <Strong>{props.children}</Strong>,
   del: (props) => <Del>{props.children}</Del>,
