@@ -157,8 +157,11 @@ dompurify.d.ts — ambient type declaration, no runtime code
 
 - `scratch/shadcn-prototype/` — ported shadcn/ui components (`ported-*.tsx`),
   a `demo.tsx`, and `FINDINGS.md` documenting the exploration's conclusions.
-  Not imported by anything in `src/`. Decision on keep/delete/adopt still
-  pending — see `docs/SYNC-HANDOFF.md` "What's still open" #2.
+  Not imported by anything in `src/`. **Decision (this session): keep it**,
+  untracked/exploratory, as reference for integrating the still-unported
+  components (Dialog, Table, Badge, Separator, ScrollArea, Menubar, Toast)
+  later — Alert/Button/Skeleton/Tooltip are already integrated in `src/`. See
+  `docs/SYNC-HANDOFF.md` "What's still open" #2.
 
 ## Verification status (as of this snapshot)
 

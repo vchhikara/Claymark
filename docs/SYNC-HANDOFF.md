@@ -78,26 +78,42 @@ Four files conflicted; all resolved by combining both sides, not picking one:
     config/plugin-registration gaps in this repo's `eslint.config.*`, not
     violations of an active rule. Worth fixing the config at some point but
     out of scope for this rebase.
-- Manual browser verification: **started but not completed** — see below.
+- Manual browser verification: **complete** — see below.
 
 ## What's still open (do this next)
 
-1. **Finish manual browser verification.** A previous attempt hit friction
-   getting the Browser pane's `preview_start`/`navigate` tools to agree on a
-   port (vite kept landing on its default `5173` instead of the configured
-   `5190`, and stray vite processes from earlier sessions needed killing —
-   see "Dev server notes" below). The app **did** load successfully at
-   `http://localhost:5173` and rendered correctly (theming, code blocks with
-   working Copy button, tables, all visibly correct in a screenshot). What's
-   NOT yet confirmed: an actual `mermaid` fence rendering as a diagram (a
-   paste was in progress into the editor textarea when this was interrupted
-   — nothing broken, just unfinished). To finish: open the app, click "Paste
-   your own Markdown", paste a ` ```mermaid ` fence, confirm it renders as a
-   diagram (not raw text or an error), and check both light/dark theme via
-   the moon/sun toggle in the header.
-2. **Decide what to do with `scratch/shadcn-prototype/`** — exploratory,
-   not wired into the app. Ask the user: keep it, delete it, or adopt parts
-   of it. Not yet asked.
+1. ~~Finish manual browser verification~~ — **done this session.** Started
+   the dev server via `preview_start({name: "claymark-app"})`; it again hit
+   the known port-collision gotcha (vite bound to its default `5173` instead
+   of configured `5190` — no stray processes this time, just vite's own
+   default winning), fixed per the note below by pointing
+   `preview_start({url: "http://localhost:5173"})` at the actual bound port.
+   Confirmed: app loads and renders correctly (theming, code blocks, tables).
+   Clicked "Paste your own Markdown", pasted a ` ```mermaid ` fence (a simple
+   flowchart), and confirmed via the accessibility tree that it rendered as
+   an actual `graphics-document`/SVG with the diagram's labeled nodes
+   ("Start", "Is it working?", "Yes", "Ship it", "Debug") — not raw text, no
+   error. Toggled the theme both directions (dark → light → dark) via the
+   header button; confirmed `data-theme` and computed background color
+   flipped correctly each time (`rgb(250,250,250)` light /
+   `rgb(18,18,17)` dark), diagram stayed rendered throughout. Only console
+   errors seen were the same "unknown error fetching the script" x3 noise
+   unrelated to app code (present before any interaction). Dev server
+   stopped cleanly afterward, no stray vite processes left running.
+2. ~~Decide what to do with `scratch/shadcn-prototype/`~~ — **asked, decided
+   this session: keep it.** User initially thought integration work had been
+   lost in the rebase; investigation showed nothing was lost — `Alert.tsx`,
+   `Button.tsx`, `Skeleton.tsx`, `Tooltip.tsx`, and the corresponding
+   `claymark.css` block are already integrated in `src/` (each cites its
+   `scratch/shadcn-prototype/ported-*.tsx` source in a comment) and survived
+   the rebase intact. The remaining prototype components — Dialog, Table,
+   Badge, Separator, ScrollArea, Menubar, Toast/Sonner — were, per
+   `FINDINGS.md` itself, explicitly never integrated ("out of scope for this
+   batch... a separate future decision"), including Dialog: `Lightbox.tsx`
+   in `src/` is still the pre-shadcn component, not the ported Dialog.
+   Decision: keep `scratch/shadcn-prototype/` in place, untracked/
+   exploratory, as reference for integrating those remaining components
+   later.
 3. **Ask the user before pushing `ui-wip` or opening a PR.** Don't push
    straight to `master` even though `docs/UI-HANDOFF.md` describes a no-PR
    workflow — this session's prior work went through PRs (see the two merged
