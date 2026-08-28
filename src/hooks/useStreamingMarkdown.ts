@@ -1,7 +1,11 @@
 import { useMemo, useRef } from 'react'
 import type { ReactElement } from 'react'
+import type { Components } from 'hast-util-to-jsx-runtime'
 import { ReconcileState } from '../pipeline/streaming/reconcile'
 import { toReact } from '../pipeline/to-react'
+import { DEFAULT_COMPONENTS } from '../components/map'
+
+const components = DEFAULT_COMPONENTS as unknown as Components
 
 export interface UseStreamingMarkdownResult {
   // One React element per block, in document order. FR-3.3 monotonicity:
@@ -35,7 +39,7 @@ export function useStreamingMarkdown(source: string): UseStreamingMarkdownResult
       seen.add(block.tree)
       const cached = cache.get(block.tree)
       if (cached) return cached
-      const element = toReact(block.tree)
+      const element = toReact(block.tree, { components })
       cache.set(block.tree, element)
       return element
     })

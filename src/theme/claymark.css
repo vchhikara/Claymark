@@ -147,6 +147,54 @@
   background: none;
 }
 
+.claymark-codeblock {
+  position: relative;
+  margin-block: var(--space-4);
+}
+
+.claymark-codeblock-scroll {
+  display: block;
+}
+
+.claymark-codeblock .claymark-pre {
+  margin-block: 0;
+}
+
+.claymark-codeblock-header {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.claymark-codeblock-lang {
+  font-family: var(--font-mono);
+  font-size: var(--text-code);
+  color: hsl(var(--text-secondary));
+}
+
+.claymark-copy-button {
+  font-family: inherit;
+  font-size: var(--text-code);
+  color: hsl(var(--text-secondary));
+  background: hsl(var(--surface-code));
+  border: 1px solid hsl(var(--border-subtle));
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+}
+
+.claymark-copy-button:hover {
+  color: hsl(var(--text-primary));
+}
+
+.claymark-copy-button[data-state='copied'] {
+  color: hsl(var(--text-primary));
+}
+
 .claymark-table-scroll {
   position: relative;
   overflow-x: auto;
