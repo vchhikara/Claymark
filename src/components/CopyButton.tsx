@@ -57,6 +57,7 @@ export function CopyButton({ text }: CopyButtonProps): ReactElement {
       type="button"
       className="claymark-copy-button"
       data-state={state}
+      title={state === 'copied' ? 'Copied to clipboard' : 'Copy code to clipboard'}
       aria-label={state === 'copied' ? 'Copied to clipboard' : 'Copy code to clipboard'}
       onClick={() => {
         void handleClick()
