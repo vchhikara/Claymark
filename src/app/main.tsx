@@ -50,6 +50,7 @@ function Reader() {
   const [editing, setEditing] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const { elements } = useStreamingMarkdown(source)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -69,7 +70,6 @@ function Reader() {
       setLoadError(null)
       stopStreamingDemo()
       setSource(typeof reader.result === 'string' ? reader.result : '')
-      setEditing(true)
     }
     // Previously unhandled: a read failure (permission error, file removed
     // mid-drag, unreadable encoding) left the UI silently doing nothing.
@@ -78,6 +78,12 @@ function Reader() {
     }
     reader.readAsText(file)
   }
+
+  useEffect(() => {
+    const onScroll = (): void => setShowScrollTop(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     let i = 0
@@ -111,56 +117,52 @@ function Reader() {
         <header
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: 'var(--space-4)',
-            marginBottom: 'var(--space-6)',
+            justifyContent: 'space-between',
+            marginBottom: 'var(--space-5)',
             paddingBottom: 'var(--space-4)',
             borderBottom: '1px solid hsl(var(--border-subtle))',
           }}
         >
-          <div>
-            <p
-              style={{
-                margin: 0,
-                fontFamily: 'var(--font-ui)',
-                fontSize: '0.75rem',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'hsl(var(--text-muted))',
-              }}
-            >
-              Claymark
-            </p>
-            <p
-              style={{
-                margin: 0,
-                marginTop: 'var(--space-1)',
-                fontFamily: 'var(--font-ui)',
-                fontSize: '0.875rem',
-                color: 'hsl(var(--text-secondary))',
-              }}
-            >
-              A live reader for streamed, untrusted Markdown.
-            </p>
-          </div>
-          <ThemeToggle />
+          <p
+            style={{
+              margin: 0,
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.75rem',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'hsl(var(--text-muted))',
+            }}
+          >
+            Claymark
+          </p>
+          <ThemeToggle compact />
         </header>
 
         <div
           style={{
             display: 'flex',
             flexWrap: 'wrap',
+            alignItems: 'center',
             gap: 'var(--space-2)',
             marginBottom: 'var(--space-5)',
           }}
         >
-          <Button type="button" variant="outline" onClick={() => setEditing((v) => !v)}>
-            {editing ? 'Hide editor' : 'Paste your own Markdown'}
+          <Button
+            type="button"
+            variant="outline"
+            className="claymark-button--compact"
+            onClick={() => setEditing((v) => !v)}
+          >
+            {editing ? 'Hide editor' : 'Write'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-            Open a .md file…
+          <Button
+            type="button"
+            variant="outline"
+            className="claymark-button--compact"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Browse
           </Button>
           <input
             ref={fileInputRef}
@@ -231,6 +233,17 @@ function Reader() {
           }
         </MarkdownRoot>
       </div>
+
+      {showScrollTop && (
+        <button
+          type="button"
+          aria-label="Scroll to top"
+          className="claymark-scroll-top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          ↑
+        </button>
+      )}
     </ThemeProvider>
   )
 }

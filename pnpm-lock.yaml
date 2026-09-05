@@ -20,8 +20,11 @@ importers:
       mermaid:
         specifier: 10.9.8
         version: 10.9.8
+      prettier:
+        specifier: 3.2.5
+        version: 3.2.5
       radix-ui:
-        specifier: ^1.6.7
+        specifier: 1.6.7
         version: 1.6.7(@types/react-dom@18.3.1)(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rehype-katex:
         specifier: 7.0.0
@@ -96,9 +99,6 @@ importers:
       playwright:
         specifier: 1.44.0
         version: 1.44.0
-      prettier:
-        specifier: 3.2.5
-        version: 3.2.5
       react:
         specifier: 18.3.1
         version: 18.3.1

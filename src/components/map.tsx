@@ -98,8 +98,13 @@ function CodeAdapter({ children, className, ...rest }: NodeProps): ReactElement 
   // discards that entire code element and splices in Shiki's own <pre><code>
   // output instead — which carries no `language-*` class at all, only a
   // `data-language` property — so the substring check alone stops matching
-  // the moment hydration finishes.
-  const isBlockCode = (cls !== undefined && /language-/.test(cls)) || 'data-language' in rest
+  // the moment hydration finishes. A fenced block with no info string (no
+  // language) carries neither signal, so also fall back to raw-text shape:
+  // a `code` span can't contain a literal newline, but a fence's contents
+  // routinely do — that's the only signal left to tell it apart from an
+  // inline code span once hydration/language-less fences rule out the rest.
+  const rawText = extractRawText(rest.node as HastLikeElement | undefined)
+  const isBlockCode = (cls !== undefined && /language-/.test(cls)) || 'data-language' in rest || rawText.includes('\n')
   if (isBlockCode) {
     return <code className={cls ? `claymark-code-block ${cls}` : 'claymark-code-block'} {...rest}>{children}</code>
   }

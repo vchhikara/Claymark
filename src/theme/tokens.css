@@ -23,9 +23,13 @@
   --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-ui: Inter, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-  --text-body: 20px;
+  --text-body: 18px;
   --leading-body: 1.4;
-  --text-code: 16px;
+  --text-code: 15px;
+  /* The fenced code block ("boxed" code) reads 1pt smaller than inline
+     code and the rest of the prose — same convention as most code-heavy
+     reading UIs (denser monospace block vs. inline mentions). */
+  --text-code-block: 12px;
   --text-h1: 2rem;
   --leading-h1: 1.2;
   --weight-h1: 600;
@@ -61,9 +65,10 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --z-lightbox: 1000;
-  --surface: var(--neutral-100);
+  --surface: 48 45% 98%;
   --surface-raised: var(--neutral-200);
-  --surface-code: var(--neutral-200);
+  --surface-code: 48 45% 98%;
+  --pill-bg: 0 0% 94%;
   --text-primary: var(--neutral-1000);
   --text-secondary: var(--neutral-900);
   --text-muted: var(--neutral-800);
@@ -75,9 +80,10 @@
 }
 
 [data-theme='dark'] {
-  --surface: var(--neutral-1200);
+  --surface: 0 0% 9.8%;
   --surface-raised: var(--neutral-1100);
-  --surface-code: var(--neutral-1100);
+  --surface-code: 0 0% 18%;
+  --pill-bg: 0 0% 18%;
   --text-primary: var(--neutral-200);
   --text-secondary: var(--neutral-400);
   --text-muted: var(--neutral-600);
