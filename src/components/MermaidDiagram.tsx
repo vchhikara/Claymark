@@ -22,6 +22,20 @@ function nextId(): string {
 // timeout turns that into the same fail-closed fallback as a thrown error.
 const RENDER_TIMEOUT_MS = 5000
 
+// A mermaid fence streamed in token-by-token is, for most of its lifetime, a
+// syntactically incomplete diagram (CommonMark auto-closes an unterminated
+// fence at EOF, so `findMermaidSource` in map.tsx hands this component real
+// but truncated source on every intermediate append) — mermaid.render()
+// reliably throws a parse error on that partial text, even though the block
+// self-heals the instant the closing fence arrives. Surfacing that as an
+// immediate error flashes "Diagram failed to render" for the diagram's
+// entire streaming duration, reading as permanently broken. Holding a
+// failure for this long before showing it gives the next append a chance to
+// arrive and cancel it (effect cleanup below) — long enough to cover normal
+// inter-token gaps, short enough that a genuinely broken final diagram still
+// reports promptly.
+const ERROR_DEBOUNCE_MS = 800
+
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`Mermaid render exceeded ${ms}ms`)), ms)
@@ -51,6 +65,7 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
 
   useEffect(() => {
     let cancelled = false
+    let errorTimer: ReturnType<typeof setTimeout> | undefined
     setSvg(null)
     setError(null)
 
@@ -108,13 +123,19 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
         })
         if (!cancelled) setSvg(cleaned)
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+        const message = err instanceof Error ? err.message : String(err)
+        if (!cancelled) {
+          errorTimer = setTimeout(() => {
+            if (!cancelled) setError(message)
+          }, ERROR_DEBOUNCE_MS)
+        }
       }
     }
 
     void renderDiagram()
     return () => {
       cancelled = true
+      clearTimeout(errorTimer)
     }
   }, [source])
 
