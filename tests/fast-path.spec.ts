@@ -48,7 +48,7 @@ describe('G6 — Short-message fast path (T-P6-08)', () => {
   it('produces the same rendered output as the full pipeline for eligible plain text', () => {
     const text = 'a plain short message with no markdown syntax at all'
     const fastTree = fastPathRender(text)
-    const fullTree = processor.runSync(processor.parse(text) as Root) as Root
+    const fullTree = processor.runSync(processor.parse(text)) as Root
 
     expect(toHtml(fastTree)).toBe(toHtml(fullTree))
   })

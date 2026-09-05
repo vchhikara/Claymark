@@ -30,16 +30,74 @@ starting commit `94be163`.
 | L-008 | `pnpm lint` crashed outright (`Cannot find module 'find-up'`) — a corrupted `node_modules/.pnpm/eslint@9.3.0` link, not a lockfile/specifier problem | `rm -rf node_modules && pnpm install --frozen-lockfile` (full relink from the pnpm content-addressable store, already warm — no re-download) | `pnpm lint` → runs; 7 errors, cross-checked against `docs/SYNC-HANDOFF.md`'s own list — all previously documented, 0 new | PASS |
 | L-009 | `tests/responsive.spec.ts` (3 test files incl. 2 stale worktree copies) failed: Playwright's Chromium binary was never downloaded in this environment | `pnpm exec playwright install chromium` | `npx vitest run tests/responsive.spec.ts` → 3/3 files, 9/9 tests pass | PASS |
 
+## Correction — L-005 and L-007 were wrong; superseded here
+
+Per Rule 6 (never continue past a failed revalidation) and Rule 10 (no
+completion claim without evidence): after committing `01097cb` (which
+included L-005/L-007's fix) and separately fixing `pnpm lint`'s corrupted
+`node_modules` (L-008, which required a *second* `rm -rf node_modules &&
+pnpm install --frozen-lockfile`), a routine re-run of `pnpm tsc --noEmit`
+— done as due diligence before the final sweep, not because anything
+prompted suspicion — came back with 16 errors, not 0. Investigating:
+
+- **L-005's diagnosis was wrong.** The mdast/hast `Root` mismatch was
+  already present in the *very first* `tsc` run of this session, before
+  `@types/mdast` was touched at all (re-reading that run's own output
+  confirms the error already named `@types+mdast@3.0.15` on one side).
+  The "unist-v2's loose typing was masking a real gap" theory was a
+  plausible-sounding guess I didn't verify against the actual first-run
+  evidence before acting on it. The `@types/mdast` 3.0.15→4.0.4 bump was
+  an independently-reasonable alignment (matching `@types/hast`'s own
+  unist-v3 move) but was not the fix for L-007's errors and was not
+  necessary.
+- **The bump had a real, separate side effect.** The dependency graph
+  already contained a duplicate, older `mdast-util-from-markdown@1.3.1`/
+  `mdast-util-to-string@3.2.0` pair (pulling their own `@types/mdast@3.0.15`)
+  alongside the modern `remark-parse@11`-generation chain (which pulls
+  `@types/mdast@4.0.4` regardless of what this project's own
+  `package.json` declares). With my own devDependency *also* at 4.0.4,
+  pnpm happened to dedupe my top-level import onto the same nominal
+  instance the internal chain uses, which is why `pnpm tsc --noEmit`
+  read 0 errors right after L-007's fix — coincidentally, not because
+  the fix was structurally correct. Reverting `@types/mdast` back to
+  `3.0.15` (undoing L-005) made the coincidental dedupe stop, and the
+  *same* 16 errors reappeared, now in a stable, deterministic form
+  (confirmed via 3 consecutive re-runs) rather than the address-order-
+  dependent flip seen mid-investigation.
+- **L-007's actual root cause:** `processor.runSync`'s parameter type is
+  determined by `remark-parse`'s own internal, modern `@types/mdast@4.0.4`
+  — *not* by this project's own `@types/mdast` devDependency version at
+  all. `processor.parse(x)` already naturally returns exactly that type.
+  My `as Root` (hast) cast on the `.parse()` output was therefore
+  actively wrong — it was overriding an already-correct inferred type
+  with an incorrect one. Removing the cast at all 15 sites (verified:
+  each file is now byte-identical to the pre-session baseline `94be163`
+  for this specific change) restored `pnpm tsc --noEmit` to a
+  deterministic 0 errors, confirmed across 3 consecutive runs.
+
+| ID | Correction | Revalidate | Verdict |
+|---|---|---|---|
+| L-005R (supersedes L-005) | Reverted `@types/mdast` to `3.0.15` (original value) | `pnpm tsc --noEmit` ×3 consecutive runs → 0 errors each time; `git diff 94be163 -- package.json` shows only the L-004 `radix-ui` change remains | PASS |
+| L-007R (supersedes L-007) | Reverted the `as Root` cast on `processor.parse(...)` at all 15 sites (no cast needed) | `git diff 94be163 -- <the 8 affected files>` → empty (byte-identical to baseline); `pnpm tsc --noEmit` ×3 → 0 errors | PASS |
+
+Net effect: the only files that actually needed a change for `pnpm tsc
+--noEmit` to pass are `package.json`/`pnpm-lock.yaml` (L-004, the
+`radix-ui` range specifier) and `src/pipeline/plugins/shiki-config.ts`
+(L-006). L-002/L-003 (the corrupted `node_modules`) were real and
+required the reinstalls regardless.
+
 ## Per-phase consolidated verification (this session's deliverable, taken together)
 
 | ID | Scope | Check | Evidence | Verdict |
 |---|---|---|---|---|
-| L-010 | Whole project | `pnpm tsc --noEmit` | exit 0, 0 errors | PASS |
-| L-011 | Whole project | `pnpm lint` | 7 errors — `react/no-danger` (rule-not-found, ×1 main + ×2 stale worktrees), `prefer-const` (×1 + ×2 stale worktrees), `react-hooks/exhaustive-deps` (rule-not-found, ×1) — all confirmed pre-existing per `docs/SYNC-HANDOFF.md`, 0 new | PASS (with disclosed pre-existing findings) |
-| L-012 | Whole project | `pnpm test` | 355/355 tests, 54/54 files (includes 2 stale-worktree triplications of the whole suite) — no flakes this run, incl. the normally-flaky `stress.spec.ts` S-01 | PASS |
-| L-013 | Library build | `pnpm build` | exit 0; `dist/claymark.js` (807 B entry, delegates to `dist/index-B-L2oCXT.js` 416,829 B) + `dist/claymark.cjs` (1,043 B entry, delegates to `dist/index-BKLaPdSh.cjs` 268,671 B) + `.d.ts` files present | PASS |
-| L-014 | PWA build | `pnpm build:app` | exit 0; `dist/app/*` produced (chunk-size warning only, pre-existing, not a failure) | PASS |
+| L-010 | Whole project | `pnpm tsc --noEmit` | exit 0, 0 errors — **superseded, see L-005R/L-007R above**: this specific run's green result was a coincidental dependency-dedupe artifact, not evidence the fix was correct. Re-verified 0 errors ×3 after the correction, on the actually-correct code | PASS (as corrected) |
+| L-011 | Whole project | `pnpm lint` | 7 errors — `react/no-danger` (rule-not-found, ×1 main + ×2 stale worktrees), `prefer-const` (×1 + ×2 stale worktrees), `react-hooks/exhaustive-deps` (rule-not-found, ×1) — all confirmed pre-existing per `docs/SYNC-HANDOFF.md`, 0 new. Unaffected by the L-005/L-007 correction (re-run gave identical output) | PASS |
+| L-012 | Whole project | `pnpm test` | 355/355 tests, 54/54 files (includes 2 stale-worktree triplications of the whole suite) — no flakes this run, incl. the normally-flaky `stress.spec.ts` S-01. This run predates the L-005/L-007 correction, but the reverted lines were pure type-level casts with zero runtime effect (`as Root` erases at compile time either way), so this evidence still holds; re-run after the correction for full confidence — see L-012R | PASS |
+| L-013 | Library build | `pnpm build` | exit 0; `dist/claymark.js` (807 B entry, delegates to `dist/index-B-L2oCXT.js` 416,829 B) + `dist/claymark.cjs` (1,043 B entry, delegates to `dist/index-BKLaPdSh.cjs` 268,671 B) + `.d.ts` files present. Same type-erasure caveat as L-012 — re-run after the correction, see L-013R | PASS |
+| L-014 | PWA build | `pnpm build:app` | exit 0; `dist/app/*` produced (chunk-size warning only, pre-existing, not a failure). Re-run after the correction, see L-013R | PASS |
 | L-015 | Working tree | `git status --short` after commits | clean except `plan/.claude/settings.local.json` (untracked, empty `{}`, machine-local — left alone, matches the existing convention of not tracking `.claude/settings.local.json`) | PASS |
+| L-012R | Whole project, post-correction | `pnpm test` | 354/355, 53/54 files — one failure, `tests/stress.spec.ts`, on the full-suite concurrent run. Re-ran that file alone: 6/6 pass (incl. both stale-worktree copies), confirming this is `DEF-005` (`plan/04-STATE-LEDGER.md`), the pre-existing, already-disclosed timing flake that only reproduces under full-suite load — same diagnosis pattern as its original discovery — not a regression from the L-005R/L-007R correction | PASS (pre-existing flake, not a regression) |
+| L-013R | Library + PWA build, post-correction | `pnpm build` && `pnpm build:app` | both exit 0, real non-empty bundles (re-run after reverting L-005/L-007) | PASS |
 
 ## Decisions
 

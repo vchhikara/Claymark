@@ -76,7 +76,7 @@ const results: StressResult[] = []
   let threw = false
   const ms = timeMs(() => {
     try {
-      const tree = processor.runSync(processor.parse(doc) as Root) as Root
+      const tree = processor.runSync(processor.parse(doc)) as Root
       toReact(tree)
     } catch {
       threw = true
@@ -98,7 +98,7 @@ const results: StressResult[] = []
   let stackOverflow = false
   let otherError = false
   try {
-    const tree = processor.runSync(processor.parse(doc) as Root) as Root
+    const tree = processor.runSync(processor.parse(doc)) as Root
     toReact(tree)
   } catch (err) {
     if (err instanceof RangeError) stackOverflow = true
@@ -119,7 +119,7 @@ const results: StressResult[] = []
   let threw = false
   const ms = timeMs(() => {
     try {
-      const tree = processor.runSync(processor.parse(doc) as Root) as Root
+      const tree = processor.runSync(processor.parse(doc)) as Root
       toReact(tree)
     } catch {
       threw = true
@@ -155,7 +155,7 @@ const results: StressResult[] = []
   let tableTag: string | undefined
   const ms = timeMs(() => {
     try {
-      const tree = processor.runSync(processor.parse(doc) as Root) as Root
+      const tree = processor.runSync(processor.parse(doc)) as Root
       const html = toHtml(tree)
       tableTag = html.includes('<table') ? '<table>' : 'no <table> found'
     } catch {
@@ -182,7 +182,7 @@ const results: StressResult[] = []
   let threw = false
   const ms = timeMs(() => {
     try {
-      const tree = processor.runSync(processor.parse(doc) as Root) as Root
+      const tree = processor.runSync(processor.parse(doc)) as Root
       toReact(tree)
     } catch {
       threw = true
@@ -331,7 +331,7 @@ const results: StressResult[] = []
   let hasScript = false
   let preservedVisible = false
   try {
-    const tree = processor.runSync(processor.parse(doc) as Root) as Root
+    const tree = processor.runSync(processor.parse(doc)) as Root
     const html = toHtml(tree)
     hasScript = /<script/i.test(html)
     preservedVisible = html.includes('reversed') && html.includes('zero') && html.includes(zwjEmoji)
@@ -353,7 +353,7 @@ const results: StressResult[] = []
   const ms = timeMs(() => {
     const outputs = Array.from({ length: 50 }, (_, i) => {
       const doc = `# Instance ${i}\n\nUnique content marker ${i}-${Math.random()}.`
-      const tree = processor.runSync(processor.parse(doc) as Root) as Root
+      const tree = processor.runSync(processor.parse(doc)) as Root
       return { i, html: toHtml(tree) }
     })
     for (const { i, html } of outputs) {
