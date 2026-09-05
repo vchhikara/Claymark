@@ -33,7 +33,7 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
 
 - [ ] Decide on integrating the remaining `scratch/shadcn-prototype/` components — `Dialog` (could close the image-lightbox gap, `DEF-002`), `Table`, `Badge`, `Separator`, `ScrollArea`, `Menubar`, `Toast`
-- [ ] **Ask the user before pushing `ui-wip` or opening a PR** — explicit, standing instruction in `docs/SYNC-HANDOFF.md`, and a "publishing/outward-facing" action under this session's own operating rules regardless of the executor protocol's no-gates instruction
+- [x] Push `ui-wip` and open a PR — user explicitly asked. Pushed `94be163..02de572`, opened [PR #4](https://github.com/vchhikara/Claymark/pull/4) (`ui-wip` → `master`). See `ledger.md` L-018.
 - [ ] Reconcile `docs/SPEC.md`'s typography numbers (`20px`/`16px` body/code) against the `ui-wip` token changes (now `18px`/`15px`, plus a new `12px` code-block size) — a product-copy decision, not logged as done or reverted
 - [ ] Theme the two new hardcoded pill/reference colors in `src/theme/claymark.css` (`#a84545`, `#3367d6`) — currently identical in light/dark, not driven by a semantic token
 - [x] Clean up stale `.claude/worktrees/optimistic-sinoussi-38bf13` and `.claude/worktrees/objective-sinoussi-6193de` — user explicitly asked; both confirmed merged into `origin/master` first, then `git worktree remove --force` on each. See `ledger.md` L-016.
