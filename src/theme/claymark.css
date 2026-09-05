@@ -1,3 +1,33 @@
+/* T-UI-01: the native scrollbar defaults to the platform's light chrome
+ * (white track/thumb) regardless of `--surface`/`--border-*`, reading as
+ * broken against this app's dark theme. Themed via both standard
+ * `scrollbar-color` (Firefox, Chromium ≥121) and the WebKit pseudo-elements
+ * (Safari, older Chromium) so it tracks the same tokens as the rest of the
+ * UI and repaints correctly on theme toggle.
+ */
+html {
+  scrollbar-color: hsl(var(--border-subtle)) hsl(var(--surface));
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--surface));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-subtle));
+  border-radius: var(--radius-md);
+  border: 3px solid hsl(var(--surface));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-default));
+}
+
 .claymark-root {
   max-width: var(--measure);
   margin-inline: auto;
@@ -47,6 +77,7 @@
 
 .claymark-p {
   margin: 0;
+  text-align: justify;
 }
 
 .claymark-text {
@@ -55,6 +86,31 @@
 
 .claymark-strong {
   font-weight: 700;
+}
+
+.claymark-scroll-top {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--border-default));
+  background: hsl(var(--surface-raised));
+  color: hsl(var(--text-primary));
+  font-size: 0.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  z-index: var(--z-lightbox);
+}
+
+.claymark-scroll-top:hover {
+  background: hsl(var(--surface));
+  transform: translateY(-2px);
 }
 
 .claymark-em {
@@ -71,12 +127,6 @@
 .claymark-link:hover {
   color: var(--accent-brand);
   text-decoration-color: currentColor;
-}
-
-.claymark-link--external::after {
-  content: ' \2197';
-  font-size: 0.75em;
-  vertical-align: super;
 }
 
 .claymark-list {
@@ -113,12 +163,24 @@
   margin-block: var(--space-4);
 }
 
+/* Pill styling — used only for in-body code that's a literal value
+   (numbers, CSS values, hex colors), per InlineCode.tsx's heuristic. */
 .claymark-code-inline {
   font-family: var(--font-mono);
-  font-size: var(--text-code);
-  background: hsl(var(--surface-code));
-  border-radius: var(--radius-sm);
-  padding: 0.1em var(--space-1);
+  font-size: 0.85em;
+  color: #a84545;
+  background: hsl(var(--pill-bg));
+  border: 1px solid hsl(var(--border-subtle));
+  border-radius: var(--radius-md);
+  padding: 0.15em var(--space-2);
+}
+
+/* Reference styling — file paths and filenames render as plain inline
+   code, no pill, so they don't compete visually with value pills. */
+.claymark-code-ref {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: #3367d6;
 }
 
 .claymark-rule {
@@ -134,8 +196,9 @@
 
 .claymark-pre {
   font-family: var(--font-mono);
-  font-size: var(--text-code);
+  font-size: var(--text-code-block);
   background: hsl(var(--surface-code));
+  border: 1px solid hsl(var(--border-default));
   border-radius: var(--radius-md);
   padding: var(--space-4);
   overflow-x: auto;
@@ -268,16 +331,51 @@
   }
 }
 
+/* Table design ported from shadcn/ui's <Table> primitive (registry: @shadcn/table)
+   — row-separator borders instead of a full grid, a muted-background hover per
+   row, and tighter padding than a full-prose table — re-expressed against this
+   project's own tokens (no Tailwind/cn() here). */
 .claymark-table {
   border-collapse: collapse;
   width: 100%;
   margin-block: 0;
+  font-size: var(--text-code);
 }
 
-.claymark-th,
+/* shadcn: `[&_tr]:border-b` on <TableHeader> */
+.claymark-thead .claymark-tr {
+  border-bottom: 1px solid hsl(var(--border-default));
+}
+
+/* shadcn: `[&_tr:last-child]:border-0` on <TableBody> */
+.claymark-tbody .claymark-tr:last-child {
+  border-bottom: none;
+}
+
+/* shadcn: `border-b transition-colors hover:bg-muted/50` on <TableRow> */
+.claymark-tr {
+  border-bottom: 1px solid hsl(var(--border-default));
+  transition: background-color 0.15s ease;
+}
+
+.claymark-tbody .claymark-tr:hover {
+  background: hsl(var(--surface-raised));
+}
+
+/* shadcn: `h-10 px-2 text-left align-middle font-medium` on <TableHead> */
+.claymark-th {
+  height: 2.5rem;
+  padding: 0 var(--space-3);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 600;
+  color: hsl(var(--text-primary));
+}
+
+/* shadcn: `p-2 align-middle` on <TableCell> */
 .claymark-td {
-  border: 1px solid hsl(var(--border-subtle));
   padding: var(--space-2) var(--space-3);
+  vertical-align: middle;
   text-align: left;
 }
 
@@ -404,7 +502,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  font: var(--font-ui);
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
@@ -500,6 +598,27 @@
   height: 2.25rem;
 }
 
+/* 0.6x of the default .claymark-button size (font-size 0.875rem, padding
+   var(--space-2) var(--space-4)) — used by the header's Write/Browse
+   buttons. Scales font-size and padding directly rather than a CSS
+   `transform: scale()`, which would leave the pre-scale layout box behind. */
+.claymark-button--compact {
+  font-size: 0.525rem;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Icon buttons (fixed width/height, not font-driven) need their own
+   override — the width/height rule above doesn't touch them. Sized by
+   padding instead of a fixed box so the resulting height matches
+   .claymark-button--compact's text buttons exactly (same padding + font-size
+   -> same line box), rather than an independently-guessed pixel size. */
+.claymark-button--compact[data-size='icon'] {
+  width: auto;
+  height: auto;
+  padding: 0.3rem;
+  font-size: 0.525rem;
+}
+
 /* ---- Alert ---- */
 
 .claymark-alert {
@@ -560,7 +679,7 @@
   background: hsl(var(--text-primary));
   color: hsl(var(--surface));
   padding: var(--space-1) var(--space-3);
-  font: var(--font-ui);
+  font-family: var(--font-ui);
   font-size: 0.75rem;
 }
 .claymark-tooltip-arrow {
