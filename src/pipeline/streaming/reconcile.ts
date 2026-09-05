@@ -116,7 +116,7 @@ export class ReconcileState {
         blocks.push({ text: segment.text, tree: cached })
         continue
       }
-      const tree = processor.runSync(processor.parse(segment.text) as Root) as Root
+      const tree = processor.runSync(processor.parse(segment.text)) as Root
       this.cache.set(segment.text, tree)
       reparsedCount += 1
       blocks.push({ text: segment.text, tree })

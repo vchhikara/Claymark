@@ -33,7 +33,7 @@ export interface SecurityCheckResult {
 }
 
 async function render(markdown: string): Promise<Root> {
-  return (await processor.run(processor.parse(markdown) as Root)) as Root
+  return (await processor.run(processor.parse(markdown))) as Root
 }
 
 function isInert(tree: Root): boolean {

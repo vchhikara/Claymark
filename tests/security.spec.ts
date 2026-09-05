@@ -16,7 +16,7 @@ const ALLOWED_TAGS = new Set([
 ])
 
 async function render(markdown: string): Promise<Root> {
-  return (await processor.run(processor.parse(markdown) as Root)) as Root
+  return (await processor.run(processor.parse(markdown))) as Root
 }
 
 function assertInert(tree: Root, label: string): void {
