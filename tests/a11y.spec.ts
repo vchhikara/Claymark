@@ -68,7 +68,7 @@ Final paragraph after the rule.
 `
 
 async function renderReferenceDoc(): Promise<HTMLDivElement> {
-  const tree = processor.runSync(processor.parse(REFERENCE_DOC)) as Root
+  const tree = processor.runSync(processor.parse(REFERENCE_DOC) as Root) as Root
   const content = toReact(tree, { components: DEFAULT_COMPONENTS as never })
   const container = document.createElement('div')
   document.body.appendChild(container)

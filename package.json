@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "dompurify": "3.4.14",
-    "radix-ui": "^1.6.7",
+    "radix-ui": "1.6.7",
     "hast-util-to-jsx-runtime": "2.3.0",
     "katex": "0.16.47",
     "mermaid": "10.9.8",
@@ -64,7 +64,7 @@
     "@tauri-apps/cli": "2.0.0",
     "@testing-library/react": "15.0.7",
     "@types/hast": "3.0.5",
-    "@types/mdast": "3.0.15",
+    "@types/mdast": "4.0.4",
     "@types/node": "20.12.7",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",

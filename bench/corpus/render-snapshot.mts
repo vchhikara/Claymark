@@ -58,7 +58,7 @@ for (const entry of manifest.entries) {
       const tree = mathProcessor.runSync(mathProcessor.parse(text)) as Root
       html = toHtml(tree)
     } else {
-      const tree = processor.runSync(processor.parse(text)) as Root
+      const tree = processor.runSync(processor.parse(text) as Root) as Root
       html = toHtml(tree)
     }
   } catch (err) {

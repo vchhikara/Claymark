@@ -1,4 +1,4 @@
-import type { BundledLanguage, BundledTheme, HighlighterGeneric } from 'shiki'
+import type { BundledLanguage, BundledTheme, Highlighter } from 'shiki'
 import { getHighlighter } from 'shiki'
 
 // R-LANG: fixed registry of 34 grammars. Adding a language is a DEC- decision,
@@ -49,7 +49,7 @@ export const DEFAULT_THEMES = {
   dark: 'github-dark-dimmed',
 } as const satisfies Record<'light' | 'dark', BundledTheme>
 
-export type ShikiHighlighter = HighlighterGeneric<BundledLanguage, BundledTheme>
+export type ShikiHighlighter = Highlighter
 
 let highlighterPromise: Promise<ShikiHighlighter> | null = null
 
@@ -57,11 +57,12 @@ let highlighterPromise: Promise<ShikiHighlighter> | null = null
 // not in the initial chunk). Only the 34 pinned grammars and 2 pinned themes
 // are loaded — never the full bundle.
 export function getShikiHighlighter(): Promise<ShikiHighlighter> {
-  if (!highlighterPromise) {
-    highlighterPromise = getHighlighter({
-      langs: [...SUPPORTED_LANGUAGES],
-      themes: [DEFAULT_THEMES.light, DEFAULT_THEMES.dark],
-    })
-  }
-  return highlighterPromise
+  const existing = highlighterPromise
+  if (existing) return existing
+  const created: Promise<ShikiHighlighter> = getHighlighter({
+    langs: [...SUPPORTED_LANGUAGES],
+    themes: [DEFAULT_THEMES.light, DEFAULT_THEMES.dark],
+  })
+  highlighterPromise = created
+  return created
 }
