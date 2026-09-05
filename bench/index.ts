@@ -44,7 +44,7 @@ export function runBudgetBenchmarks(): BenchResult[] {
   // state rendering, not first-ever module load / JIT warmup in the process.
   {
     const warmupDoc = repeatMd('warmup', 1024)
-    const warmupTree = processor.runSync(processor.parse(warmupDoc)) as Root
+    const warmupTree = processor.runSync(processor.parse(warmupDoc) as Root) as Root
     toReact(warmupTree)
   }
 
@@ -52,7 +52,7 @@ export function runBudgetBenchmarks(): BenchResult[] {
   {
     const doc = repeatMd('This is a short paragraph of ordinary prose used for benchmarking.', 2 * 1024)
     const ms = timeMs(() => {
-      const tree = processor.runSync(processor.parse(doc)) as Root
+      const tree = processor.runSync(processor.parse(doc) as Root) as Root
       toReact(tree)
     })
     results.push({
@@ -68,7 +68,7 @@ export function runBudgetBenchmarks(): BenchResult[] {
   {
     const doc = repeatMd('This is a short paragraph of ordinary prose used for benchmarking.', 100 * 1024)
     const ms = timeMs(() => {
-      const tree = processor.runSync(processor.parse(doc)) as Root
+      const tree = processor.runSync(processor.parse(doc) as Root) as Root
       toReact(tree)
     })
     results.push({
