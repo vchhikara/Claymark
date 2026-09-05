@@ -4,8 +4,8 @@
     {
       "name": "claymark-app",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--mode", "app"],
-      "port": 5190,
+      "runtimeArgs": ["vite", "--mode", "app", "--port", "5199", "--strictPort"],
+      "port": 5199,
       "autoPort": true
     }
   ]

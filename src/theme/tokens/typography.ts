@@ -7,11 +7,14 @@ export const typography = {
     mono: FONT_STACKS.mono.stack,
   },
   body: {
-    fontSize: '20px',
+    fontSize: '18px',
     lineHeight: 1.4,
   },
   code: {
-    fontSize: '16px',
+    fontSize: '15px',
+  },
+  codeBlock: {
+    fontSize: '12px',
   },
 }
 

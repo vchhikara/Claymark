@@ -7,7 +7,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tool
 // ThemeProvider (localStorage) so it survives a reload; setting it also
 // marks the choice as manual there, so a later system-preference change no
 // longer overrides it.
-export function ThemeToggle(): ReactElement {
+export interface ThemeToggleProps {
+  // Matches the 0.6x-scaled header action buttons (see .claymark-button--compact).
+  compact?: boolean
+}
+
+export function ThemeToggle({ compact = false }: ThemeToggleProps): ReactElement {
   const { theme, setTheme } = useTheme()
   const next: 'light' | 'dark' = theme === 'dark' ? 'light' : 'dark'
   const label = `Switch to ${next} theme`
@@ -18,9 +23,11 @@ export function ThemeToggle(): ReactElement {
         <TooltipTrigger asChild>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="claymark-theme-toggle"
+            className={['claymark-theme-toggle', compact && 'claymark-button--compact']
+              .filter(Boolean)
+              .join(' ')}
             aria-label={label}
             aria-pressed={theme === 'dark'}
             onClick={() => setTheme(next)}
