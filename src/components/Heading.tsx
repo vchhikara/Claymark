@@ -1,7 +1,10 @@
 import { isValidElement } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 
-export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6
+// DEF-001 (knip dead-export audit): not part of the public API (only
+// src/components/index.ts's re-exports are), and never imported outside
+// this file — de-exported.
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6
 
 const TAGS: Record<HeadingLevel, 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'> = {
   1: 'h1',
@@ -12,7 +15,8 @@ const TAGS: Record<HeadingLevel, 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'> = {
   6: 'h6',
 }
 
-export function slugify(text: string): string {
+// DEF-001: not part of the public API, never imported outside this file.
+function slugify(text: string): string {
   return text
     .trim()
     .toLowerCase()

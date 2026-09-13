@@ -3,7 +3,9 @@ import type { ComponentProps } from 'react'
 // Adapted from scratch/shadcn-prototype/ported-alert.tsx (validated, see
 // FINDINGS.md). No Radix primitive — pure markup + role="alert".
 
-export type AlertVariant = 'default' | 'destructive'
+// DEF-001 (knip dead-export audit): not part of the public API, never
+// imported outside this file — de-exported.
+type AlertVariant = 'default' | 'destructive'
 
 export interface AlertProps extends ComponentProps<'div'> {
   variant?: AlertVariant

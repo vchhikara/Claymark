@@ -40,8 +40,6 @@ export const SUPPORTED_LANGUAGES = [
   'yaml',
 ] as const satisfies readonly BundledLanguage[]
 
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
-
 // docs/THEMING.md §8: paired light/dark themes, resolved by the data-theme
 // attribute. Overridable with any VS Code theme.
 export const DEFAULT_THEMES = {

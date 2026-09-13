@@ -6,8 +6,10 @@ import type { ComponentProps } from 'react'
 // styled entirely from src/theme/claymark.css's `.claymark-button` rules
 // (tokens.css custom properties), no Tailwind/cva/cn().
 
-export type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
-export type ButtonSize = 'default' | 'sm' | 'lg' | 'icon'
+// DEF-001 (knip dead-export audit): neither is part of the public API,
+// never imported outside this file — de-exported.
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+type ButtonSize = 'default' | 'sm' | 'lg' | 'icon'
 
 export interface ButtonProps extends ComponentProps<'button'> {
   variant?: ButtonVariant

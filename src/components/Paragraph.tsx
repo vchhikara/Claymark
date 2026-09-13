@@ -8,10 +8,6 @@ export function Paragraph({ children }: ParagraphProps): ReactElement {
   return <p className="claymark-p">{children}</p>
 }
 
-export interface TextProps {
-  children: ReactNode
-}
-
-export function Text({ children }: TextProps): ReactElement {
-  return <span className="claymark-text">{children}</span>
-}
+// DEF-001 (knip dead-export audit): the exported `Text`/`TextProps` pair
+// that used to live here (a bare `<span>` wrapper) was never referenced by
+// DEFAULT_COMPONENTS or anything else in src/ or tests/. Removed.
