@@ -73,22 +73,59 @@ const results: StressResult[] = []
   // finding is reported honestly rather than silently substituted.
   const block = 'This is one paragraph of ordinary prose for a large-document stress test.\n\n'
   const doc = block.repeat(Math.ceil((1 * 1024 * 1024) / block.length))
+  // DEF-005: closure required two changes, done in this order per explicit
+  // user direction after the first hardening attempt alone didn't hold up
+  // under direct measurement (see plan/04-STATE-LEDGER.md and ledger.md):
+  //
+  // 1. Sampling 5 times and asserting on the median (not the mean, which one
+  //    extreme outlier still skews) — absorbs scheduler-noise flakiness
+  //    while keeping full sensitivity to an actual regression, a real
+  //    slowdown pushes every sample up, not just one. This alone was the
+  //    original DEF-005 scope ("test-hardening, not a code fix").
+  // 2. Investigated whether the pinned engine version (package.json:
+  //    node 20.11.1) vs. this environment's actual Node v24.20.0 explained
+  //    a further, much larger gap the median-of-5 alone did not close: this
+  //    environment measures a consistent ~2900-3650ms for this exact 1 MB
+  //    document (median 3153-3480ms across repeated runs), 50-75% over the
+  //    2000ms budget DEC-017 set — not noise, a sustained gap, confirmed by
+  //    a normal load average (2.6/12 cores). Re-ran the identical
+  //    measurement directly under Node 20.11.1 (installed via nvm
+  //    specifically to test this): 2866-3653ms, materially the same —
+  //    ruling out the Node version as the cause. The conclusion is that
+  //    DEC-017's 828-907ms/1MB baseline was measured on faster/different
+  //    hardware than this sandbox, never re-validated since, and the
+  //    2000ms budget was never actually portable. Raising it to 5000ms
+  //    (real margin above the worst single sample observed across both Node
+  //    versions, 3653ms) is a deliberate, disclosed scope change beyond
+  //    "test-hardening, not a code fix" — explicitly authorized after this
+  //    finding, not something sampling alone could respect. A genuine
+  //    regression pushing parse time toward the old 5 MB literal cost
+  //    (~5.7s) still fails.
+  const BUDGET_MS = 5000
+  const SAMPLE_COUNT = 5
+  const samples: number[] = []
   let threw = false
-  const ms = timeMs(() => {
-    try {
-      const tree = processor.runSync(processor.parse(doc)) as Root
-      toReact(tree)
-    } catch {
-      threw = true
-    }
-  })
+  for (let i = 0; i < SAMPLE_COUNT; i++) {
+    samples.push(
+      timeMs(() => {
+        try {
+          const tree = processor.runSync(processor.parse(doc)) as Root
+          toReact(tree)
+        } catch {
+          threw = true
+        }
+      }),
+    )
+  }
+  const sorted = [...samples].sort((a, b) => a - b)
+  const ms = sorted[Math.floor(sorted.length / 2)]!
   results.push({
     id: 'S-01',
     name: 'Large document (1 MB, scaled down from 5 MB — see note)',
-    budget: '< 2000ms, no OOM',
-    measured: `${ms.toFixed(0)}ms, threw=${threw}`,
-    pass: !threw && ms < 2000,
-    note: 'Scaled down from the literal 5 MB in the gate table per DEC-017: remark-parse+remark-gfm parsing cost is super-linear in document size (measured 100KB=187ms, 1MB=828-907ms, 1.5MB up to 2000ms under full-suite memory pressure, 2MB=1794-2073ms, 3MB=2911ms), so literal 5 MB (~5.7s after the urlPolicy/linkHardening traversal fix) cannot meet a 2000ms budget with GFM enabled — an upstream cost, not a Claymark defect. Not faked as a pass.',
+    budget: `< ${BUDGET_MS}ms, no OOM`,
+    measured: `median ${ms.toFixed(0)}ms of ${SAMPLE_COUNT} samples [${samples.map((s) => s.toFixed(0)).join(', ')}]ms, threw=${threw}`,
+    pass: !threw && ms < BUDGET_MS,
+    note: `Scaled down from the literal 5 MB in the gate table per DEC-017: remark-parse+remark-gfm parsing cost is super-linear in document size (measured on DEC-017's reference machine: 100KB=187ms, 1MB=828-907ms, 1.5MB up to 2000ms under full-suite memory pressure, 2MB=1794-2073ms, 3MB=2911ms), so literal 5 MB (~5.7s after the urlPolicy/linkHardening traversal fix) cannot meet a 2000ms budget with GFM enabled on that machine — an upstream cost, not a Claymark defect. Not faked as a pass. DEF-005 (this session): hardened to a median of ${SAMPLE_COUNT} samples (was a single flaky sample); separately, this actual execution environment measures ~2900-3650ms for the same 1 MB document regardless of Node version (confirmed directly under both v24.20.0 and the pinned v20.11.1) — DEC-017's 2000ms budget assumed hardware this sandbox doesn't match. Budget raised to ${BUDGET_MS}ms with real margin above every sample observed during that investigation; still fails a genuine regression toward the old ~5.7s/5MB cost.`,
   })
 }
 
