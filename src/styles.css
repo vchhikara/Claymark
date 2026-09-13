@@ -1,0 +1,15 @@
+/*
+ * DEF-003 follow-up: the aggregate stylesheet documented in
+ * docs/INSTALLATION.md as `import 'claymark/styles.css'` — "carries the
+ * token definitions, the font faces, and the KaTeX stylesheet." Vite's
+ * lib build has no CSS entry point without this file existing and being
+ * wired in as a second `build.lib.entry` (see vite.config.ts), so before
+ * this file existed the documented import resolved to nothing at all.
+ *
+ * Order matters: tokens first (custom properties everything else reads),
+ * then component styles, then KaTeX's own stylesheet last so nothing here
+ * needs to override it.
+ */
+@import './theme/tokens.css';
+@import './theme/claymark.css';
+@import './theme/katex.css';

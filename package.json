@@ -4,7 +4,9 @@
   "description": "A pixel-faithful, security-hardened Markdown rendering engine in the Claude visual idiom.",
   "type": "module",
   "license": "MIT",
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css"
+  ],
   "main": "./dist/claymark.cjs",
   "module": "./dist/claymark.js",
   "types": "./dist/index.d.ts",
@@ -13,7 +15,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/claymark.js",
       "require": "./dist/claymark.cjs"
-    }
+    },
+    "./styles.css": "./dist/styles.css"
   },
   "files": [
     "dist",

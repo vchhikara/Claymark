@@ -33,10 +33,18 @@ export default defineConfig(({ mode }) => {
         }
       : {
           outDir: 'dist',
+          // Vite defaults cssCodeSplit to false in lib mode, which refuses
+          // a CSS file as a rollupOptions input outright. true is required
+          // for the styles.css entry below to build at all.
+          cssCodeSplit: true,
           lib: {
-            entry: 'src/index.ts',
+            // DEF-003 follow-up: 'styles' is a second entry so Vite emits
+            // dist/styles.css (Vite's CSS plugin lets a .css file be a lib
+            // entry directly) — previously the lib build had no CSS entry
+            // point at all, so docs/INSTALLATION.md's documented
+            // `import 'claymark/styles.css'` resolved to nothing.
+            entry: { claymark: 'src/index.ts', styles: 'src/styles.css' },
             formats: ['es', 'cjs'],
-            fileName: 'claymark',
           },
           rollupOptions: {
             external: ['react', 'react-dom', 'react/jsx-runtime'],
