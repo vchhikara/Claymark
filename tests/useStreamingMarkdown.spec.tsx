@@ -58,7 +58,7 @@ describe('G6 — useStreamingMarkdown (T-P6-04)', () => {
     const root = createRoot(container)
 
     const doc = 'para one\n\npara two\n\npara three\n'
-    let lengths: number[] = []
+    const lengths: number[] = []
     const onElements = (els: ReactElement[]) => {
       lengths.push(els.length)
     }

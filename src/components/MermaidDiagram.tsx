@@ -181,8 +181,9 @@ export function MermaidDiagram({ source }: MermaidDiagramProps): ReactElement {
       // (see the `error` branch above), so it's used verbatim here too.
       role="img"
       aria-label={source}
-      // eslint-disable-next-line react/no-danger -- svg is produced by this
-      // component's own render path and sanitized before being stored (T-P5-07).
+      // svg is produced by this component's own render path and sanitized
+      // before being stored (T-P5-07).
+      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   )
