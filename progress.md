@@ -33,7 +33,7 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 ## This session (defect-closure pass, `defect-closure` branch off `ui-wip`)
 
 - [x] Close `DEF-001`, `DEF-003`, `DEF-005`, `DEF-006` per user's explicit itemized instructions (see checkboxes above; `ledger.md` L-019–L-022, D-009)
-- **New finding, not requested this pass, flagged for its own follow-up**: the library build produces no `dist/styles.css` at all — `docs/INSTALLATION.md` documents `import 'claymark/styles.css'` as carrying the KaTeX stylesheet (and presumably the rest of the theme), but `vite.config.ts`'s lib build has no CSS entry point, so that import resolves to nothing in a consumer's build. Pre-existing, not caused by this session's changes; affects all theming, not just math. Recommended as a new DEF ticket.
+- [x] Fix the missing `dist/styles.css` build output flagged above (`6445358`, see `ledger.md` L-023) — added `src/styles.css` aggregating tokens/component/KaTeX CSS, wired it as a second Vite lib entry, exported `claymark/styles.css`, and fixed `sideEffects` so bundlers can't tree-shake the import away
 - DEF-007, DEF-008 explicitly out of scope for this pass per user instruction
 
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
