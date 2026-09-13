@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
+import type { Root } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 import { MermaidDiagram } from '../src/components/MermaidDiagram'
 
@@ -16,10 +17,27 @@ function flush(ms = 300): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// Test hygiene: unmount every test's React root and remove its container
+// afterward, so no forgotten component instance's effect cleanup (`cancelled
+// = true`, src/components/MermaidDiagram.tsx) is left un-run, and the
+// document starts each test empty. (This alone does not fix DEF-006 — see
+// mermaid-pathological.spec.ts for that.)
+const mounted: { root: Root; container: HTMLDivElement }[] = []
+
+afterEach(async () => {
+  for (const { root, container } of mounted.splice(0)) {
+    await act(async () => {
+      root.unmount()
+    })
+    container.remove()
+  }
+})
+
 async function renderAndWait(source: string): Promise<HTMLDivElement> {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
+  mounted.push({ root, container })
   root.render(createElement(MermaidDiagram, { source }))
   for (let i = 0; i < 40 && !container.querySelector('svg, pre'); i++) {
     await act(async () => {
@@ -79,11 +97,6 @@ describe('G5 — Mermaid', () => {
 
   // T-P8-05: mermaid emits no <title>/<desc>, so without an explicit text
   // alternative a screen reader announces nothing for the rendered diagram.
-  // Placed before the "pathological input" test below: that test's bounded
-  // timeout leaves lingering module-level mermaid/d3 state that makes
-  // whichever test runs immediately after it fall back to the error path
-  // (pre-existing test-ordering fragility, unrelated to this change —
-  // reordering avoids it rather than papering over it).
   it('rendered diagram exposes the raw source as its accessible name', async () => {
     const source = 'graph TD; A["hello"]-->B["world"];'
     const container = await renderAndWait(source)
@@ -92,8 +105,18 @@ describe('G5 — Mermaid', () => {
     expect(diagram?.getAttribute('aria-label')).toBe(source)
   }, 20000)
 
-  it('pathological input that would hang mermaid.render still resolves via a bounded timeout', async () => {
-    const container = await renderAndWait('graph TD; A["<img src=x onerror=alert(1)>"];')
-    expect(container.querySelector('pre.claymark-mermaid-fallback')).toBeTruthy()
-  }, 20000)
+  // DEF-006: "pathological input that would hang mermaid.render" used to
+  // live here too, and whichever test ran immediately after it would fail —
+  // moved to its own file (mermaid-pathological.spec.ts). See that file's
+  // header comment for the actual root cause (confirmed by direct
+  // reproduction, not guessed): mermaid.render() truly never settles for
+  // that input in this environment; our own `withTimeout` only stops *us*
+  // from waiting on it, it doesn't — can't — cancel mermaid's own in-flight
+  // work, which then blocks every *later* `mermaid.render()` call in the
+  // same process behind it, forever (mermaid.js is documented as unsafe for
+  // concurrent/overlapping render() calls). No fix from this side makes a
+  // second render reliable once that's happened — the only real fix is
+  // making sure it can never happen in the same module registry as any
+  // other mermaid test, which is exactly what per-file isolation (Vitest's
+  // default) gives for free once it's its own file.
 })
