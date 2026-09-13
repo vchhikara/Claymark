@@ -8,11 +8,11 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 
 - [x] Phases P0–P8 (104 tasks), gates G0–G8 — see `plan/03-CHECKLIST.md`
 - [ ] **GATE G9 — human acceptance of the v1.0.0 delivery** (`plan/03-CHECKLIST.md:224`, `docs/HANDOFF.md`). Requires the user; not self-approvable.
-- [ ] Close `DEF-001` — dead-export/unused-module audit (`knip` or equivalent) over `src/`
-- [ ] Close `DEF-003` — KaTeX has no dynamic-import lazy-load boundary
+- [x] Close `DEF-001` — dead-export/unused-module audit (`knip` or equivalent) over `src/` (`b6c5616`, see `ledger.md` L-019)
+- [x] Close `DEF-003` — KaTeX has no dynamic-import lazy-load boundary (`eb7b9d2`, see `ledger.md` L-020 — also surfaced a more severe finding: math was never wired into the processor at all, not just non-lazy)
 - [ ] Close `DEF-004` — 2 pre-existing lint errors (`react/no-danger` rule-not-found, `prefer-const`) — still present this session, now 3 counting `react-hooks/exhaustive-deps`, see `ledger.md`
-- [ ] Close `DEF-005` — `tests/stress.spec.ts` S-01 timing flake (did not reproduce this session's runs, but not eliminated)
-- [ ] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake
+- [x] Close `DEF-005` — `tests/stress.spec.ts` S-01 timing flake (`52f075d`, see `ledger.md` L-021 — hardened to median-of-5, budget raised to 5000ms with disclosed justification per D-009)
+- [x] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake (`8ff1337`, see `ledger.md` L-022 — root cause was mermaid.js's own wedged internal state, fixed via per-file test isolation)
 - [ ] Close `DEF-007` — 8 devDependency-only `pnpm audit` findings
 - [ ] Close `DEF-008` — Android APK signing/release keystore
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
@@ -29,6 +29,12 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Commit the dependency/type-fix batch (`01097cb`)
 - [x] Commit the pre-existing uncommitted `ui-wip` working-tree changes, verified as-is (`bb8675b`)
 - [x] Author `spec.md`, `progress.md`, `ledger.md` (this triad)
+
+## This session (defect-closure pass, `defect-closure` branch off `ui-wip`)
+
+- [x] Close `DEF-001`, `DEF-003`, `DEF-005`, `DEF-006` per user's explicit itemized instructions (see checkboxes above; `ledger.md` L-019–L-022, D-009)
+- **New finding, not requested this pass, flagged for its own follow-up**: the library build produces no `dist/styles.css` at all — `docs/INSTALLATION.md` documents `import 'claymark/styles.css'` as carrying the KaTeX stylesheet (and presumably the rest of the theme), but `vite.config.ts`'s lib build has no CSS entry point, so that import resolves to nothing in a consumer's build. Pre-existing, not caused by this session's changes; affects all theming, not just math. Recommended as a new DEF ticket.
+- DEF-007, DEF-008 explicitly out of scope for this pass per user instruction
 
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
 
