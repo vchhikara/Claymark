@@ -210,6 +210,14 @@ html {
   background: none;
 }
 
+/* DEF-003: block math (`$$…$$`) bypasses CodeBlock's chrome (see map.tsx's
+   PreAdapter) — a plain wrapper, scrollable for wide equations, matching
+   .claymark-pre's own overflow handling. */
+.claymark-math-block {
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+
 .claymark-codeblock {
   position: relative;
   margin-block: var(--space-4);

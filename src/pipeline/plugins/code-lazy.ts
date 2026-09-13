@@ -45,7 +45,15 @@ export const codeSkeleton: Plugin<[], Root> = () => (tree) => {
     const className = codeElement.properties?.className
     const hasLangClass =
       Array.isArray(className) &&
-      className.some((name) => typeof name === 'string' && name.startsWith('language-'))
+      className.some(
+        // DEF-003: `language-math` (remark-math's block-math class, see
+        // math-lazy.ts) is deliberately excluded — it belongs to
+        // mathSkeleton/hydrateMathHighlighting, never to Shiki. Marking it
+        // pending here would make Shiki's `unknownLanguageFallback`
+        // (code.ts) strip the `language-math` class before rehype-katex
+        // ever gets a chance to find it.
+        (name) => typeof name === 'string' && name.startsWith('language-') && name !== 'language-math',
+      )
     if (!hasLangClass) return
 
     const textNode = codeElement.children.find(

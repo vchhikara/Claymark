@@ -7,6 +7,9 @@ import { toHtml } from 'hast-util-to-html'
 import type { Root } from 'hast'
 import { math, mathHighlight } from '../src/pipeline/plugins/math'
 import { sanitizeSchema } from '../src/pipeline/sanitize-schema'
+import { processor } from '../src/pipeline/processor'
+import { hydrateMathHighlighting } from '../src/pipeline/plugins/math-lazy'
+import { hydrateCodeHighlighting } from '../src/pipeline/plugins/code-lazy'
 
 async function renderRaw(markdown: string): Promise<Root> {
   return (await unified()
@@ -101,5 +104,47 @@ describe('G5 — Math', () => {
   it('does not regress the existing security suite scope (no raw html, no script)', async () => {
     const html = await renderSanitized('$x$ <script>alert(1)</script>')
     expect(html).not.toContain('<script')
+  })
+
+  // DEF-003: the tests above only exercise math.ts's own standalone
+  // pipeline. Until this batch, `src/pipeline/processor.ts` (what
+  // MarkdownRoot/useStreamingMarkdown actually use) never called `math` or
+  // `mathHighlight` at all — `$…$`/`$$…$$` passed straight through as
+  // literal text, silently, with no error. These prove the real production
+  // pipeline, not just the plugin in isolation.
+  describe('wired into the real processor + lazy hydration (DEF-003)', () => {
+    it('the synchronous processor marks math pending, not rendered', () => {
+      const tree = processor.runSync(processor.parse('Inline $x^2$ math.')) as Root
+      const html = toHtml(tree)
+      expect(html).toContain('data-math-pending')
+      expect(html).not.toContain('katex')
+    })
+
+    it('hydrateMathHighlighting renders inline and block math from a processor tree', async () => {
+      const inline = processor.runSync(processor.parse('Inline $x^2$ math.')) as Root
+      await hydrateMathHighlighting(inline)
+      expect(toHtml(inline)).toContain('class="katex"')
+
+      const block = processor.runSync(processor.parse('$$\n\\frac{1}{2}\n$$')) as Root
+      await hydrateMathHighlighting(block)
+      expect(toHtml(block)).toContain('katex-display')
+    })
+
+    it('never lets codeSkeleton mark a math block data-code-pending', () => {
+      const tree = processor.runSync(processor.parse('$$\na+b\n$$')) as Root
+      expect(toHtml(tree)).not.toContain('data-code-pending')
+    })
+
+    it('a math block and a code block in the same document hydrate independently, with no cross-contamination', async () => {
+      const tree = processor.runSync(
+        processor.parse('$$\na+b\n$$\n\n```js\nconst x = 1\n```'),
+      ) as Root
+      await Promise.all([hydrateMathHighlighting(tree), hydrateCodeHighlighting(tree)])
+      const html = toHtml(tree)
+      expect(html).toContain('katex-display') // math rendered
+      expect(html).not.toContain('language-math') // rehype-katex consumed it, Shiki never touched it
+      expect(html).not.toContain('data-code-pending')
+      expect(html).not.toContain('data-math-pending')
+    })
   })
 })

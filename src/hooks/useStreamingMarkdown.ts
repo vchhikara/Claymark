@@ -7,6 +7,7 @@ import { ReconcileState } from '../pipeline/streaming/reconcile'
 import type { ReconciledBlock } from '../pipeline/streaming/reconcile'
 import { toReact } from '../pipeline/to-react'
 import { hydrateCodeHighlighting } from '../pipeline/plugins/code-lazy'
+import { hydrateMathHighlighting } from '../pipeline/plugins/math-lazy'
 import { DEFAULT_COMPONENTS } from '../components/map'
 
 const components = DEFAULT_COMPONENTS as unknown as Components
@@ -29,6 +30,20 @@ function hasPendingCode(tree: Root): boolean {
   let found = false
   visit(tree, 'element', (node: Element) => {
     if (node.properties && 'data-code-pending' in node.properties) found = true
+  })
+  return found
+}
+
+// DEF-003: same idea, for `mathSkeleton`'s `data-math-pending` marker
+// (src/pipeline/plugins/math-lazy.ts). Checked separately from
+// hasPendingCode — deliberately never merged into one "hasPendingEnrichment"
+// check, so a math-only tree never invokes hydrateCodeHighlighting (whose
+// unknownLanguageFallback would strip the `language-math` class rehype-katex
+// needs) and vice versa.
+function hasPendingMath(tree: Root): boolean {
+  let found = false
+  visit(tree, 'element', (node: Element) => {
+    if (node.properties && 'data-math-pending' in node.properties) found = true
   })
   return found
 }
@@ -95,9 +110,14 @@ export function useStreamingMarkdown(source: string): UseStreamingMarkdownResult
     for (const block of blocks as ReconciledBlock[]) {
       const { tree } = block
       if (hydratingRef.current.has(tree)) continue
-      if (!hasPendingCode(tree)) continue
+      const pendingCode = hasPendingCode(tree)
+      const pendingMath = hasPendingMath(tree)
+      if (!pendingCode && !pendingMath) continue
       hydratingRef.current.add(tree)
-      void hydrateCodeHighlighting(tree).then(() => {
+      const hydrations: Promise<Root>[] = []
+      if (pendingCode) hydrations.push(hydrateCodeHighlighting(tree))
+      if (pendingMath) hydrations.push(hydrateMathHighlighting(tree))
+      void Promise.all(hydrations).then(() => {
         if (cancelled) return
         elementCacheRef.current.delete(tree)
         setHydrationTick((tick) => tick + 1)

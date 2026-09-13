@@ -103,6 +103,16 @@ function CodeAdapter({ children, className, ...rest }: NodeProps): ReactElement 
   // a `code` span can't contain a literal newline, but a fence's contents
   // routinely do — that's the only signal left to tell it apart from an
   // inline code span once hydration/language-less fences rule out the rest.
+  // DEF-003: `language-math` (remark-math's inline-math class, see
+  // math-lazy.ts) must never take the block-code path below — pre-hydration
+  // it should render as a plain `<code>` (native monospace is exactly the
+  // documented "Raw TeX source, monospaced" placeholder); post-hydration
+  // rehype-katex has already replaced the whole element with its own
+  // `<span class="katex">`, so this function no longer even runs for it.
+  const isMathCode = cls !== undefined && /(^|\s)language-math(\s|$)/.test(cls)
+  if (isMathCode) {
+    return <code className={cls} {...rest}>{children}</code>
+  }
   const rawText = extractRawText(rest.node as HastLikeElement | undefined)
   const isBlockCode = (cls !== undefined && /language-/.test(cls)) || 'data-language' in rest || rawText.includes('\n')
   if (isBlockCode) {
@@ -186,11 +196,25 @@ function isSoleImageParagraph(node: unknown): boolean {
   return meaningful.length === 1 && meaningful[0]?.tagName === 'img'
 }
 
+// DEF-003: block math (`$$…$$`) is structurally a fenced code block
+// (`<pre><code class="language-math math-display">`, per remark-math's own
+// documented hast conversion — see math-lazy.ts) but shouldn't get
+// CodeBlock's copy-button/language chrome. Checked against the `pre` node's
+// own hast child, same pattern as findMermaidSource above.
+function isMathBlock(node: unknown): boolean {
+  const el = node as HastLikeElement | undefined
+  const codeChild = el?.children?.find((child) => child.tagName === 'code')
+  return codeChild !== undefined && hasLanguageClass(codeChild, 'math')
+}
+
 function PreAdapter(props: NodeProps): ReactElement {
   const { children, node } = props
   const mermaidSource = findMermaidSource(node)
   if (mermaidSource !== null) {
     return <MermaidDiagram source={mermaidSource} />
+  }
+  if (isMathBlock(node)) {
+    return <div className="claymark-math-block">{children}</div>
   }
   // codeSkeleton (src/pipeline/plugins/code-lazy.ts) marks a pending code
   // block's `pre` with `data-code-pending` + an inline `min-height` style —
