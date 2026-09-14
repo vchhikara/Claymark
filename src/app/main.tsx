@@ -116,6 +116,8 @@ function Reader() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          rowGap: 'var(--space-2)',
           gap: 'var(--space-3)',
           marginBottom: 'var(--space-5)',
           paddingBlock: 'var(--space-3) var(--space-4)',
@@ -346,7 +348,7 @@ function Reader() {
             }}
           >
             <p style={{ margin: 0 }}>Save changes to {session.ref?.name}?</p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
               <Button type="button" variant="outline" className="claymark-button--compact" onClick={() => void session.resolveAbandon('cancel')}>
                 Cancel
               </Button>

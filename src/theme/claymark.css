@@ -9,6 +9,22 @@ html {
   scrollbar-color: hsl(var(--border-subtle)) hsl(var(--surface));
 }
 
+/* Real-device finding (POCO M2 Pro, editing-mode header): an unconstrained
+ * flex row (Back/filename/Save-as/Save) could grow past the viewport width,
+ * producing a horizontal document scroll that this app's design explicitly
+ * rules out. Content overflowing sideways should wrap or truncate, never
+ * scroll — see main.tsx's header `flexWrap`. This is the safety net: even if
+ * some future row misbehaves the same way, the page itself won't scroll
+ * horizontally. Confirmed on-device that runaway horizontal scroll also
+ * drags `position: fixed` modals (the unsaved-changes prompt) out from under
+ * the viewport, making their buttons untappable — this rule prevents that
+ * class of bug outright, not just the header's instance of it.
+ */
+html,
+body {
+  overflow-x: hidden;
+}
+
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
