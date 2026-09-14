@@ -59,4 +59,14 @@ class ContentResolverPlugin(private val activity: Activity) : Plugin(activity) {
         result.put("name", name)
         invoke.resolve(result)
     }
+
+    // "Open with" support: returns (and clears) the content:// / file:// URI
+    // MainActivity captured from an incoming VIEW intent, so JS can open it
+    // exactly once — on the app's own startup check, not on every call.
+    @Command
+    fun getLaunchUri(invoke: Invoke) {
+        val result = JSObject()
+        result.put("uri", MainActivity.takePendingLaunchUri())
+        invoke.resolve(result)
+    }
 }

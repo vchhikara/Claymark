@@ -55,4 +55,10 @@ export interface DocumentBackend {
   downloadCopy: (ref: DocumentRef, text: string) => Promise<void>
   // What the primary persist button should say/do for this ref right now.
   persistAction: (ref: DocumentRef) => PersistAction
+  // Checks whether the app was launched/resumed via an external "Open with"
+  // intent (a file manager, share sheet, etc. handing Claymark a document
+  // URI directly, bypassing the in-app picker) and opens it if so; null if
+  // there was none. Optional — only Android/Tauri has a launch-intent
+  // concept; other backends simply don't implement it.
+  openLaunchDocument?: () => Promise<DocumentSnapshot | null>
 }

@@ -22,6 +22,34 @@
                 <!-- AndroidTV support -->
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+
+            <!-- Register Claymark as an "Open with" target for Markdown files
+                 launched from a file manager / share sheet, so it shows up
+                 the way Simple Markdown Viewer / ChatGPT do. MainActivity
+                 captures the launch/new intent's data URI (see MainActivity.kt)
+                 and exposes it to JS via the get_launch_uri command; the app
+                 then opens it through the same refFor()/readTextFile() path
+                 as a document picked via the in-app "Open" dialog. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" android:mimeType="text/markdown" />
+                <data android:scheme="content" android:mimeType="text/x-markdown" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="file"
+                    android:host="*"
+                    android:pathPattern=".*\\.md" />
+                <data
+                    android:scheme="file"
+                    android:host="*"
+                    android:pathPattern=".*\\.markdown" />
+            </intent-filter>
         </activity>
 
         <provider

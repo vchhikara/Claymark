@@ -14,13 +14,14 @@ fn main() {
     println!("cargo:rustc-link-arg=-Wl,-z,max-page-size=16384");
   }
 
-  // `get_display_name` (src/lib.rs) is an app-level command, not a plugin
-  // command, so it needs its own ACL entry — `AppManifest::commands`
-  // autogenerates `allow-get-display-name`/`deny-get-display-name`, which
+  // `get_display_name`/`get_launch_uri` (src/lib.rs) are app-level commands,
+  // not plugin commands, so each needs its own ACL entry —
+  // `AppManifest::commands` autogenerates `allow-<cmd>`/`deny-<cmd>`, which
   // capabilities/default.json then grants explicitly.
   tauri_build::try_build(
-    tauri_build::Attributes::new()
-      .app_manifest(tauri_build::AppManifest::new().commands(&["get_display_name"])),
+    tauri_build::Attributes::new().app_manifest(
+      tauri_build::AppManifest::new().commands(&["get_display_name", "get_launch_uri"]),
+    ),
   )
   .expect("failed to run tauri-build");
 }

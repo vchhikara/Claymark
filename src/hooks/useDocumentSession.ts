@@ -40,6 +40,7 @@ const DRAFT_DEBOUNCE_MS = 700
 
 export interface UseDocumentSessionResult extends DocumentSessionState {
   openFile: () => Promise<void>
+  openLaunchDocument: () => Promise<void>
   startEdit: () => void
   backToPreview: () => void
   updateText: (text: string) => void
@@ -141,6 +142,17 @@ export function useDocumentSession(): UseDocumentSessionResult {
     }
     await performOpen()
   }, [performOpen, state.mode, state.saveStatus])
+
+  // "Open with" support: checked once on mount (see main.tsx) for a
+  // just-launched external document URI. Never gated on dirty state — this
+  // only ever runs against the fresh 'no-document' startup state, so there's
+  // nothing to lose yet.
+  const openLaunchDocument = useCallback(async () => {
+    const backend = await createDocumentBackend()
+    const snapshot = await backend.openLaunchDocument?.()
+    if (!snapshot) return
+    await applyOpenedDoc(snapshot.ref, snapshot.text)
+  }, [applyOpenedDoc])
 
   const startEdit = useCallback(() => {
     setState((s) => (s.mode === 'viewing' ? { ...s, mode: 'editing' } : s))
@@ -267,6 +279,7 @@ export function useDocumentSession(): UseDocumentSessionResult {
     () => ({
       ...state,
       openFile,
+      openLaunchDocument,
       startEdit,
       backToPreview,
       updateText,
@@ -276,6 +289,18 @@ export function useDocumentSession(): UseDocumentSessionResult {
       resolveAbandon,
       discardRecoveredDraft,
     }),
-    [state, openFile, startEdit, backToPreview, updateText, save, saveAs, downloadCopy, resolveAbandon, discardRecoveredDraft],
+    [
+      state,
+      openFile,
+      openLaunchDocument,
+      startEdit,
+      backToPreview,
+      updateText,
+      save,
+      saveAs,
+      downloadCopy,
+      resolveAbandon,
+      discardRecoveredDraft,
+    ],
   )
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimum permissions for the reader-shell IPC surface: the frontend now uses @tauri-apps/plugin-dialog (native Open/Save file pickers) and @tauri-apps/plugin-fs (read/write only the files those pickers returned). `core:default` also bundles menu/tray/image/resources permissions this app never uses (no tray icon, no native menu, no image or resource APIs) — narrowed to just what's needed. `fs:allow-read-text-file`/`fs:allow-write-text-file`/`fs:allow-write-file` are scoped to whatever path/URI the dialog plugin itself returned (Tauri's dialog+fs integration adds that selection to the fs scope at runtime) — no broad `$HOME/**`/`$DOCUMENT/**` root is granted. No shell, process, or arbitrary-HTTP capability is present. `allow-get-display-name` grants the app-level (not plugin) `get_display_name` command (src-tauri/src/lib.rs) — Android-only, reads a content:// URI's OpenableColumns.DISPLAY_NAME so basename() can show a real filename for MediaDocumentsProvider URIs; no-ops to `null` on every other platform.",
+  "description": "Minimum permissions for the reader-shell IPC surface: the frontend now uses @tauri-apps/plugin-dialog (native Open/Save file pickers) and @tauri-apps/plugin-fs (read/write only the files those pickers returned). `core:default` also bundles menu/tray/image/resources permissions this app never uses (no tray icon, no native menu, no image or resource APIs) — narrowed to just what's needed. `fs:allow-read-text-file`/`fs:allow-write-text-file`/`fs:allow-write-file` are scoped to whatever path/URI the dialog plugin itself returned (Tauri's dialog+fs integration adds that selection to the fs scope at runtime) — no broad `$HOME/**`/`$DOCUMENT/**` root is granted. No shell, process, or arbitrary-HTTP capability is present. `allow-get-display-name` grants the app-level (not plugin) `get_display_name` command (src-tauri/src/lib.rs) — Android-only, reads a content:// URI's OpenableColumns.DISPLAY_NAME so basename() can show a real filename for MediaDocumentsProvider URIs; no-ops to `null` on every other platform. `allow-get-launch-uri` grants the app-level `get_launch_uri` command — Android-only, returns the content://file:// URI of a document Claymark was opened with from a file manager/share sheet (AndroidManifest.xml's VIEW intent-filters + MainActivity.kt); no-ops to `null` on every other platform.",
   "windows": [
     "main"
   ],
@@ -15,6 +15,7 @@
     "fs:allow-read-text-file",
     "fs:allow-write-text-file",
     "fs:allow-write-file",
-    "allow-get-display-name"
+    "allow-get-display-name",
+    "allow-get-launch-uri"
   ]
 }

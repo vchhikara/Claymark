@@ -77,6 +77,16 @@ function Reader() {
     }
   }, [])
 
+  // "Open with" support: on mount, check once whether the app was just
+  // launched from an external file manager/share sheet (AndroidManifest.xml's
+  // VIEW intent-filters) rather than the in-app picker, and open that
+  // document if so. No-ops on every non-Android backend and on a normal
+  // in-app launch (no pending launch URI).
+  useEffect(() => {
+    void session.openLaunchDocument()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Ctrl/Cmd+O open, Ctrl/Cmd+S save — audit §33. Only intercepted when
   // Claymark actually handles the shortcut (a document is loaded for Save);
   // never overrides copy/paste/select-all.

@@ -100,6 +100,26 @@ export function createTauriDocumentBackend(): DocumentBackend {
       return await refFor(destination, true)
     },
 
+    // "Open with" support (AndroidManifest.xml's VIEW intent-filters +
+    // MainActivity.kt + the get_launch_uri command): checks whether the app
+    // was just opened with a document URI from outside (a file manager,
+    // share sheet, etc.), and if so reads it through the same refFor() path
+    // as a document picked via openFile()'s native dialog. Returns null on
+    // every non-Android target and whenever there was no pending launch URI.
+    openLaunchDocument: async () => {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const { readTextFile } = await import('@tauri-apps/plugin-fs')
+      let uri: string | null
+      try {
+        uri = await invoke<string | null>('get_launch_uri')
+      } catch {
+        return null
+      }
+      if (!uri) return null
+      const text = await readTextFile(uri)
+      return { ref: await refFor(uri, true), text }
+    },
+
     downloadCopy: async () => {
       // Tauri always has a real writable destination via saveAs(); a
       // browser-style download is never the right fallback here.

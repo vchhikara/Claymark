@@ -58,12 +58,38 @@ async fn get_display_name(app: tauri::AppHandle, uri: String) -> Result<Option<S
   }
 }
 
+/// "Open with" support: returns (and clears) the `content://`/`file://` URI
+/// MainActivity.kt captured from an incoming VIEW intent — a document opened
+/// from a file manager / share sheet outside the app, not via the in-app
+/// "Open" dialog. Called once on app startup by the JS side; every non-Android
+/// target has no such intent concept, so it always resolves to `None` there.
+#[tauri::command]
+async fn get_launch_uri(app: tauri::AppHandle) -> Result<Option<String>, String> {
+  #[cfg(target_os = "android")]
+  {
+    #[derive(serde::Deserialize)]
+    struct LaunchUriResponse {
+      uri: Option<String>,
+    }
+    let handle = app.state::<PluginHandle<tauri::Wry>>();
+    let response: LaunchUriResponse = handle
+      .run_mobile_plugin("getLaunchUri", ())
+      .map_err(|error| error.to_string())?;
+    Ok(response.uri)
+  }
+  #[cfg(not(target_os = "android"))]
+  {
+    let _ = app;
+    Ok(None)
+  }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   let builder = tauri::Builder::default()
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
-    .invoke_handler(tauri::generate_handler![get_display_name])
+    .invoke_handler(tauri::generate_handler![get_display_name, get_launch_uri])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
