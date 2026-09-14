@@ -145,13 +145,18 @@ function Reader() {
             {
               // Audit's three distinct P0 save actions (progress.md "Product
               // priority"): Save, Save as, and Download copy. The primary
-              // button's label already adapts via PERSIST_LABEL for the
+              // button's label already adapts via PERSIST_LABEL for both the
               // write-back-impossible case (persistAction === 'download-copy'
-              // means Save *is* the honest download-copy action). Save as is
-              // only offered as a second action when a real save-to-location
-              // mechanism exists (backend.saveAs isn't a no-op) — i.e. not on
-              // the plain-download-only web fallback.
-              session.persistAction !== 'download-copy' && (
+              // means Save *is* the honest download-copy action) and the
+              // no-persisted-write-grant case (persistAction === 'save-as' —
+              // real-device finding: a document opened via Android's
+              // MediaDocumentsProvider route has no writable location, so
+              // isKnownNonWritableUri() in tauri.ts makes this reachable).
+              // Only offer the dedicated Save-as button as a *second*, real
+              // alternative when the primary button is doing something
+              // different (an in-place Save) — otherwise both buttons read
+              // "Save as" and trigger the identical action.
+              session.persistAction === 'save' && (
                 <Button
                   type="button"
                   variant="outline"
