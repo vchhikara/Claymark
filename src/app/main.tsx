@@ -106,14 +106,17 @@ function Reader() {
 
   return (
     <ThemeProvider>
-      <div
-        style={{
-          maxWidth: 'var(--measure)',
-          margin: '0 auto',
-          padding: 'var(--space-6) var(--space-5)',
-          boxSizing: 'border-box',
-        }}
-      >
+      {
+        // T-UI-08: ThemeProvider already wraps its children in a
+        // `.claymark-root` div (max-width/padding/typography — see
+        // src/theme/claymark.css and ThemeProvider.tsx) — this used to
+        // reapply the exact same max-width+padding on a second wrapper div
+        // nested directly inside it. On a narrow (phone-width) viewport
+        // that stacked padding was clearly visible as over-wide side
+        // margins squeezing all content toward the centre. Layout below is
+        // unwrapped so ThemeProvider's own container is the only one.
+      }
+      <>
         <header
           style={{
             display: 'flex',
@@ -232,7 +235,7 @@ function Reader() {
             elements.map((element, index) => cloneElement(element, { key: index }))
           }
         </MarkdownRoot>
-      </div>
+      </>
 
       {showScrollTop && (
         <button
