@@ -148,8 +148,16 @@ export function useDocumentSession(): UseDocumentSessionResult {
 
   const backToPreview = useCallback(() => {
     setState((s) => {
-      if (s.mode !== 'editing') return s
-      if (s.saveStatus === 'dirty') return { ...s, pendingAbandon: { reason: 'back' } }
+      // 'save-failed' is reachable here too (real device finding: Back to
+      // preview is visible whenever isEditing is true, which includes
+      // save-failed, but this guard previously only accepted 'editing' —
+      // silently no-op'ing the button and leaving the user stuck with no
+      // way out except leaving the app). A failed save always means the
+      // buffer still differs from what's on disk, so route it through the
+      // same abandon prompt as a dirty buffer rather than either no-op'ing
+      // or silently discarding into 'viewing'.
+      if (s.mode !== 'editing' && s.mode !== 'save-failed') return s
+      if (s.saveStatus === 'dirty' || s.saveStatus === 'failed') return { ...s, pendingAbandon: { reason: 'back' } }
       return { ...s, mode: 'viewing' }
     })
   }, [])
