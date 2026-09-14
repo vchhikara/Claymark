@@ -1,17 +1,18 @@
 import { createRoot } from 'react-dom/client'
 import { cloneElement, useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, DragEvent } from 'react'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { MarkdownRoot } from '../components/MarkdownRoot'
 import { Button } from '../components/Button'
-import { Alert, AlertDescription, AlertTitle } from '../components/Alert'
 import { useStreamingMarkdown } from '../hooks/useStreamingMarkdown'
+import { useDocumentSession } from '../hooks/useDocumentSession'
 
 // A short, hand-written sample (not a bench/corpus/ fixture — those are
 // synthetic benchmark filler, not fit for a first impression) that exercises
 // headings, a list, a fenced code block, a table, and a link, so the reader
-// visibly demonstrates the default component map on first load.
+// visibly demonstrates the default component map on first load. Shown ONLY
+// in the no-document state (never overlaid on a real opened file) — per the
+// Tauri/PWA audit §47, a demo must never masquerade as the user's content.
 const SAMPLE_MD = `# claymark
 
 A Markdown renderer built for **streamed, untrusted LLM output**.
@@ -35,57 +36,35 @@ const hast = await processor.run(tree)
 | Sanitization | ✅ |
 | Theming | ✅ |
 
-Try replacing this text in the box below — see [\`docs/API.md\`](https://github.com/vchhikara/Claymark) for the full surface.
+Tap **Open file** above to open your own Markdown file.
 `
 
-// Reference reader app: types out SAMPLE_MD through useStreamingMarkdown so
-// the streaming/monotonic-rendering behavior is visible on load, then hands
-// control to a plain textarea so a human can paste their own Markdown and
-// see it re-render live. This is the entry point for both the PWA
-// (`vite build --mode app`) and the Tauri desktop shell — it is the actual
-// "read rendered documents" surface promised at SPEC.md §2, not just a demo
-// of the theme toggle.
+const PERSIST_LABEL: Record<string, string> = {
+  save: 'Save',
+  'save-as': 'Save as',
+  'download-copy': 'Download copy',
+}
+
+// Reference reader app: the primary job is VIEWING a Markdown file fast —
+// see progress.md's "Product priority" — with an Edit mode present but
+// deliberately secondary (a single header action, a plain textarea, never
+// stacked with the preview). This is the entry point for both the PWA
+// (`vite build --mode app`) and the Tauri desktop/Android shells.
 function Reader() {
-  const [source, setSource] = useState('')
-  const [editing, setEditing] = useState(false)
-  const [dragOver, setDragOver] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
+  const session = useDocumentSession()
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [readProgress, setReadProgress] = useState(0)
-  const { elements } = useStreamingMarkdown(source)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-
-  const stopStreamingDemo = (): void => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  // Loads a dropped/selected .md/.markdown/.txt file's text into the editor,
-  // stopping the sample-streaming timer the same way manual typing does.
-  const loadFile = (file: File): void => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      setLoadError(null)
-      stopStreamingDemo()
-      setSource(typeof reader.result === 'string' ? reader.result : '')
-    }
-    // Previously unhandled: a read failure (permission error, file removed
-    // mid-drag, unreadable encoding) left the UI silently doing nothing.
-    reader.onerror = () => {
-      setLoadError(`Couldn't read "${file.name}" — ${reader.error?.message ?? 'unknown error'}.`)
-    }
-    reader.readAsText(file)
-  }
+  const demo = useStreamingMarkdown(session.mode === 'no-document' ? SAMPLE_MD : '')
+  const openDoc = useStreamingMarkdown(session.mode !== 'no-document' && session.mode !== 'editing' ? session.text : '')
+  const editorRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     const onScroll = (): void => {
       setShowScrollTop(window.scrollY > 400)
       // Reading-progress bar (src/theme/claymark.css's .claymark-progress-*):
       // fraction of the document already scrolled past, 0 when the page
-      // doesn't scroll at all (scrollHeight === innerHeight).
+      // doesn't scroll at all (scrollHeight === innerHeight). A View-mode
+      // element (see progress.md) — unaffected by Edit-mode work.
       const scrollable = document.documentElement.scrollHeight - window.innerHeight
       setReadProgress(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0)
     }
@@ -98,158 +77,225 @@ function Reader() {
     }
   }, [])
 
+  // Ctrl/Cmd+O open, Ctrl/Cmd+S save — audit §33. Only intercepted when
+  // Claymark actually handles the shortcut (a document is loaded for Save);
+  // never overrides copy/paste/select-all.
   useEffect(() => {
-    let i = 0
-    // Reveal the sample a few characters at a time — mirrors the growth
-    // pattern tests/useStreamingMarkdown.spec.tsx exercises against the hook
-    // directly, but driven from a real UI so streaming is something a human
-    // can actually watch happen rather than just a passing assertion.
-    timerRef.current = setInterval(() => {
-      i = Math.min(i + 3, SAMPLE_MD.length)
-      setSource(SAMPLE_MD.slice(0, i))
-      if (i >= SAMPLE_MD.length && timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const mod = event.ctrlKey || event.metaKey
+      if (!mod) return
+      if (event.key === 'o') {
+        event.preventDefault()
+        void session.openFile()
+      } else if (event.key === 's' && session.mode === 'editing') {
+        event.preventDefault()
+        void session.save()
       }
-    }, 15)
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [])
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [session])
+
+  const isEditing = session.mode === 'editing' || session.mode === 'saving' || session.mode === 'save-failed'
+  const hasDocument = session.mode !== 'no-document'
+  const elements = session.mode === 'no-document' ? demo.elements : openDoc.elements
 
   return (
     <ThemeProvider>
-      {
-        // T-UI-08: ThemeProvider already wraps its children in a
-        // `.claymark-root` div (max-width/padding/typography — see
-        // src/theme/claymark.css and ThemeProvider.tsx) — this used to
-        // reapply the exact same max-width+padding on a second wrapper div
-        // nested directly inside it. On a narrow (phone-width) viewport
-        // that stacked padding was clearly visible as over-wide side
-        // margins squeezing all content toward the centre. Layout below is
-        // unwrapped so ThemeProvider's own container is the only one.
-      }
       <div className="claymark-progress-track" aria-hidden="true">
         <div className="claymark-progress-fill" style={{ height: `${readProgress * 100}%` }} />
       </div>
 
-      <>
-        <header
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 10, // matches --z-header (tokens.css) — React's CSSProperties
+          // types zIndex as number, so this can't reference the custom
+          // property directly the way the rest of this file does.
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'var(--space-3)',
+          marginBottom: 'var(--space-5)',
+          paddingBlock: 'var(--space-3) var(--space-4)',
+          background: 'hsl(var(--surface))',
+          borderBottom: '1px solid hsl(var(--border-subtle))',
+        }}
+      >
+        {isEditing ? (
+          <>
+            <Button type="button" variant="outline" className="claymark-button--compact" onClick={session.backToPreview}>
+              ← Back to preview
+            </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: 'hsl(var(--text-primary))' }}>
+                {session.ref?.name}
+              </p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }} aria-live="polite">
+                {session.saveStatus === 'dirty' && 'Unsaved changes'}
+                {session.saveStatus === 'saving' && 'Saving…'}
+                {session.saveStatus === 'saved' && 'Saved'}
+                {session.saveStatus === 'failed' && 'Save failed'}
+                {session.saveStatus === 'clean' && 'No changes'}
+              </p>
+            </div>
+            {
+              // Audit's three distinct P0 save actions (progress.md "Product
+              // priority"): Save, Save as, and Download copy. The primary
+              // button's label already adapts via PERSIST_LABEL for the
+              // write-back-impossible case (persistAction === 'download-copy'
+              // means Save *is* the honest download-copy action). Save as is
+              // only offered as a second action when a real save-to-location
+              // mechanism exists (backend.saveAs isn't a no-op) — i.e. not on
+              // the plain-download-only web fallback.
+              session.persistAction !== 'download-copy' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="claymark-button--compact"
+                  disabled={session.mode === 'saving'}
+                  onClick={() => void session.saveAs()}
+                >
+                  Save as…
+                </Button>
+              )
+            }
+            <Button
+              type="button"
+              variant="outline"
+              className="claymark-button--compact"
+              disabled={session.mode === 'saving'}
+              onClick={() =>
+                void (session.persistAction === 'download-copy' ? session.downloadCopy() : session.save())
+              }
+            >
+              {PERSIST_LABEL[session.persistAction ?? 'save']}
+            </Button>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.875rem',
+                  fontWeight: hasDocument ? 600 : 400,
+                  letterSpacing: hasDocument ? 'normal' : '0.08em',
+                  textTransform: hasDocument ? 'none' : 'uppercase',
+                  color: hasDocument ? 'hsl(var(--text-primary))' : 'hsl(var(--text-muted))',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {hasDocument ? session.ref?.name : 'Claymark'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Button
+                type="button"
+                variant="outline"
+                className="claymark-button--compact"
+                aria-label="Open file"
+                onClick={() => void session.openFile()}
+              >
+                Open file
+              </Button>
+              {hasDocument && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="claymark-button--compact"
+                  aria-label="Edit document"
+                  onClick={session.startEdit}
+                >
+                  Edit
+                </Button>
+              )}
+              <ThemeToggle compact />
+            </div>
+          </>
+        )}
+      </header>
+
+      {session.recoveredDraft && (
+        <div
+          role="status"
           style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10, // matches --z-header (tokens.css) — React's CSSProperties
-            // types zIndex as number, so this can't reference the custom
-            // property directly the way the rest of this file does.
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 'var(--space-5)',
-            paddingBlock: 'var(--space-3) var(--space-4)',
-            background: 'hsl(var(--surface))',
-            borderBottom: '1px solid hsl(var(--border-subtle))',
+            gap: 'var(--space-3)',
+            marginBottom: 'var(--space-4)',
+            padding: 'var(--space-3)',
+            border: '1px solid hsl(var(--border-default))',
+            borderRadius: 'var(--radius-md)',
+            background: 'hsl(var(--surface-raised))',
+            fontSize: '0.8125rem',
           }}
         >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.875rem',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'hsl(var(--text-muted))',
-            }}
-          >
-            Claymark
-          </p>
-          <ThemeToggle compact />
-        </header>
+          <span>Recovered unsaved changes from a previous session.</span>
+          <Button type="button" variant="outline" className="claymark-button--compact" onClick={session.discardRecoveredDraft}>
+            Discard
+          </Button>
+        </div>
+      )}
 
+      {session.saveStatus === 'failed' && (
         <div
+          role="alert"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
             alignItems: 'center',
-            gap: 'var(--space-2)',
-            marginBottom: 'var(--space-5)',
+            justifyContent: 'space-between',
+            gap: 'var(--space-3)',
+            marginBottom: 'var(--space-4)',
+            padding: 'var(--space-3)',
+            border: '1px solid hsl(var(--danger, 0 70% 50%))',
+            borderRadius: 'var(--radius-md)',
+            background: 'hsl(var(--surface-raised))',
+            fontSize: '0.8125rem',
           }}
         >
+          <span>Couldn&rsquo;t save {session.ref?.name}. {session.saveError}</span>
           <Button
             type="button"
             variant="outline"
             className="claymark-button--compact"
-            onClick={() => setEditing((v) => !v)}
+            onClick={() => void (session.persistAction === 'download-copy' ? session.downloadCopy() : session.save())}
           >
-            {editing ? 'Hide editor' : 'Write'}
+            Retry
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="claymark-button--compact"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Browse
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".md,.markdown,.txt,text/markdown,text/plain"
-            style={{ display: 'none' }}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              const file = event.target.files?.[0]
-              if (file) loadFile(file)
-              event.target.value = '' // allow re-selecting the same file
-            }}
-          />
         </div>
+      )}
 
-        {loadError && (
-          <Alert variant="destructive" style={{ marginBottom: 'var(--space-5)' }}>
-            <AlertTitle>Couldn't load file</AlertTitle>
-            <AlertDescription>
-              <p>{loadError}</p>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {editing && (
-          <textarea
-            aria-label="Markdown source"
-            className="cm-source-textarea"
-            value={source}
-            onChange={(event) => {
-              stopStreamingDemo()
-              setSource(event.target.value)
-            }}
-            onDragOver={(event: DragEvent<HTMLTextAreaElement>) => {
-              event.preventDefault()
-              setDragOver(true)
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(event: DragEvent<HTMLTextAreaElement>) => {
-              event.preventDefault()
-              setDragOver(false)
-              const file = event.dataTransfer.files?.[0]
-              if (file) loadFile(file)
-            }}
-            placeholder="Type, paste, or drop a .md file here…"
-            style={{
-              width: '100%',
-              minHeight: '10rem',
-              marginBottom: 'var(--space-6)',
-              font: 'var(--text-code)/1.5 var(--font-mono)',
-              boxSizing: 'border-box',
-              background: dragOver ? 'hsl(var(--surface))' : 'hsl(var(--surface-raised))',
-              color: 'hsl(var(--text-primary))',
-              border: `1px solid hsl(var(--border-${dragOver ? 'default' : 'subtle'}))`,
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--space-3)',
-              resize: 'vertical',
-              transition: 'background 0.15s ease, border-color 0.15s ease',
-            }}
-          />
-        )}
-
+      {isEditing ? (
+        <textarea
+          ref={editorRef}
+          aria-label="Markdown source"
+          className="cm-source-textarea"
+          value={session.text}
+          onChange={(event) => session.updateText(event.target.value)}
+          disabled={session.mode === 'saving'}
+          style={{
+            display: 'block',
+            width: '100%',
+            // Full-screen editor, no stacked preview, no resize handle
+            // (audit §30) — fills the content area below the header.
+            minHeight: 'calc(100vh - 8rem)',
+            resize: 'none',
+            font: 'var(--text-code)/1.5 var(--font-mono)',
+            boxSizing: 'border-box',
+            background: 'hsl(var(--surface-raised))',
+            color: 'hsl(var(--text-primary))',
+            border: '1px solid hsl(var(--border-subtle))',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-3)',
+          }}
+        />
+      ) : (
         <MarkdownRoot>
           {
             // FR-3.3 monotonicity means a block's position is stable once
@@ -258,9 +304,9 @@ function Reader() {
             elements.map((element, index) => cloneElement(element, { key: index }))
           }
         </MarkdownRoot>
-      </>
+      )}
 
-      {showScrollTop && (
+      {showScrollTop && !isEditing && (
         <button
           type="button"
           aria-label="Scroll to top"
@@ -269,6 +315,50 @@ function Reader() {
         >
           ↑
         </button>
+      )}
+
+      {session.pendingAbandon && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Unsaved changes"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'hsl(0 0% 0% / 0.4)',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: 'hsl(var(--surface))',
+              border: '1px solid hsl(var(--border-default))',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-5)',
+              maxWidth: '22rem',
+              width: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-4)',
+            }}
+          >
+            <p style={{ margin: 0 }}>Save changes to {session.ref?.name}?</p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+              <Button type="button" variant="outline" className="claymark-button--compact" onClick={() => void session.resolveAbandon('cancel')}>
+                Cancel
+              </Button>
+              <Button type="button" variant="outline" className="claymark-button--compact" onClick={() => void session.resolveAbandon('discard')}>
+                Discard
+              </Button>
+              <Button type="button" variant="outline" className="claymark-button--compact" onClick={() => void session.resolveAbandon('save')}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </ThemeProvider>
   )
