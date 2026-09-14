@@ -15,7 +15,7 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake (`8ff1337`, see `ledger.md` L-022 — root cause was mermaid.js's own wedged internal state, fixed via per-file test isolation)
 - [x] Close `DEF-007` — `pnpm audit` findings (`02d11cf`, see `ledger.md` L-025 — actually 15 findings, not 8, and one reached production via mermaid; user explicitly authorized the toolchain major bumps needed to close all of them)
 - [ ] Close `DEF-008` — Android APK signing/release keystore
-- [ ] Close `DEF-009` — Android debug/release APK `libapp_lib.so` (`lib/arm64-v8a`) is not 16 KB page-size aligned (ELF `LOAD` segment not aligned); Android surfaces its own "Android app compatibility" warning dialog on install, screenshotted during on-device testing. Needs an NDK/linker flag fix (`-Wl,-z,max-page-size=16384` equivalent for the Rust/Cargo Android target) per https://developer.android.com/16kb-page-size — not attempted this pass.
+- [x] Close `DEF-009` — Android debug/release APK `libapp_lib.so` (`lib/arm64-v8a`) is not 16 KB page-size aligned (`b7669a4`, see `ledger.md` L-028 — fixed via `build.rs`'s `cargo:rustc-link-arg`, since tauri-cli force-overrides `.cargo/config.toml` rustflags for Android targets)
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
 - **Browser extension: confirmed out of scope, deferred.** `docs/SPEC.md` §5 lists no browser extension among the four deliverables — the user's earlier "three deliverables" framing meant the PWA (`claymark-app`, already shipped), not a separate Chrome/Firefox extension. A real WebExtension stays deferred until everything else above is done; see `workflow.md` (locked) for the full reasoning and the feature-parity workflow going forward.
 
@@ -40,6 +40,17 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - DEF-008 remains explicitly out of scope (needs the user's call on a release signing identity, not something to decide unilaterally)
 - [x] On-device (Android, physical hardware) navigation testing via `adb`: investigated an apparent "blank screen" symptom against a stale unsigned release APK — root-caused as a stale-build artifact, not a live bug (a freshly-built debug APK from current source renders correctly); confirmed Write/Browse/theme-toggle navigation all work; surfaced two real, separate issues along the way — DEF-009 (16 KB page-size alignment, tracked above) and a genuine triple-nested-padding layout bug (fixed, see below)
 - [x] Fix `src/app/main.tsx` applying the same `.claymark-root` max-width/padding a second time on top of `ThemeProvider`'s own wrapper, stacking with `MarkdownRoot`'s own third application — visible as oversized side margins squeezing all content toward the centre, most noticeable on a phone-width viewport (see `ledger.md` L-026)
+
+## This session (UI bug-report pass, user-supplied screenshots + on-device follow-ups)
+
+- [x] Fix inline code "pilling" wrapping badly on multi-word type signatures (e.g. `` `(e: RenderError) => void` ``) via `box-decoration-break: clone` (`027cc88`, see `ledger.md` L-029)
+- [x] Fix header font size too small; make theme toggle reachable while scrolled via `position: sticky` header (`027cc88`, L-029)
+- [x] Body text: `justify` → `left` by default; table cells: `left` → `center` by default (`027cc88`, L-029)
+- [x] Add a reading-progress bar as the page's side scroller (`027cc88`, L-029)
+- [x] Fix 4 occurrences of invalid `hsl(var(--accent-brand))` (token is a hex literal, not an HSL triplet) → bare `var(--accent-brand)` (`027cc88`, L-029)
+- [x] Fix code-block language label going blank (most visible on Android) — `getCodeLanguage()` only checked the `language-xxx` class, not rehype-pretty-code's alternate `data-language` attribute form (`027cc88`, L-029)
+- [x] Fix codeblock header/Copy-button overlapping the code below it; keep header inside the same bordered box per user correction; remove the resulting redundant divider line (`027cc88`, L-029)
+- [x] Close `DEF-009` — see checkbox above
 
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
 
