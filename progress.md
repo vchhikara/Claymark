@@ -15,8 +15,9 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake (`8ff1337`, see `ledger.md` L-022 — root cause was mermaid.js's own wedged internal state, fixed via per-file test isolation)
 - [x] Close `DEF-007` — `pnpm audit` findings (`02d11cf`, see `ledger.md` L-025 — actually 15 findings, not 8, and one reached production via mermaid; user explicitly authorized the toolchain major bumps needed to close all of them)
 - [ ] Close `DEF-008` — Android APK signing/release keystore
-- [ ] Close `DEF-009` — Android debug/release APK `libapp_lib.so` (`lib/arm64-v8a`) is not 16 KB page-size aligned (ELF `LOAD` segment not aligned); Android surfaces its own "Android app compatibility" warning dialog on install (see `ledger.md` L-026). Needs an NDK/linker flag fix (`-Wl,-z,max-page-size=16384` equivalent for the Rust/Cargo Android target) per https://developer.android.com/16kb-page-size — not attempted this pass.
+- [ ] Close `DEF-009` — Android debug/release APK `libapp_lib.so` (`lib/arm64-v8a`) is not 16 KB page-size aligned (ELF `LOAD` segment not aligned); Android surfaces its own "Android app compatibility" warning dialog on install, screenshotted during on-device testing. Needs an NDK/linker flag fix (`-Wl,-z,max-page-size=16384` equivalent for the Rust/Cargo Android target) per https://developer.android.com/16kb-page-size — not attempted this pass.
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
+- **Browser extension: confirmed out of scope, deferred.** `docs/SPEC.md` §5 lists no browser extension among the four deliverables — the user's earlier "three deliverables" framing meant the PWA (`claymark-app`, already shipped), not a separate Chrome/Firefox extension. A real WebExtension stays deferred until everything else above is done; see `workflow.md` (locked) for the full reasoning and the feature-parity workflow going forward.
 
 ## This session (vargr-build-rules pass) — environment & commit hygiene
 
