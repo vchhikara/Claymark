@@ -1,0 +1,63 @@
+/*
+ * T-UI-09: `--font-body`/`--font-ui`/`--font-mono` (src/theme/tokens.css)
+ * and FONT_STACKS (src/theme/fonts.ts) both name 'Source Serif 4', 'Inter',
+ * and 'JetBrains Mono' as the intended typefaces, and the woff2 files ship
+ * in public/fonts/ (see docs/INSTALLATION.md's "Fonts fall back to Georgia"
+ * troubleshooting entry, and its own claim that `claymark/styles.css`
+ * "carries the token definitions, the font faces, and the KaTeX
+ * stylesheet") — but no @font-face rule ever existed to load them, so
+ * every one of those stacks fell straight through to its system fallback
+ * (Georgia/Times New Roman/serif, -apple-system/"Segoe UI"/sans-serif,
+ * "SF Mono"/Menlo/monospace) on every platform, including this app's own
+ * Android build.
+ *
+ * Paths are root-absolute (`/fonts/...`), not relative to this file: Vite's
+ * `public/` directory is copied verbatim to the site root, not processed as
+ * a module, so a relative `url()` here would resolve against this file's
+ * own location instead. This matches docs/INSTALLATION.md's existing
+ * troubleshooting note ("Verify your bundler copies public/fonts/") and
+ * katex.css's colocation contract — a consumer of `claymark/styles.css`
+ * must serve these six files at its own site root under `/fonts/`.
+ */
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url(/fonts/source-serif-4-latin-400-normal.woff2) format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url(/fonts/source-serif-4-latin-600-normal.woff2) format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url(/fonts/inter-latin-400-normal.woff2) format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url(/fonts/inter-latin-600-normal.woff2) format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url(/fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url(/fonts/jetbrains-mono-latin-700-normal.woff2) format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

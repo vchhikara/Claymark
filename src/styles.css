@@ -11,5 +11,6 @@
  * needs to override it.
  */
 @import './theme/tokens.css';
+@import './theme/fonts.css';
 @import './theme/claymark.css';
 @import './theme/katex.css';
