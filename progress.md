@@ -15,6 +15,7 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake (`8ff1337`, see `ledger.md` L-022 — root cause was mermaid.js's own wedged internal state, fixed via per-file test isolation)
 - [x] Close `DEF-007` — `pnpm audit` findings (`02d11cf`, see `ledger.md` L-025 — actually 15 findings, not 8, and one reached production via mermaid; user explicitly authorized the toolchain major bumps needed to close all of them)
 - [ ] Close `DEF-008` — Android APK signing/release keystore
+- [ ] Close `DEF-009` — Android debug/release APK `libapp_lib.so` (`lib/arm64-v8a`) is not 16 KB page-size aligned (ELF `LOAD` segment not aligned); Android surfaces its own "Android app compatibility" warning dialog on install (see `ledger.md` L-026). Needs an NDK/linker flag fix (`-Wl,-z,max-page-size=16384` equivalent for the Rust/Cargo Android target) per https://developer.android.com/16kb-page-size — not attempted this pass.
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
 
 ## This session (vargr-build-rules pass) — environment & commit hygiene
@@ -36,6 +37,8 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Fix the missing `dist/styles.css` build output flagged above (`6445358`, see `ledger.md` L-023) — added `src/styles.css` aggregating tokens/component/KaTeX CSS, wired it as a second Vite lib entry, exported `claymark/styles.css`, and fixed `sideEffects` so bundlers can't tree-shake the import away
 - [x] Close DEF-007 (`02d11cf`) — see checkbox above
 - DEF-008 remains explicitly out of scope (needs the user's call on a release signing identity, not something to decide unilaterally)
+- [x] On-device (Android, physical hardware) navigation testing via `adb`: investigated an apparent "blank screen" symptom against a stale unsigned release APK — root-caused as a stale-build artifact, not a live bug (a freshly-built debug APK from current source renders correctly); confirmed Write/Browse/theme-toggle navigation all work; surfaced two real, separate issues along the way — DEF-009 (16 KB page-size alignment, tracked above) and a genuine triple-nested-padding layout bug (fixed, see below)
+- [x] Fix `src/app/main.tsx` applying the same `.claymark-root` max-width/padding a second time on top of `ThemeProvider`'s own wrapper, stacking with `MarkdownRoot`'s own third application — visible as oversized side margins squeezing all content toward the centre, most noticeable on a phone-width viewport (see `ledger.md` L-026)
 
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
 
