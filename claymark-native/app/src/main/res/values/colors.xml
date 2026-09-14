@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background only. Every in-app color comes from
+         theme/Tokens.kt, which holds the same HSL triplets as
+         src/theme/tokens.css. These two are the resolved values of
+         `--surface` in each theme: hsl(48 45% 98%) and hsl(0 0% 9.8%). -->
+    <color name="surface_light">#FCFBF8</color>
+    <color name="surface_dark">#191919</color>
+</resources>
