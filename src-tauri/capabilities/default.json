@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimum permissions for a single-window webview shell with no IPC surface: the frontend calls no Tauri API (no @tauri-apps/api import, no invoke()), so only the core window/webview/app/event permissions needed to open and run the window are granted. `core:default` also bundles menu/tray/image/resources permissions this app never uses (no tray icon, no native menu, no image or resource APIs) — narrowed to just what's needed. No filesystem, shell, dialog, or process capability is present: this project's Cargo.toml has no tauri-plugin-fs/shell/dialog/process dependency at all, so those permission namespaces don't exist to grant.",
+  "description": "Minimum permissions for the reader-shell IPC surface: the frontend now uses @tauri-apps/plugin-dialog (native Open/Save file pickers) and @tauri-apps/plugin-fs (read/write only the files those pickers returned). `core:default` also bundles menu/tray/image/resources permissions this app never uses (no tray icon, no native menu, no image or resource APIs) — narrowed to just what's needed. `fs:allow-read-text-file`/`fs:allow-write-text-file`/`fs:allow-write-file` are scoped to whatever path/URI the dialog plugin itself returned (Tauri's dialog+fs integration adds that selection to the fs scope at runtime) — no broad `$HOME/**`/`$DOCUMENT/**` root is granted. No shell, process, or arbitrary-HTTP capability is present.",
   "windows": [
     "main"
   ],
@@ -9,6 +9,11 @@
     "core:window:default",
     "core:webview:default",
     "core:app:default",
-    "core:event:default"
+    "core:event:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-write-file"
   ]
 }

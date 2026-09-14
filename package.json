@@ -46,6 +46,9 @@
     "react-dom": "18.3.1"
   },
   "dependencies": {
+    "@tauri-apps/api": "2.9.0",
+    "@tauri-apps/plugin-dialog": "2.4.2",
+    "@tauri-apps/plugin-fs": "2.4.4",
     "dompurify": "3.4.14",
     "hast-util-to-jsx-runtime": "2.3.0",
     "katex": "0.16.47",
