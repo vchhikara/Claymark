@@ -13,11 +13,47 @@ function basename(pathOrUri: string): string {
   return decodeURIComponent(parts[parts.length - 1] || pathOrUri)
 }
 
-function refFor(pathOrUri: string, writable: boolean): DocumentRef {
+// Real-device finding (POCO M2 Pro): a document opened via Android's
+// "Documents"/"Recent" drawer arrives as a
+// content://com.android.providers.media.documents/document/... URI —
+// MediaDocumentsProvider gives out no persisted write grant for these, so a
+// save always fails with a real PermissionDenial ("requires
+// android.permission.MANAGE_DOCUMENTS or grantUriPermission()"), confirmed
+// live on-device. The direct storage-volume route
+// (content://.../primary:Download/..., ExternalStorageProvider) is the only
+// content:// route this app has confirmed writable. Without this check,
+// persistAction() reports 'save' for both routes alike and offers a Save
+// button that's guaranteed to fail for the drawer route.
+function isKnownNonWritableUri(pathOrUri: string): boolean {
+  return pathOrUri.startsWith('content://com.android.providers.media.documents/')
+}
+
+// The same MediaDocumentsProvider URIs have no filename anywhere in the URI
+// itself, so basename()'s naive last-path-segment parsing (which works fine
+// for desktop paths and the ExternalStorageProvider content:// route)
+// produces a meaningless "document:<id>"-shaped string. The only way to
+// recover a real name is to ask the platform's ContentResolver for
+// OpenableColumns.DISPLAY_NAME via the native `get_display_name` command
+// (src-tauri/src/lib.rs + ContentResolverPlugin.kt) — a best-effort
+// enhancement layered on top of the naive name, not a replacement for it:
+// it no-ops to `null` on every non-Android target and on any lookup failure.
+async function displayNameFor(pathOrUri: string): Promise<string> {
+  const naive = basename(pathOrUri)
+  if (!pathOrUri.startsWith('content://')) return naive
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    const name = await invoke<string | null>('get_display_name', { uri: pathOrUri })
+    return name && name.length > 0 ? name : naive
+  } catch {
+    return naive
+  }
+}
+
+async function refFor(pathOrUri: string, writable: boolean): Promise<DocumentRef> {
   return {
     id: pathOrUri,
-    name: basename(pathOrUri),
-    writable,
+    name: await displayNameFor(pathOrUri),
+    writable: writable && !isKnownNonWritableUri(pathOrUri),
     // Android content resolvers return `content://`; every other Tauri
     // target (desktop, and iOS if ever added) returns a real path/`file://`.
     sourceKind: pathOrUri.startsWith('content://') ? 'tauri-content-uri' : 'tauri-path',
@@ -39,7 +75,7 @@ export function createTauriDocumentBackend(): DocumentBackend {
       })
       if (!selected || Array.isArray(selected)) return null
       const text = await readTextFile(selected)
-      return { ref: refFor(selected, true), text }
+      return { ref: await refFor(selected, true), text }
     },
 
     read: async (ref) => {
@@ -61,7 +97,7 @@ export function createTauriDocumentBackend(): DocumentBackend {
       })
       if (!destination) return null
       await writeTextFile(destination, text)
-      return refFor(destination, true)
+      return await refFor(destination, true)
     },
 
     downloadCopy: async () => {
