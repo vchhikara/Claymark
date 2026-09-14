@@ -133,6 +133,11 @@ function Reader() {
           paddingBlock: 'var(--space-3) var(--space-4)',
           background: 'hsl(var(--surface))',
           borderBottom: '1px solid hsl(var(--border-subtle))',
+          // Safety net for a runaway-width row (real-device finding, see
+          // claymark.css) — clipping the header's OWN overflow rather than
+          // an ancestor's keeps this sticky header actually sticky (an
+          // ancestor's overflow-x would hijack the scrolling context).
+          overflowX: 'hidden',
         }}
       >
         {isEditing ? (

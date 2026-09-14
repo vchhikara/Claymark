@@ -13,17 +13,23 @@ html {
  * flex row (Back/filename/Save-as/Save) could grow past the viewport width,
  * producing a horizontal document scroll that this app's design explicitly
  * rules out. Content overflowing sideways should wrap or truncate, never
- * scroll — see main.tsx's header `flexWrap`. This is the safety net: even if
- * some future row misbehaves the same way, the page itself won't scroll
- * horizontally. Confirmed on-device that runaway horizontal scroll also
- * drags `position: fixed` modals (the unsaved-changes prompt) out from under
- * the viewport, making their buttons untappable — this rule prevents that
- * class of bug outright, not just the header's instance of it.
+ * scroll — see main.tsx's header `flexWrap`. Confirmed on-device that
+ * runaway horizontal scroll also drags `position: fixed` modals (the
+ * unsaved-changes prompt) out from under the viewport, making their buttons
+ * untappable.
+ *
+ * This safety net used to live on html/body (then #root), clipping via a
+ * shared ancestor — but setting `overflow-x` on ANY element without an
+ * explicit `overflow-y` makes the UA compute overflow-y as `auto` too
+ * (CSS2.1 §11.1.1), turning that element into its own scroll container.
+ * Because the header (`position: sticky`) is a *descendant* of html/body/
+ * #root, this silently broke its stickiness (found live): sticky positions
+ * relative to its nearest scrolling ancestor, and that ancestor was no
+ * longer the viewport. Clipping the header directly instead — a sticky
+ * element's own `overflow-x` doesn't affect its own stickiness, only an
+ * ancestor's does — gets the same safety net with no such side effect. See
+ * main.tsx's `<header>` inline style.
  */
-html,
-body {
-  overflow-x: hidden;
-}
 
 ::-webkit-scrollbar {
   width: 12px;
