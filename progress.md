@@ -13,7 +13,7 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [x] Close `DEF-004` — 3 pre-existing lint errors (`a819158`, see `ledger.md` L-024 — `react/no-danger`/`react-hooks/exhaustive-deps` were a missing-plugin config gap, plus one genuine `prefer-const`; also fixed a real bug found along the way — the `react/no-danger` disable comment was on the wrong line and suppressed nothing)
 - [x] Close `DEF-005` — `tests/stress.spec.ts` S-01 timing flake (`52f075d`, see `ledger.md` L-021 — hardened to median-of-5, budget raised to 5000ms with disclosed justification per D-009)
 - [x] Close `DEF-006` — `tests/mermaid.spec.ts` ordering-dependent flake (`8ff1337`, see `ledger.md` L-022 — root cause was mermaid.js's own wedged internal state, fixed via per-file test isolation)
-- [ ] Close `DEF-007` — 8 devDependency-only `pnpm audit` findings
+- [x] Close `DEF-007` — `pnpm audit` findings (`02d11cf`, see `ledger.md` L-025 — actually 15 findings, not 8, and one reached production via mermaid; user explicitly authorized the toolchain major bumps needed to close all of them)
 - [ ] Close `DEF-008` — Android APK signing/release keystore
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
 
@@ -34,7 +34,8 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 
 - [x] Close `DEF-001`, `DEF-003`, `DEF-005`, `DEF-006` per user's explicit itemized instructions (see checkboxes above; `ledger.md` L-019–L-022, D-009)
 - [x] Fix the missing `dist/styles.css` build output flagged above (`6445358`, see `ledger.md` L-023) — added `src/styles.css` aggregating tokens/component/KaTeX CSS, wired it as a second Vite lib entry, exported `claymark/styles.css`, and fixed `sideEffects` so bundlers can't tree-shake the import away
-- DEF-007, DEF-008 explicitly out of scope for this pass per user instruction
+- [x] Close DEF-007 (`02d11cf`) — see checkbox above
+- DEF-008 remains explicitly out of scope (needs the user's call on a release signing identity, not something to decide unilaterally)
 
 ## `ui-wip` UI-polish phase — open items (not attempted this pass)
 
