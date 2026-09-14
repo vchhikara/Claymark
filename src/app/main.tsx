@@ -51,6 +51,7 @@ function Reader() {
   const [dragOver, setDragOver] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [readProgress, setReadProgress] = useState(0)
   const { elements } = useStreamingMarkdown(source)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -80,9 +81,21 @@ function Reader() {
   }
 
   useEffect(() => {
-    const onScroll = (): void => setShowScrollTop(window.scrollY > 400)
+    const onScroll = (): void => {
+      setShowScrollTop(window.scrollY > 400)
+      // Reading-progress bar (src/theme/claymark.css's .claymark-progress-*):
+      // fraction of the document already scrolled past, 0 when the page
+      // doesn't scroll at all (scrollHeight === innerHeight).
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight
+      setReadProgress(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0)
+    }
+    onScroll() // set the initial value — a reload can land mid-scroll (hash link, restored position)
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   useEffect(() => {
@@ -116,14 +129,24 @@ function Reader() {
         // margins squeezing all content toward the centre. Layout below is
         // unwrapped so ThemeProvider's own container is the only one.
       }
+      <div className="claymark-progress-track" aria-hidden="true">
+        <div className="claymark-progress-fill" style={{ height: `${readProgress * 100}%` }} />
+      </div>
+
       <>
         <header
           style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10, // matches --z-header (tokens.css) — React's CSSProperties
+            // types zIndex as number, so this can't reference the custom
+            // property directly the way the rest of this file does.
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 'var(--space-5)',
-            paddingBottom: 'var(--space-4)',
+            paddingBlock: 'var(--space-3) var(--space-4)',
+            background: 'hsl(var(--surface))',
             borderBottom: '1px solid hsl(var(--border-subtle))',
           }}
         >
@@ -131,7 +154,7 @@ function Reader() {
             style={{
               margin: 0,
               fontFamily: 'var(--font-body)',
-              fontSize: '0.75rem',
+              fontSize: '0.875rem',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               color: 'hsl(var(--text-muted))',

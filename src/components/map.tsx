@@ -168,6 +168,16 @@ function hastToText(node: HastLikeElement | undefined): string {
   return node.children.map(hastToText).join('')
 }
 
+// rehype-pretty-code represents the language two different ways depending
+// on where in its pipeline the tree is read: a `language-xxx` class before
+// (and sometimes after) processing, or a `data-language` property once it
+// rewrites the code element — CodeAdapter (below) already checks both
+// (`'data-language' in rest`) for the isBlockCode heuristic; this used the
+// class only, so the header's language label could go blank exactly when
+// the class form wasn't the one present (observed on-device, though the
+// same divergence is reachable on any platform depending on hydration
+// timing — checked here for symmetry with CodeAdapter, not just for that
+// one repro).
 function getCodeLanguage(preNode: HastLikeElement | undefined): string {
   const codeChild = preNode?.children?.find((child) => child.tagName === 'code')
   const className = codeChild?.properties?.className
@@ -175,7 +185,9 @@ function getCodeLanguage(preNode: HastLikeElement | undefined): string {
   const languageClass = classes.find(
     (name): name is string => typeof name === 'string' && name.startsWith('language-'),
   )
-  return languageClass ? languageClass.slice('language-'.length) : ''
+  if (languageClass) return languageClass.slice('language-'.length)
+  const dataLanguage = codeChild?.properties?.['data-language']
+  return typeof dataLanguage === 'string' ? dataLanguage : ''
 }
 
 // T-P8-01: CommonMark wraps a standalone `![alt](src)` in a `<p>` (an image

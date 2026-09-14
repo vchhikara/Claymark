@@ -77,7 +77,7 @@ html {
 
 .claymark-p {
   margin: 0;
-  text-align: justify;
+  text-align: left;
 }
 
 .claymark-text {
@@ -111,6 +111,30 @@ html {
 .claymark-scroll-top:hover {
   background: hsl(var(--surface));
   transform: translateY(-2px);
+}
+
+/* Reading-progress bar (src/app/main.tsx): a slim indicator fixed to the
+   viewport's left edge, fill height driven by scroll fraction (inline
+   style, computed in JS — CSS alone can't read scroll position). Pure
+   feedback, not a control — aria-hidden, no interaction. */
+.claymark-progress-track {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  width: 3px;
+  background: hsl(var(--border-subtle));
+  z-index: var(--z-header);
+}
+
+.claymark-progress-fill {
+  width: 100%;
+  /* --accent-brand (tokens.css) is a hex literal, not an HSL triplet like
+     most other color tokens here — wrapping it in hsl() is invalid CSS and
+     silently drops the whole declaration (transparent background,
+     initial value). Use it bare, matching .claymark-copy-button[data-state]
+     and .claymark-link:focus-visible's existing convention for this token. */
+  background: var(--accent-brand);
+  transition: height 0.1s linear;
 }
 
 .claymark-em {
@@ -164,7 +188,16 @@ html {
 }
 
 /* Pill styling — used only for in-body code that's a literal value
-   (numbers, CSS values, hex colors), per InlineCode.tsx's heuristic. */
+   (numbers, CSS values, hex colors), per InlineCode.tsx's heuristic.
+   Multi-word values (a type signature like `(e: RenderError) => void`,
+   a chain of filenames joined by arrows) routinely wrap across two lines —
+   inside a narrow table cell especially. Without `box-decoration-break`,
+   an inline element's background/border/radius is computed once for the
+   whole element and then sliced wherever it happens to wrap, so the
+   pill's rounded corners only ever appear at the very start and end of
+   the *whole* span — the wrap point itself renders as a flat, disjointed
+   edge instead of two clean rounded boxes (one per line). `clone` makes
+   every line fragment paint its own complete box. */
 .claymark-code-inline {
   font-family: var(--font-mono);
   font-size: 0.85em;
@@ -173,6 +206,8 @@ html {
   border: 1px solid hsl(var(--border-subtle));
   border-radius: var(--radius-md);
   padding: 0.15em var(--space-2);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Reference styling — file paths and filenames render as plain inline
@@ -205,6 +240,18 @@ html {
   margin-block: var(--space-4);
 }
 
+/* A bare `.claymark-pre` (block math, or any fence rendered outside
+   CodeBlock's chrome) keeps its own full box above. Inside CodeBlock
+   (.claymark-codeblock), the box moves to the shared container below so the
+   header row and the code sit inside one visual box together. */
+.claymark-codeblock .claymark-pre {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-block: 0;
+}
+
 .claymark-code-block {
   font-family: inherit;
   background: none;
@@ -218,27 +265,35 @@ html {
   margin-block: var(--space-4);
 }
 
+/* The box (background/border/radius/padding) used to belong to .claymark-pre
+   alone, with the header absolutely-positioned on top of it — floating over
+   the pre's top-right corner. On a narrow (phone) viewport, or any code
+   block whose first line runs long enough, that put the Copy button
+   directly on top of real code text (reported on-device: "from ..."
+   collided with the button). Moving the box to this shared container
+   instead keeps the header inside the same visual box (not a separate
+   element floating above it) while putting it in normal document flow
+   above the code — it can't overlap the code by construction, regardless
+   of line length or viewport width, without leaving the box. */
 .claymark-codeblock {
   position: relative;
   margin-block: var(--space-4);
+  background: hsl(var(--surface-code));
+  border: 1px solid hsl(var(--border-default));
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .claymark-codeblock-scroll {
   display: block;
 }
 
-.claymark-codeblock .claymark-pre {
-  margin-block: 0;
-}
-
 .claymark-codeblock-header {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  z-index: 1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .claymark-codeblock-lang {
@@ -374,7 +429,7 @@ html {
 .claymark-th {
   height: 2.5rem;
   padding: 0 var(--space-3);
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
   font-weight: 600;
   color: hsl(var(--text-primary));
@@ -384,7 +439,7 @@ html {
 .claymark-td {
   padding: var(--space-2) var(--space-3);
   vertical-align: middle;
-  text-align: left;
+  text-align: center;
 }
 
 .claymark-img {
@@ -454,7 +509,10 @@ html {
 
 .claymark-theme-toggle:hover {
   background: hsl(var(--surface));
-  border-color: hsl(var(--accent-brand));
+  /* --accent-brand is a hex literal (tokens.css), not an HSL triplet —
+     hsl() wrapping it is invalid CSS and silently drops the declaration.
+     See the fuller explanation on .claymark-scroll-top's progress fill. */
+  border-color: var(--accent-brand);
   box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
 }
 
@@ -476,7 +534,7 @@ html {
 
 .cm-toolbar-btn:hover {
   background: hsl(var(--surface)) !important;
-  border-color: hsl(var(--accent-brand)) !important;
+  border-color: var(--accent-brand) !important;
   box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
 }
 
@@ -488,7 +546,7 @@ html {
 .cm-toolbar-btn:focus-visible,
 .claymark-theme-toggle:focus-visible,
 .cm-source-textarea:focus-visible {
-  outline: 2px solid hsl(var(--accent-brand));
+  outline: 2px solid var(--accent-brand);
   outline-offset: 2px;
 }
 
@@ -606,13 +664,16 @@ html {
   height: 2.25rem;
 }
 
-/* 0.6x of the default .claymark-button size (font-size 0.875rem, padding
+/* 0.85x of the default .claymark-button size (font-size 0.875rem, padding
    var(--space-2) var(--space-4)) — used by the header's Write/Browse
    buttons. Scales font-size and padding directly rather than a CSS
-   `transform: scale()`, which would leave the pre-scale layout box behind. */
+   `transform: scale()`, which would leave the pre-scale layout box behind.
+   Was 0.6x (font-size 0.525rem/~8px) — reported too small to read
+   comfortably against the rest of the header; 0.85x keeps the header
+   buttons visibly secondary to body text while staying legible. */
 .claymark-button--compact {
-  font-size: 0.525rem;
-  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  padding: 0.425rem 0.85rem;
 }
 
 /* Icon buttons (fixed width/height, not font-driven) need their own
@@ -623,8 +684,8 @@ html {
 .claymark-button--compact[data-size='icon'] {
   width: auto;
   height: auto;
-  padding: 0.3rem;
-  font-size: 0.525rem;
+  padding: 0.425rem;
+  font-size: 0.75rem;
 }
 
 /* ---- Alert ---- */
