@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Claymark icon (dark surface)</title>
+  <desc>
+    Same mark as icon-c.svg, for placement on a dark surface (a dark
+    README theme, a dark hero section) rather than a re-theming of the
+    app icon itself — the tile still carries its own clay fill; only the
+    letterform's contrast partner changes, matching how the wordmark
+    gets a dedicated dark-surface color rather than reusing the light one.
+  </desc>
+  <defs>
+    <linearGradient id="tileFillDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dd8562" />
+      <stop offset="100%" stop-color="#c8542d" />
+    </linearGradient>
+    <filter id="ambientShadowDark" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <g filter="url(#ambientShadowDark)">
+    <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#tileFillDark)" />
+  </g>
+
+  <path
+    d="M378.9,342.0
+       A150,150 0 1 1 378.9,170.0
+       L328.1,205.5
+       A88,88 0 1 0 328.1,306.5
+       Z"
+    fill="#faf9f5"
+  />
+</svg>

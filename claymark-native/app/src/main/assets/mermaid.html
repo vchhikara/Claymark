@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!--
+  Mermaid host page. Same offline contract as math.html: every subresource
+  resolves inside the APK, and the app declares no INTERNET permission.
+
+  Invalid syntax falls back to showing the diagram source as a code block —
+  the fallback is performed by the Kotlin side, which this page signals via
+  ClaymarkBridge.onError so the failure is rendered by the native code-block
+  component rather than approximated here.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<script src="mermaid/mermaid.min.js"></script>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow-x: hidden;
+  }
+  #root {
+    /* Wide diagrams scroll inside their own container; the page never does. */
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  #root svg { max-width: none; height: auto; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  function reportHeight() {
+    var h = document.getElementById('root').getBoundingClientRect().height;
+    if (window.ClaymarkBridge && window.ClaymarkBridge.onHeight) {
+      window.ClaymarkBridge.onHeight(Math.ceil(h));
+    }
+  }
+
+  // T-P5-08: some pathological source can make mermaid.render hang rather
+  // than reject; from the reader's side a hang is indistinguishable from a
+  // crash. A bounded timeout turns it into the same fail-closed fallback as
+  // a thrown error.
+  var RENDER_TIMEOUT_MS = 5000;
+
+  // Called from Kotlin. payload = { source, theme }
+  window.cmRender = function (payload) {
+    var data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    var settled = false;
+
+    function fail(message) {
+      if (settled) return;
+      settled = true;
+      if (window.ClaymarkBridge && window.ClaymarkBridge.onError) {
+        window.ClaymarkBridge.onError(String(message));
+      }
+    }
+
+    var timer = setTimeout(function () {
+      fail('Mermaid render exceeded ' + RENDER_TIMEOUT_MS + 'ms');
+    }, RENDER_TIMEOUT_MS);
+
+    try {
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: data.theme === 'dark' ? 'dark' : 'default',
+        fontFamily: 'Inter, sans-serif'
+      });
+
+      mermaid.render('cm-diagram', data.source).then(function (result) {
+        if (settled) return;
+        clearTimeout(timer);
+        settled = true;
+        document.getElementById('root').innerHTML = result.svg;
+        setTimeout(reportHeight, 0);
+        setTimeout(reportHeight, 80);
+      }).catch(function (err) {
+        clearTimeout(timer);
+        fail(err && err.message ? err.message : err);
+      });
+    } catch (err) {
+      clearTimeout(timer);
+      fail(err && err.message ? err.message : err);
+    }
+  };
+
+  window.addEventListener('resize', reportHeight);
+</script>
+</body>
+</html>

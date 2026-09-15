@@ -5,3 +5,6 @@ coverage/
 *.log
 .DS_Store
 src-tauri/target/
+Claymark.apk
+claymark-android-src.zip
+plan/.claude/settings.local.json

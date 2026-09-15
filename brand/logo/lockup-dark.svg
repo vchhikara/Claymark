@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 220" width="1400" height="220">
+  <title>Claymark — horizontal lockup (dark surfaces)</title>
+  <desc>
+    Same fix as lockup-light.svg: geometry inlined, not referenced, so
+    this renders correctly wherever an SVG is used as an &lt;img&gt;.
+    Icon is unchanged (the terracotta tile already contrasts fine on
+    dark); only the wordmark swaps to the dark-theme text color.
+  </desc>
+  <defs>
+    <linearGradient id="tileFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dd8562" />
+      <stop offset="100%" stop-color="#c8542d" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(10,10) scale(0.390625)">
+    <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#tileFill)" />
+    <path
+      d="M378.9,342.0
+         A150,150 0 1 1 378.9,170.0
+         L328.1,205.5
+         A88,88 0 1 0 328.1,306.5
+         Z"
+      fill="#faf9f5"
+    />
+  </g>
+
+  <text
+    x="250" y="165"
+    font-family="Inter, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="600"
+    letter-spacing="-2"
+    fill="#f5f5f4"
+  >claymark</text>
+</svg>
