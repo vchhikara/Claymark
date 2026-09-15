@@ -248,8 +248,11 @@ private fun Header(session: DocumentSession, onOpenDrawer: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(Space.s2),
         ) {
             if (session.isEditing) {
+                // Plain text, no glyph: this row already carries a lot
+                // (Save as / status), and "Back" alone reads clearly next
+                // to it without a redundant arrow.
                 ClayButton(
-                    label = "\u2190 Back",
+                    label = "Back",
                     compact = true,
                     onClick = session::backToPreview,
                 )
