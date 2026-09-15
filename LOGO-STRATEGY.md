@@ -688,6 +688,31 @@ Stage 4's hex-lock pass (§5) and then Stage 3's vector production (§3)
 per the pipeline — the design decisions themselves (letter, no dot device,
 lockup arrangement) are stable at this point and shouldn't need revisiting.
 
+## 16. Checkpoint 8 — dark-theme wordmark verified against a real dark background
+
+Re-checked against an actual black background (not the white canvas that
+made Checkpoint 7's version untestable) — legible, clean contrast, warm
+off-white reading correctly against true black. Checkpoint 6's failure is
+resolved and actually confirmed this time, not just assumed from a
+same-shape/different-color description.
+
+**All design-level checkpoints are now closed:** letter (C), no dot device
+on either mark, icon shape/treatment, wordmark typeface/casing, the
+icon+wordmark lockup, and both light- and dark-theme color pairings are
+each independently verified against the failure condition that mattered
+for it (contrast, transparency, pairing, legibility) rather than approved
+by eye. What remains per the pipeline in §4 is production, not design:
+
+- **Stage 4** — hex-lock both marks' exact colors against the real
+  `tokens.css` swatches (`clay-500`/`clay-600` for the icon,
+  `Neutral.n200`-equivalent for the dark wordmark) rather than trusting
+  each generator's approximation of the brief.
+- **Stage 3** — native-vector production pass (Recraft) for the actual
+  scalable assets, plus the outline-only and single-ink cuts §5 calls for.
+- **§6's full technical checklist** — PWA/Tauri/Android adaptive-icon
+  exports, maskable safe zone, 16px legibility actually rendered (not just
+  inferred from how simple the shape is), both-theme contrast finalized.
+
 ---
 
 ## Sources consulted
