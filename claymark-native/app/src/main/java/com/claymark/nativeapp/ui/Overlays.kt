@@ -60,7 +60,6 @@ fun AbandonDialog(
             modifier = Modifier
                 .widthIn(max = 360.dp)
                 .clayRaised(base = c.surface, colors = c, radius = Radius.lg, elevation = 16.dp)
-                .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.lg))
                 .padding(Space.s5),
             verticalArrangement = Arrangement.spacedBy(Space.s4),
         ) {

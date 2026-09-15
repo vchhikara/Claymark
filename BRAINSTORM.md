@@ -380,6 +380,118 @@ were already weighed:
 
 ---
 
+## 7. UI gaps found via device testing (2026-09-15, tablet `SM_X610`)
+
+Not researched externally — both items below are observed defects/gaps found
+by actually running the installed build, confirmed via on-device screenshot
+before writing this section.
+
+### 7.1 Drawer content is visually empty
+
+The drawer (`ClaymarkDrawerContent` / `DrawerRow`, `ui/Screens.kt`) is
+currently just the "CLAYMARK" wordmark, 4 plain text rows (Settings/Help/
+About/Privacy), and then a large stretch of dead surface-colored space below
+— confirmed on-screen: the rows read as bare list items with no visual
+weight at rest (`DrawerRow` only gets a `surfaceRaised` background when
+`active`), no icons, no grouping, no footer. It works, but doesn't feel
+designed — the rest of the app (buttons, cards, table rows) is consistently
+`clayRaised`/bordered/tokened; the drawer is the one surface that isn't.
+
+Concrete ideas, roughly in order of value/cost:
+
+- **Leading icon per row** — a small monochrome glyph (same idiom as
+  `ClayIconButton`'s sun/moon/menu/back: `Icons.Filled.Settings`,
+  `Icons.AutoMirrored.Filled.HelpOutline` or similar core M3 icons already
+  available without the `-extended` dependency) to the left of each label.
+  Cheapest single fix for "feels blank" — a drawer that's pure text at 100%
+  width reads unfinished regardless of spacing.
+- **Give rows real rest-state chrome** — a subtle `border(1.dp,
+  c.borderSubtle, ...)` or hairline divider between rows (shadcn's own
+  drawer/sidebar pattern), so the list has visible structure even before any
+  row is active, not just on interaction.
+- **A footer anchor instead of empty space** — app version number (already
+  surfaced on the About screen per earlier work) pinned to the bottom of the
+  drawer column via `Spacer(Modifier.weight(1f))` before it. Turns "empty
+  space" into "intentional whitespace with a purpose," and is a pattern
+  already used in most Android nav-drawer references.
+- **Group visually, even with only 4 items** — the user's specific framing
+  ("no separation between settings and the different areas") suggests a
+  small section label or extra top padding separating "Settings" (an
+  action/config destination) from Help/About/Privacy (informational
+  destinations) — two visual groups instead of one flat list of four, even
+  though today's item count doesn't strictly need grouping to stay
+  scannable. Cheap (`Space.s2` gap + optional small caption), directly
+  answers the "these feel undifferentiated" complaint.
+- **Current-document context at the top** (stretch) — once §2.3 Recent
+  files exists, showing the currently-open document's name/last-modified
+  under the wordmark would give the drawer a reason to feel "alive" rather
+  than static navigation-only chrome. Depends on other work, not a
+  first-pass item.
+
+**Verdict:** small, self-contained, no new dependency (core icons already
+available per §1.7's adaptive-icon note) — a good near-term polish pass,
+independent of every other item in this document. Icon + rest-state
+chrome + footer anchor alone would likely resolve the "dull/blank" feeling
+without needing the grouping or context-header ideas.
+
+### 7.2 No distinction between "opened a file" and "cold launch with nothing to open"
+
+Confirmed via `session/DocumentSession.kt` + `ClaymarkApp.kt:117` and an
+on-device screenshot of a fresh launch (via the launcher icon, not
+"Open with"): `SessionMode.NO_DOCUMENT` currently renders `SAMPLE_MD` through
+the exact same reader chrome as a real open document — full header, full
+rendered markdown body (the built-in `claymark` product-description sample),
+with only one line tacked onto the bottom ("Tap **Open file** above to open
+your own Markdown file."). It is a real document, not a welcome screen —
+useful as a "here's what rendering looks like" demo, but the two entry paths
+(tap the launcher icon vs. "Open with" on a `.md` file from a file manager)
+currently produce visually the same screen, which is the actual gap: opening
+a real file should land you on *that* content immediately, exactly like now
+— but cold-launching the app with nothing to open should read as its own
+distinct state, not as "here's a sample document, by the way you can open a
+real one."
+
+Proposed split, matching the two intent paths already handled in
+`MainActivity.kt` (`openLaunchDocument()` at line 92 for the normal launch
+path, line 164 for `ACTION_VIEW`/"Open with"):
+
+- **`ACTION_VIEW` (Open with a `.md` file)** — unchanged. Goes straight to
+  `VIEWING` with the real document, no intermediate screen. This already
+  works correctly and should stay exactly as-is.
+- **`ACTION_MAIN`/`LAUNCHER` with no prior document** — new dedicated
+  welcome/empty state instead of falling through to `SAMPLE_MD`:
+  - Claymorphism-styled, consistent with the rest of the app (`clayRaised`
+    surfaces, `Space`/`Radius` tokens, serif wordmark treatment already used
+    in the drawer header) — centered "CLAYMARK" mark, a one-line tagline
+    (reuse the existing subtitle copy: "A Markdown renderer built for
+    streamed, untrusted LLM output" or a shorter welcome-specific line), and
+    two primary actions as `ClayButton`s: **Open file** (wires to the same
+    SAF picker `openLaunchDocument`/open-file flow already built) and
+    **View sample** (demotes today's `SAMPLE_MD` render from "the default
+    thing you see" to an explicit, opt-in action — the demo content isn't
+    lost, just no longer disguised as a real document).
+    - "Create new" (a blank document straight into `EDITING`) is a
+      reasonable third action if there's an existing blank-document code
+      path to hang it on — worth checking `DocumentSession` for whether
+      `NO_DOCUMENT → EDITING` with empty text is already representable
+      before committing to this one; if not, it's a small addition to the
+      state machine rather than pure UI.
+  - Recovered-draft handling (`RecoveryDraft`/`DraftStore`, already wired
+    per `DocumentSession.kt`) should still take priority over this new
+    welcome screen exactly as it presumably does today for `SAMPLE_MD` — a
+    user with an unsaved draft from last session should see the recovery
+    prompt, not a welcome screen burying it.
+
+**Verdict:** the more substantial of the two items in this section — a new
+screen/composable plus a `SessionMode`-adjacent way to represent "showing
+the bundled sample on purpose" vs. "nothing open yet," but no new
+dependency, no new permission, and directly fixes a real first-run
+impression problem (a cold launch currently looks like a broken/confused
+state to anyone who doesn't read the bottom line). Worth doing before most
+of §1/§2's items — first impressions compound.
+
+---
+
 ## Sources consulted this pass
 
 - [Jetpack Glance — Android Developers](https://developer.android.com/develop/ui/compose/glance)

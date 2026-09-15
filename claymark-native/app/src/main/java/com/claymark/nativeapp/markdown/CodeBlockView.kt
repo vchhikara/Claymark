@@ -4,16 +4,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.claymark.nativeapp.theme.ClaymarkFonts
 import com.claymark.nativeapp.theme.Radius
@@ -34,7 +32,7 @@ import com.claymark.nativeapp.theme.Space
 import com.claymark.nativeapp.theme.TypeScale
 import com.claymark.nativeapp.theme.clayRaised
 import com.claymark.nativeapp.theme.colors
-import com.claymark.nativeapp.ui.ClayButton
+import com.claymark.nativeapp.ui.ClayBadge
 import kotlinx.coroutines.delay
 
 /**
@@ -45,8 +43,10 @@ import kotlinx.coroutines.delay
  * on-device fix: an absolutely-positioned copy button landed directly on top
  * of code text on a narrow viewport whenever the first line ran long.
  *
- * Horizontal overflow scrolls within the block. The page never scrolls
- * sideways — a hard product rule, not a preference.
+ * Long lines wrap within the block instead of scrolling horizontally — the
+ * page never scrolls sideways, and neither does the code inside it; a
+ * fence that ran off-screen was unreadable without a swipe the reader had
+ * no reason to know was there.
  */
 @Composable
 fun CodeBlockView(
@@ -57,7 +57,6 @@ fun CodeBlockView(
     modifier: Modifier = Modifier,
 ) {
     val c = colors
-    val scroll = rememberScrollState()
 
     val palette = if (c.isDark) Highlighter.GithubDarkDimmed else Highlighter.GithubLight
     val highlighted: AnnotatedString = remember(code, language, c.isDark) {
@@ -74,10 +73,10 @@ fun CodeBlockView(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = Space.s4)
-            // Chrome, so it takes the clay treatment. The fill is still
-            // --surface-code; the modifier only adds depth around it.
-            .clayRaised(base = c.surfaceCode, colors = c, radius = Radius.md, elevation = 4.dp)
-            .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.md))
+            // Pressed rather than resting elevation — flattened shadow, no
+            // rim-light stroke — reads as pushed-in/engraved without a
+            // border accent or clayPot's raised outer lip.
+            .clayRaised(base = c.surfaceCode, colors = c, radius = Radius.md, elevation = 4.dp, pressed = true)
             .padding(start = Space.s4, end = Space.s4, top = Space.s3, bottom = Space.s4),
     ) {
         if (showChrome) {
@@ -88,24 +87,19 @@ fun CodeBlockView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = language,
-                    style = TextStyle(
-                        fontFamily = ClaymarkFonts.Mono,
-                        fontSize = TypeScale.code,
-                        color = c.textSecondary,
-                    ),
-                )
+                if (language.isNotBlank()) {
+                    ClayBadge(text = language)
+                } else {
+                    Box(modifier = Modifier)
+                }
                 CopyButton(text = code)
             }
         }
 
-        Box(modifier = Modifier.horizontalScroll(scroll)) {
-            if (highlightedLines.isEmpty()) {
-                Text(text = highlighted, style = codeStyle)
-            } else {
-                HighlightedLines(highlighted, code, highlightedLines, codeStyle)
-            }
+        if (highlightedLines.isEmpty()) {
+            Text(text = highlighted, style = codeStyle)
+        } else {
+            HighlightedLines(highlighted, code, highlightedLines, codeStyle)
         }
     }
 }
@@ -147,9 +141,14 @@ private fun HighlightedLines(
 /**
  * Port of `CopyButton.tsx`. Copies exactly the fence source — no line
  * numbers, no highlighting artifacts.
+ *
+ * Flat, not [ClayButton] — sitting inside the pressed-in code box, a raised
+ * clay button would fight the "engraved" read of its own container. Just
+ * text, no shadow/gradient/border.
  */
 @Composable
 fun CopyButton(text: String) {
+    val c = colors
     val context = LocalContext.current
     var copied by remember { mutableStateOf(false) }
 
@@ -160,13 +159,20 @@ fun CopyButton(text: String) {
         }
     }
 
-    ClayButton(
-        label = if (copied) "Copied" else "Copy",
-        compact = true,
-        onClick = {
-            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("Markdown code", text))
-            copied = true
-        },
+    Text(
+        text = if (copied) "Copied" else "Copy",
+        style = TextStyle(
+            fontFamily = ClaymarkFonts.Ui,
+            fontSize = TypeScale.buttonCompact,
+            fontWeight = FontWeight.Medium,
+            color = c.textSecondary,
+        ),
+        modifier = Modifier
+            .clickable {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Markdown code", text))
+                copied = true
+            }
+            .padding(horizontal = Space.s2, vertical = Space.s1),
     )
 }

@@ -186,6 +186,20 @@ class DocumentBackend(private val context: Context) {
     fun read(ref: DocumentRef): DocumentSnapshot =
         DocumentSnapshot(ref, readText(Uri.parse(ref.handle)))
 
+    /**
+     * Re-opens a document previously recorded in [RecentFilesStore] via its
+     * persisted URI — no picker involved, unlike [openPicked]. Read failure
+     * (grant revoked, file moved/deleted since) surfaces as a normal
+     * [DocumentSession] open error; the caller drops the stale recent-files
+     * entry in response.
+     */
+    fun openRecent(uriString: String): DocumentSnapshot {
+        val uri = Uri.parse(uriString)
+        val writable = hasPersistedWriteGrant(uri)
+        val text = readText(uri)
+        return DocumentSnapshot(refFor(uri, writableHint = writable), text)
+    }
+
     private fun readText(uri: Uri): String {
         if (uri.scheme == "file") {
             val path = uri.path ?: throw java.io.IOException("File URI has no path")

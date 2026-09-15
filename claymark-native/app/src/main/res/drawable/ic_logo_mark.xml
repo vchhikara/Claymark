@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The real brand mark (brand/logo/icon-c.svg), ported at its native 512
+  viewport rather than the adaptive-icon's cropped/monochrome 108 layer —
+  this is the actual rounded-square tile + cream "C" cutout used for UI
+  chrome (the drawer wordmark lockup), not the themed-icon silhouette.
+  Tile gradient stops and the cream fill are the exact hex values from the
+  SVG's own desc (Clay.c400/c600 family, the surface-light token).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:pathData="M112,16
+                           L400,16
+                           A96,96 0 0 1 496,112
+                           L496,400
+                           A96,96 0 0 1 400,496
+                           L112,496
+                           A96,96 0 0 1 16,400
+                           L16,112
+                           A96,96 0 0 1 112,16
+                           Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="256"
+                android:startY="16"
+                android:endX="256"
+                android:endY="496">
+                <item android:offset="0" android:color="#FFDD8562" />
+                <item android:offset="1" android:color="#FFC8542D" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:pathData="M378.9,342.0
+                           A150,150 0 1 1 378.9,170.0
+                           L328.1,205.5
+                           A88,88 0 1 0 328.1,306.5
+                           Z"
+        android:fillColor="#FFFAF9F5" />
+</vector>
