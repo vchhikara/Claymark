@@ -662,6 +662,32 @@ use on dark surfaces, the same way this document already treats the icon
 tile as needing both a light- and dark-theme check rather than one
 universal render.
 
+## 15. Checkpoint 7 — lockup passes, dark variant generated but not yet verified
+
+Two results reviewed. **The icon+wordmark lockup passes** — the "C" tile
+and wordmark now read as one family: consistent color logic (terracotta
+icon, matching dark-charcoal text), sensible size ratio, generous spacing,
+and the tile sits properly balanced against the wordmark's cap-height/
+baseline rather than looking randomly placed. This resolves Checkpoint
+5's open pairing question — icon and wordmark are confirmed to work
+together, not just independently.
+
+**The dark-theme wordmark was generated correctly but is not yet
+confirmed** — it was shown against a white canvas, where a light-colored
+mark is trivially invisible by construction and that placement proves
+nothing about whether it solves Checkpoint 6's actual failure. Before
+this is treated as resolved, it needs the same background-swatch check
+already used in Checkpoint 6 (toggle to the dark-gray/black swatch and
+confirm real legibility there) — not a visual inspection against the
+wrong background.
+
+**Status:** icon, wordmark, and their lockup are all provisionally
+confirmed for light theme. Dark theme is one verification step away from
+being confirmed, not yet there. Once that check passes, this moves to
+Stage 4's hex-lock pass (§5) and then Stage 3's vector production (§3)
+per the pipeline — the design decisions themselves (letter, no dot device,
+lockup arrangement) are stable at this point and shouldn't need revisiting.
+
 ---
 
 ## Sources consulted
