@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Claymark icon</title>
+  <desc>
+    A flat rounded-square tile with a geometric "C" cut out in negative
+    space. Hand-authored vector paths — no beveling, no gloss/highlight
+    sweep, no directional drop shadow. Fill colors are the exact hex
+    values from src/theme/tokens.css: --clay-500 (#d97757) as the tile's
+    base, --clay-600 (#c8542d) as the shallow bottom-of-tile tint, and
+    --surface light (#faf9f5) for the letterform, deliberately reusing
+    the product's own light-surface token rather than an arbitrary
+    near-white.
+  </desc>
+  <defs>
+    <!--
+      The only "depth" cue on this mark: a very shallow vertical tint,
+      matching Claymorphism.kt's clayRaised gradient stops (lighten near
+      the top, darken near the bottom), not a beveled edge or a gloss
+      sweep. Two stops, low contrast between them on purpose.
+    -->
+    <linearGradient id="tileFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dd8562" />
+      <stop offset="100%" stop-color="#c8542d" />
+    </linearGradient>
+    <!--
+      A soft, contained, neutral ambient shadow directly beneath the
+      tile — the "sheet of paper resting on a table" treatment from
+      LOGO-STRATEGY.md's Direction F brief, not a long cast shadow to
+      one side. Kept subtle: low opacity, small offset, gentle blur.
+    -->
+    <filter id="ambientShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#3a2418" flood-opacity="0.22" />
+    </filter>
+  </defs>
+
+  <g filter="url(#ambientShadow)">
+    <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#tileFill)" />
+  </g>
+
+  <!--
+    The "C": a thick ring segment built from two concentric arcs, radii
+    150 (outer) and 88 (inner), centered on the tile at (256,256), with a
+    70-degree gap facing right (35 degrees above and below the
+    horizontal centerline) — the classic geometric-sans C opening, not a
+    custom or ornamental letterform.
+  -->
+  <path
+    d="M378.9,342.0
+       A150,150 0 1 1 378.9,170.0
+       L328.1,205.5
+       A88,88 0 1 0 328.1,306.5
+       Z"
+    fill="#faf9f5"
+  />
+</svg>

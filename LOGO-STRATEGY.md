@@ -743,6 +743,36 @@ being used doesn't support an image-reference input for this step, that's
 a reason to use a different tool for Stage 3, not to keep re-prompting in
 text.
 
+## 18. Checkpoint 10 — Stage 3 done by hand instead: `brand/logo/icon-c.svg`
+
+Rather than a fifth attempt at getting a generator to reproduce the
+confirmed design without reintroducing its own defaults, Stage 3 was done
+directly: a hand-authored SVG built from real vector primitives (a rounded
+rect, two concentric arcs forming the "C" as a closed path), not a trace
+or an AI re-generation.
+
+**This also resolves Stage 4's hex-lock requirement in the same step,**
+since it isn't possible to drift off-brand by eye when the fill values are
+the literal token hex codes rather than an approximation of them:
+`#d97757` (`--clay-500`) and `#c8542d` (`--clay-600`) as the tile's shallow
+vertical-tint gradient stops (matching `Claymorphism.kt`'s `clayRaised`
+gradient direction, not a new invention), and `#faf9f5` — the product's
+own `--surface` light token, not an arbitrary near-white — for the
+letterform. The shadow is a single `feDropShadow`, low opacity, small
+offset, no directional bias, matching Direction F's "sheet of paper
+resting on a table" brief exactly because it was authored to that
+description rather than requested from a generator and hoped for.
+
+Rendered and visually verified (headless Chromium screenshot) before
+being treated as final — confirmed flat, no bevel, no gloss, no long
+shadow, geometry matches the confirmed Checkpoint 3 design.
+
+**Still outstanding per §6's checklist:** the dark-theme tile variant (a
+second gradient/letterform pairing using the dark-theme tokens, not this
+light-theme one recolored by eye), the outline-only and single-ink cuts,
+the maskable-icon safe-zone check, an actual 16px render, and the Android
+adaptive-icon foreground/background layer split.
+
 ---
 
 ## Sources consulted
