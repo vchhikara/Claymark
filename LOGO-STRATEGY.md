@@ -833,6 +833,62 @@ assets themselves; the wordmark's text-based (not outlined-to-paths)
 construction means faithful reproduction elsewhere still needs the actual
 Inter font file available, same as any text-based wordmark SVG.
 
+## 20. Checkpoint 12 — wired into the app; a real rendering bug found and fixed along the way
+
+Every placeholder icon across the whole project replaced with the real
+mark, in place: `public/manifest.json`'s three PWA icons, all of
+`src-tauri/icons/` (desktop square sizes, the Windows tile set, the iOS
+`AppIcon` set, and the Android mipmap tree), and — the most consequential
+find — `claymark-native`'s own Android app icon.
+
+**`claymark-native` was shipping the unmodified Android Studio default
+project template icon** (`#3DDC84`, the grid-line placeholder, as the
+adaptive-icon background; a teal/orange abstract swirl as the
+foreground) — not even the old flat-orange placeholder the rest of the
+project had, something else entirely. The actual cause: the app's
+`drawable/ic_launcher_background.xml` and `drawable-v24/
+ic_launcher_foreground.xml` vector drawables existed in the project the
+whole time, but **no `mipmap-anydpi-v26/ic_launcher.xml` ever referenced
+them** — so `AndroidManifest.xml`'s `android:icon="@mipmap/ic_launcher"`
+fell through to the legacy per-density PNGs (the same default-template
+art) on every API level, adaptive-icon-capable devices included. Fixed by:
+replacing both vector drawables with real content matching `brand/logo/
+android/*.svg` exactly, and adding the missing `mipmap-anydpi-v26/
+ic_launcher.xml` + `ic_launcher_round.xml` adaptive-icon declarations.
+Legacy per-density fallback PNGs (`ic_launcher.png`, `_round.png`,
+`_foreground.png`) regenerated at their exact existing pixel dimensions
+too, for pre-API26 compatibility and build-tool references that still
+expect them.
+
+**A real, deterministic headless-Chromium bug found and fixed mid-task,**
+not a flake worked around by retrying: screenshots taken with
+`--window-size` at small values (confirmed at 192px, both for SVG and
+already-rasterized PNG sources, regardless of `<img>` sizing method)
+silently render only a cropped top-left fraction of the content — a
+browser/environment bug, unrelated to any of the artwork. Diagnosed by
+elimination (stripped the SVG to a flat two-shape file with no gradient,
+no filter, no defs — still reproduced; swapped the source to an
+already-correct PNG — still reproduced; ruled out a paint-timing race via
+`--virtual-time-budget` — still reproduced), then fixed by always
+capturing at a large window (1200px) with the actual artwork confined to
+the target size via a CSS `transform: scale()`, and cropping the
+oversized-but-correct screenshot down to the exact target dimensions with
+a small dependency-free PNG decoder/cropper written for this
+(`brand/logo/tools/crop_png.py` — zlib + struct only, since neither PIL
+nor ImageMagick nor a PNG-capable ffmpeg build were available in this
+environment). Every one of the 60-plus regenerated raster files was
+re-verified against its required exact pixel dimensions and spot-checked
+visually after the fix, not assumed correct from the first (broken)
+batch.
+
+**Not done, still requiring tooling this environment doesn't have:**
+`icon.icns` and `icon.ico` remain the old flat-orange placeholder — `npx
+tauri icon` (the tool that generates these correctly, used previously per
+`plan/04-STATE-LEDGER.md`'s T-P9-03 note) needs `@tauri-apps/cli`
+installed with a working postinstall fetch, which risked being
+unreliable here; regenerate locally with `npx tauri icon
+brand/logo/raster/icon-512.png` before the next desktop build.
+
 ---
 
 ## Sources consulted
