@@ -447,6 +447,70 @@ than iterating further inside whichever tool produced it — per §3's own
 reasoning, refining color/text accuracy inside an aesthetic-exploration
 tool fights that tool's weak point instead of routing around it.
 
+## 10. Checkpoint 2 — E-round reviewed, still fighting the same shadow, 2026-09-15
+
+Second batch (six "C" variants) reviewed. Real progress on the two things
+Checkpoint 1 flagged hardest: the letter is correctly "C" throughout, and
+the color reads as actual clay-orange rather than the earlier
+chocolate-brown drift. But one problem from round one is **still present
+in all six images, unchanged**, plus one new one:
+
+- **The long diagonal cast shadow (the dated ~2015 flat-icon-pack style)
+  is on every single tile.** The E1–E3 prompts' "a very soft low-contrast
+  diffuse shadow to the bottom-right only, subtle, not a hard cast shadow"
+  language did not stop this. Generic negatives ("no long cast shadow")
+  evidently aren't specific enough either, the same lesson Checkpoint 1
+  already drew about "sculpted material" — the fix has to *name the style
+  by its common name*, not just describe the unwanted geometry.
+- **New:** a diagonal glossy highlight sweep across the tile fill on most
+  variants — a materials/sheen effect, not the flat matte fill specified.
+- **The dot-accent device (kept from round one) isn't working out.** Across
+  two rounds it has landed as disconnected from the letterform, awkwardly
+  grafted onto the stroke, or (in one variant) produced a stray vertical
+  split through the C that reads as a rendering glitch rather than a
+  deliberate mark. Verdict: **drop it.** It was worth one try; it's adding
+  failure surface, not brand value, and a plain bold "C" (the batch's own
+  top-left tile, its cleanest result by a clear margin once the shadow is
+  removed) doesn't need it.
+- One variant reintroduced an embossed inset bezel/frame — the
+  carved-slab problem from round one, minus the visible texture this time.
+  Confirms the "no bevel/emboss" instruction needs to stay in every prompt
+  going forward, it wasn't a one-time fix.
+
+### Direction F — plain "C", shadow/sheen explicitly named and forbidden
+
+Single simplified prompt, dot dropped, and a much more aggressive negative
+clause that names the exact styles being rejected rather than only their
+geometry:
+
+```
+minimal flat 2D app icon, a single bold geometric capital letter "C"
+centered in a rounded square tile, flat matte solid terracotta fill
+#d97757, the letterform in warm parchment-white #faf9f5 cut out of the
+fill (or the reverse: parchment tile with a solid terracotta C — generate
+both), absolutely flat color with zero gradient, zero sheen, zero
+highlight sweep, zero reflection, the tile sits with only a very faint,
+barely-visible ambient shadow directly beneath it (like a sheet of paper
+resting on a table, not a floating object) — no directional shadow, no
+diagonal shadow, no long shadow, no shadow extending sideways at all,
+completely matte and flat like a Swiss/international-style graphic design
+poster, not a rendered 3D object
+--no long shadow, no diagonal shadow, no cast shadow, no drop shadow
+extending to one side, no flat-design long-shadow icon style, no
+Material-Design-style long shadow, no glossy sheen, no diagonal highlight,
+no specular highlight, no reflection, no gradient, no bevel, no emboss,
+no inset frame, no carved or sculpted look, no 3D render, no material
+texture, no paper grain, no mascot, no character, no face, no blob, no
+photorealism, no blue, no purple, no teal
+```
+
+If this still produces a long shadow, that's a signal to stop iterating
+the prompt further and instead generate the shadow-free flat shape alone
+(no shadow instruction at all, positive or negative) and add the correct
+subtle shadow afterward in a vector editor — per §3's own point, fighting
+a model's strong stylistic default past a certain point costs more than
+routing around it in a different tool.
+
 ---
 
 ## Sources consulted
