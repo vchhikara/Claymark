@@ -3,6 +3,7 @@ package com.claymark.nativeapp
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -354,10 +355,19 @@ private fun Header(session: DocumentSession, onOpenDrawer: () -> Unit) {
 /**
  * Editing is deliberately plain: one full-height field, no stacked preview,
  * no rich-text affordances, no resize handle.
+ *
+ * `.cm-source-textarea:focus-visible` on the web gives the field an
+ * `accent-brand` outline the instant it's focused — the equivalent here
+ * needs its own [FocusInteraction] source, since a bare [BasicTextField]'s
+ * border doesn't react to focus on its own the way a browser's does.
  */
 @Composable
 private fun SourceEditor(session: DocumentSession) {
     val c = colors
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    val borderColor = if (isFocused) c.accentBrand else c.borderSubtle
+
     BasicTextField(
         value = session.text,
         onValueChange = session::updateText,
@@ -369,11 +379,12 @@ private fun SourceEditor(session: DocumentSession) {
             color = c.textPrimary,
         ),
         cursorBrush = androidx.compose.ui.graphics.SolidColor(c.accentBrand),
+        interactionSource = interactionSource,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Space.s4)
             .clayInset(base = c.surfaceRaised, colors = c, radius = Radius.md)
-            .border(1.dp, c.borderSubtle, RoundedCornerShape(Radius.md))
+            .border(if (isFocused) 2.dp else 1.dp, borderColor, RoundedCornerShape(Radius.md))
             .padding(Space.s3)
             .heightIn(min = 420.dp),
     )

@@ -15,7 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -84,8 +84,9 @@ class MainActivity : ComponentActivity() {
                 // The ViewModel has no Compose/CompositionLocal access of its
                 // own — this is the one bridge from the Settings-backed
                 // preference to the session's debounced autosave.
-                LaunchedEffect(settings.autosaveEnabled) {
-                    session.setAutosaveEnabled(settings.autosaveEnabled)
+                val autosaveEnabled = settings.autosaveEnabled
+                LaunchedEffect(autosaveEnabled) {
+                    session.setAutosaveEnabled(autosaveEnabled)
                 }
 
                 LaunchedEffect(Unit) { session.openLaunchDocument() }

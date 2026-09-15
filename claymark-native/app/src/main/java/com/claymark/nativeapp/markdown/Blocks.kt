@@ -157,8 +157,10 @@ private fun HeadingBlock(node: Heading) {
         5 -> TypeScale.h5 to TypeScale.LEADING_H5
         else -> TypeScale.h6 to TypeScale.LEADING_H6
     }
+    val run = buildInlines(node, c)
     Text(
-        text = buildInlines(node, c),
+        text = run.text,
+        inlineContent = run.inlineContent,
         style = TextStyle(
             // Headings stay in the body serif at weight 600 — Claymark has no
             // separate display face anywhere.
@@ -199,8 +201,10 @@ private fun ParagraphBlock(node: Paragraph, onImageTapped: (ImagePayload) -> Uni
         return
     }
 
+    val run = buildInlines(node, c)
     LinkableText(
-        text = buildInlines(node, c),
+        text = run.text,
+        inlineContent = run.inlineContent,
         style = bodyStyle(c),
         modifier = Modifier.padding(vertical = Space.s2),
     )
@@ -308,10 +312,14 @@ private fun ListItemRow(
             var child = item.firstChild
             while (child != null) {
                 when (child) {
-                    is Paragraph -> LinkableText(
-                        text = buildInlines(child, c),
-                        style = bodyStyle(c),
-                    )
+                    is Paragraph -> {
+                        val run = buildInlines(child, c)
+                        LinkableText(
+                            text = run.text,
+                            inlineContent = run.inlineContent,
+                            style = bodyStyle(c),
+                        )
+                    }
                     is BulletList -> ListBlock(child, false, depth + 1, onImageTapped)
                     is OrderedList -> ListBlock(child, true, depth + 1, onImageTapped)
                     else -> RenderBlock(child, depth + 1, onImageTapped)
@@ -372,11 +380,15 @@ private fun BlockQuoteBlock(node: BlockQuote, depth: Int, onImageTapped: (ImageP
             var child = node.firstChild
             while (child != null) {
                 when (child) {
-                    is Paragraph -> LinkableText(
-                        text = buildInlines(child, c),
-                        style = bodyStyle(c).copy(color = c.textSecondary),
-                        modifier = Modifier.padding(vertical = Space.s2),
-                    )
+                    is Paragraph -> {
+                        val run = buildInlines(child, c)
+                        LinkableText(
+                            text = run.text,
+                            inlineContent = run.inlineContent,
+                            style = bodyStyle(c).copy(color = c.textSecondary),
+                            modifier = Modifier.padding(vertical = Space.s2),
+                        )
+                    }
                     else -> RenderBlock(child, depth, onImageTapped)
                 }
                 child = child.next
@@ -528,12 +540,14 @@ fun LinkableText(
     text: AnnotatedString,
     style: TextStyle,
     modifier: Modifier = Modifier,
+    inlineContent: Map<String, androidx.compose.foundation.text.InlineTextContent> = emptyMap(),
 ) {
     val context = LocalContext.current
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     Text(
         text = text,
+        inlineContent = inlineContent,
         style = style,
         onTextLayout = { layout = it },
         modifier = modifier
