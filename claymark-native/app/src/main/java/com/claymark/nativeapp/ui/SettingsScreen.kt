@@ -3,13 +3,21 @@ package com.claymark.nativeapp.ui
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +34,7 @@ import com.claymark.nativeapp.theme.LocalSettingsState
 import com.claymark.nativeapp.theme.LocalThemeState
 import com.claymark.nativeapp.theme.Radius
 import com.claymark.nativeapp.theme.Space
+import com.claymark.nativeapp.theme.TextSizeSteps
 import com.claymark.nativeapp.theme.ThemePreference
 import com.claymark.nativeapp.theme.TypeScale
 import com.claymark.nativeapp.theme.clayRaised
@@ -56,7 +65,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         )
 
         SettingRow(
-            title = "Dark Mode",
+            title = "Theme",
             subtitle = themeState.preference.label(),
             onClick = { showThemePicker = true },
             trailing = {
@@ -77,6 +86,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                 )
             },
         )
+
+        SettingRow(
+            title = "Text size",
+            subtitle = TextSizeSteps.LABELS[settingsState.textSizeStep],
+            trailing = {
+                TextSizeStepper(
+                    step = settingsState.textSizeStep,
+                    onStep = settingsState.setTextSizeStep,
+                )
+            },
+        )
     }
 
     if (showThemePicker) {
@@ -91,10 +111,61 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 }
 
+/**
+ * §2.5's "Settings stepper" — discrete steps into [TextSizeSteps], not a
+ * slider: the spec is explicit that full runtime theming is out of scope.
+ */
+@Composable
+private fun TextSizeStepper(step: Int, onStep: (Int) -> Unit) {
+    val c = colors
+    val last = TextSizeSteps.SCALES.lastIndex
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        ClayIconButton(
+            compact = true,
+            enabled = step > 0,
+            onClick = { onStep((step - 1).coerceAtLeast(0)) },
+        ) {
+            MinusGlyph(tint = if (step > 0) c.textPrimary else c.textMuted)
+        }
+        Box(modifier = Modifier.padding(horizontal = Space.s2))
+        ClayIconButton(
+            compact = true,
+            enabled = step < last,
+            onClick = { onStep((step + 1).coerceAtMost(last)) },
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = "Increase text size",
+                tint = if (step < last) c.textPrimary else c.textMuted,
+            )
+        }
+    }
+}
+
+/**
+ * No `Remove`/minus glyph exists in the core icon set this project depends
+ * on (only `material-icons-core`, no `-extended`) — same precedent as
+ * `HelpGlyph` in `Screens.kt`: a small hand-drawn glyph instead of pulling
+ * in the larger dependency for one icon. [Icons.Filled.Add] does exist in
+ * core, so the "+" side uses that directly.
+ */
+@Composable
+private fun MinusGlyph(tint: Color) {
+    Canvas(modifier = Modifier.size(20.dp)) {
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height / 2f),
+            end = androidx.compose.ui.geometry.Offset(size.width * 0.8f, size.height / 2f),
+            strokeWidth = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+    }
+}
+
 private fun ThemePreference.label(): String = when (this) {
-    ThemePreference.AUTO -> "auto"
-    ThemePreference.LIGHT -> "light"
-    ThemePreference.DARK -> "dark"
+    ThemePreference.AUTO -> "Auto"
+    ThemePreference.LIGHT -> "Light"
+    ThemePreference.DARK -> "Dark"
 }
 
 /** Same `Dialog` + `clayRaised` column idiom as `AbandonDialog`. */
@@ -110,7 +181,6 @@ private fun ThemePickerDialog(
             modifier = Modifier
                 .widthIn(max = 320.dp)
                 .clayRaised(base = c.surface, colors = c, radius = Radius.lg, elevation = 16.dp)
-                .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.lg))
                 .padding(Space.s4),
         ) {
             listOf(ThemePreference.AUTO, ThemePreference.LIGHT, ThemePreference.DARK).forEach { option ->

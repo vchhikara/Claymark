@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  §1.7: the adaptive icon's monochrome layer (API 33+ themed icons) — the
+  same "C" geometry as ic_launcher_foreground.xml, single-color (the system
+  supplies its own tint at render time, so the fill color here is inert).
+  Purely cosmetic, no brand-identity tension the way §1.5 dynamic color has:
+  this only affects the launcher icon, never the reading surface.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M79.92,72.15
+                           A31.64,31.64 0 1 1 79.92,35.85
+                           L69.20,43.35
+                           A18.56,18.56 0 1 0 69.20,64.65
+                           Z" />
+</vector>

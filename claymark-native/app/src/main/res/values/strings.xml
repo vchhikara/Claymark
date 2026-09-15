@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Claymark</string>
     <string name="main_activity_title">Claymark</string>
+    <string name="shortcut_open_file_short">Open file</string>
+    <string name="shortcut_open_file_long">Open a Markdown file</string>
 </resources>

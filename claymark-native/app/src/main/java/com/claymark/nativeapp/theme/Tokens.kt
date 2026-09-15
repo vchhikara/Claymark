@@ -99,7 +99,11 @@ val LightColors = ClaymarkColors(
     borderSubtle = Neutral.n400,
     borderDefault = Neutral.n500,
     link = Clay.c700,
-    quoteRule = Neutral.n500,
+    // A dark blue reused from the syntax highlighter's light-theme `number`
+    // token (Highlighter.kt) — same blue family the code blocks already
+    // use, just promoted from "hard to see" grey to something with enough
+    // saturation to actually register as an accent.
+    quoteRule = Color(0xFF0550AE),
     accentBrand = Clay.c700,
     // `--danger` is only ever referenced through a CSS fallback in
     // claymark.css (`var(--danger, 0 70% 50%)`); it is never actually
@@ -121,7 +125,9 @@ val DarkColors = ClaymarkColors(
     borderSubtle = Neutral.n800,
     borderDefault = Neutral.n700,
     link = Clay.c400,
-    quoteRule = Neutral.n700,
+    // Same family as [LightColors.quoteRule], lightened to the syntax
+    // highlighter's dark-theme `number` blue for dark-surface contrast.
+    quoteRule = Color(0xFF6CB6FF),
     accentBrand = Clay.c500,
     danger = hsl(0f, 70f, 50f),
     // The inline-code and code-ref colors are theme-independent literals in

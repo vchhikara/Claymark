@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -22,9 +23,12 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.claymark.nativeapp.theme.ClayInsets
 import com.claymark.nativeapp.theme.ClaymarkFonts
+import com.claymark.nativeapp.theme.Radius
 import com.claymark.nativeapp.theme.Space
 import com.claymark.nativeapp.theme.TypeScale
+import com.claymark.nativeapp.theme.clayPot
 import com.claymark.nativeapp.theme.colors
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.ext.gfm.tables.TableBody
@@ -77,15 +81,25 @@ fun TableView(block: TableBlock, modifier: Modifier = Modifier) {
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = Space.s4),
+            .padding(vertical = Space.s4)
+            .clayPot(
+                base = c.surface,
+                colors = c,
+                radius = Radius.md,
+                insets = ClayInsets(horizontal = 0.75.dp, vertical = 0.75.dp),
+            )
+            // Interior breathing room so the first/last row and the
+            // left/right-most cell text never sit flush against the pot's
+            // raised rim.
+            .padding(Space.s2),
     ) {
+        val totalWidth = remember(widths) { widths.fold(0.dp) { acc, w -> acc + w } }
         Column(modifier = Modifier.horizontalScroll(scroll)) {
             head.forEach { row ->
-                TableRowView(row, widths, isHeader = true)
+                TableRowView(row, widths, totalWidth, isHeader = true)
             }
             body.forEachIndexed { index, row ->
-                TableRowView(row, widths, isHeader = false, isLast = index == body.lastIndex)
+                TableRowView(row, widths, totalWidth, isHeader = false, isLast = index == body.lastIndex)
             }
         }
     }
@@ -104,6 +118,7 @@ private fun cellStyle(color: androidx.compose.ui.graphics.Color, isHeader: Boole
 private fun TableRowView(
     row: List<Cell>,
     widths: List<Dp>,
+    totalWidth: Dp,
     isHeader: Boolean,
     isLast: Boolean = false,
 ) {
@@ -137,13 +152,26 @@ private fun TableRowView(
             }
         }
         // shadcn: `border-b` on every row, `[&_tr:last-child]:border-0` on body.
+        // Same clayPot rim/sink alphas as the table's outer lip, so inner and
+        // outer borders read as one consistent engraved treatment rather than
+        // a flat line sitting inside a raised frame.
         if (!isLast) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(c.borderDefault),
-            )
+            val rimAlpha = if (c.isDark) 0.16f else 0.85f
+            val sinkAlpha = if (c.isDark) 0.45f else 0.08f
+            Column(modifier = Modifier.width(totalWidth)) {
+                Box(
+                    modifier = Modifier
+                        .width(totalWidth)
+                        .height(1.dp)
+                        .background(Color.White.copy(alpha = rimAlpha)),
+                )
+                Box(
+                    modifier = Modifier
+                        .width(totalWidth)
+                        .height(1.dp)
+                        .background(Color.Black.copy(alpha = sinkAlpha)),
+                )
+            }
         }
     }
 }

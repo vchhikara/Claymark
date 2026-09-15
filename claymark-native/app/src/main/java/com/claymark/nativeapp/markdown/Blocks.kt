@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.claymark.nativeapp.markdown
 
 import android.content.Intent
@@ -6,6 +8,8 @@ import androidx.compose.foundation.Image as ComposeImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.claymark.nativeapp.theme.ClaymarkColors
 import com.claymark.nativeapp.theme.ClaymarkFonts
+import com.claymark.nativeapp.theme.LightColors
+import com.claymark.nativeapp.theme.LocalTextScale
 import com.claymark.nativeapp.theme.Radius
 import com.claymark.nativeapp.theme.Space
 import com.claymark.nativeapp.theme.TypeScale
@@ -78,11 +85,15 @@ fun MarkdownDocument(
     root: Node,
     modifier: Modifier = Modifier,
     onImageTapped: (ImagePayload) -> Unit = {},
+    // §2.2: each heading registers its own scroll target here as it
+    // composes, keyed by the same slug [collectHeadings] returns — the TOC
+    // sheet never needs to know pixel offsets, only which slug to jump to.
+    onHeadingRegistered: (String, BringIntoViewRequester) -> Unit = { _, _ -> },
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         var child = root.firstChild
         while (child != null) {
-            RenderBlock(child, depth = 0, onImageTapped = onImageTapped)
+            RenderBlock(child, depth = 0, onImageTapped = onImageTapped, onHeadingRegistered = onHeadingRegistered)
             child = child.next
         }
     }
@@ -91,10 +102,15 @@ fun MarkdownDocument(
 data class ImagePayload(val src: String, val alt: String?, val title: String?)
 
 @Composable
-private fun RenderBlock(node: Node, depth: Int, onImageTapped: (ImagePayload) -> Unit) {
+private fun RenderBlock(
+    node: Node,
+    depth: Int,
+    onImageTapped: (ImagePayload) -> Unit,
+    onHeadingRegistered: (String, BringIntoViewRequester) -> Unit,
+) {
     val c = colors
     when (node) {
-        is Heading -> HeadingBlock(node)
+        is Heading -> HeadingBlock(node, onHeadingRegistered)
         is Paragraph -> ParagraphBlock(node, onImageTapped)
         is BulletList -> ListBlock(node, ordered = false, depth = depth, onImageTapped = onImageTapped)
         is OrderedList -> ListBlock(node, ordered = true, depth = depth, onImageTapped = onImageTapped)
@@ -120,7 +136,7 @@ private fun RenderBlock(node: Node, depth: Int, onImageTapped: (ImagePayload) ->
         is Document -> {
             var child = node.firstChild
             while (child != null) {
-                RenderBlock(child, depth, onImageTapped)
+                RenderBlock(child, depth, onImageTapped, onHeadingRegistered)
                 child = child.next
             }
         }
@@ -128,28 +144,56 @@ private fun RenderBlock(node: Node, depth: Int, onImageTapped: (ImagePayload) ->
         else -> {
             var child = node.firstChild
             while (child != null) {
-                RenderBlock(child, depth, onImageTapped)
+                RenderBlock(child, depth, onImageTapped, onHeadingRegistered)
                 child = child.next
             }
         }
     }
 }
 
+/** `HeadingEntry.text` is exactly what [buildInlines] would render for that
+ * heading — reusing it (rather than a second, parallel text walker) keeps
+ * the TOC's labels and slugs guaranteed consistent with what's on screen.
+ * The [ClaymarkColors] instance passed in is never used for anything but
+ * link/code color spans that don't affect `.text`, so any theme works. */
+data class HeadingEntry(val level: Int, val text: String, val slug: String)
+
+fun collectHeadings(root: Node): List<HeadingEntry> {
+    val out = mutableListOf<HeadingEntry>()
+    fun walk(node: Node) {
+        if (node is Heading) {
+            val text = buildInlines(node, LightColors).text.text
+            out += HeadingEntry(node.level, text, slugify(text))
+        }
+        var child = node.firstChild
+        while (child != null) {
+            walk(child)
+            child = child.next
+        }
+    }
+    walk(root)
+    return out
+}
+
 @Composable
-internal fun bodyStyle(c: ClaymarkColors) = TextStyle(
-    fontFamily = ClaymarkFonts.Body,
-    fontSize = TypeScale.body,
-    lineHeight = TypeScale.body * TypeScale.LEADING_BODY,
-    color = c.textPrimary,
-    textAlign = TextAlign.Start,
-)
+internal fun bodyStyle(c: ClaymarkColors): TextStyle {
+    val scale = LocalTextScale.current
+    return TextStyle(
+        fontFamily = ClaymarkFonts.Body,
+        fontSize = TypeScale.body * scale,
+        lineHeight = TypeScale.body * TypeScale.LEADING_BODY * scale,
+        color = c.textPrimary,
+        textAlign = TextAlign.Start,
+    )
+}
 
 // ---- headings --------------------------------------------------------------
 
 @Composable
-private fun HeadingBlock(node: Heading) {
+private fun HeadingBlock(node: Heading, onHeadingRegistered: (String, BringIntoViewRequester) -> Unit) {
     val c = colors
-    val (size, leading) = when (node.level) {
+    val scale = LocalTextScale.current
+    val (baseSize, leading) = when (node.level) {
         1 -> TypeScale.h1 to TypeScale.LEADING_H1
         2 -> TypeScale.h2 to TypeScale.LEADING_H2
         3 -> TypeScale.h3 to TypeScale.LEADING_H3
@@ -157,7 +201,14 @@ private fun HeadingBlock(node: Heading) {
         5 -> TypeScale.h5 to TypeScale.LEADING_H5
         else -> TypeScale.h6 to TypeScale.LEADING_H6
     }
+    val size = baseSize * scale
     val run = buildInlines(node, c)
+    val slug = remember(run.text.text) { slugify(run.text.text) }
+    val requester = remember { BringIntoViewRequester() }
+    DisposableEffect(slug) {
+        onHeadingRegistered(slug, requester)
+        onDispose { }
+    }
     Text(
         text = run.text,
         inlineContent = run.inlineContent,
@@ -170,7 +221,9 @@ private fun HeadingBlock(node: Heading) {
             fontWeight = FontWeight.SemiBold,
             color = c.textPrimary,
         ),
-        modifier = Modifier.padding(top = Space.s6, bottom = Space.s3),
+        modifier = Modifier
+            .padding(top = Space.s6, bottom = Space.s3)
+            .bringIntoViewRequester(requester),
     )
 }
 
@@ -322,7 +375,7 @@ private fun ListItemRow(
                     }
                     is BulletList -> ListBlock(child, false, depth + 1, onImageTapped)
                     is OrderedList -> ListBlock(child, true, depth + 1, onImageTapped)
-                    else -> RenderBlock(child, depth + 1, onImageTapped)
+                    else -> RenderBlock(child, depth + 1, onImageTapped) { _, _ -> }
                 }
                 child = child.next
             }
@@ -389,7 +442,7 @@ private fun BlockQuoteBlock(node: BlockQuote, depth: Int, onImageTapped: (ImageP
                             modifier = Modifier.padding(vertical = Space.s2),
                         )
                     }
-                    else -> RenderBlock(child, depth, onImageTapped)
+                    else -> RenderBlock(child, depth, onImageTapped) { _, _ -> }
                 }
                 child = child.next
             }
@@ -399,14 +452,7 @@ private fun BlockQuoteBlock(node: BlockQuote, depth: Int, onImageTapped: (ImageP
 
 @Composable
 private fun RuleBlock() {
-    val c = colors
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Space.s6)
-            .height(1.dp)
-            .background(c.borderSubtle),
-    )
+    Box(modifier = Modifier.fillMaxWidth().height(Space.s6))
 }
 
 // ---- code, math, diagrams --------------------------------------------------

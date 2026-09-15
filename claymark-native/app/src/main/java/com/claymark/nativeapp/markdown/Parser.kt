@@ -45,6 +45,33 @@ object MarkdownParser {
      */
     fun parse(source: String): Node = parser.parse(preprocessDisplayMath(source))
 
+    /**
+     * §2.4: word count off the already-parsed AST rather than the raw
+     * source, so fence markers, heading `#`s, and link syntax never inflate
+     * the count — only [org.commonmark.node.Text] and [org.commonmark.node.Code]
+     * literal runs are prose a reader actually reads.
+     */
+    fun wordCount(root: Node): Int {
+        var total = 0
+        fun walk(node: Node) {
+            val literal = when (node) {
+                is org.commonmark.node.Text -> node.literal
+                is org.commonmark.node.Code -> node.literal
+                else -> null
+            }
+            if (literal != null) {
+                total += literal.trim().split(Regex("\\s+")).count { it.isNotBlank() }
+            }
+            var child = node.firstChild
+            while (child != null) {
+                walk(child)
+                child = child.next
+            }
+        }
+        walk(root)
+        return total
+    }
+
     internal fun preprocessDisplayMath(source: String): String {
         val out = StringBuilder()
         val lines = source.split("\n")

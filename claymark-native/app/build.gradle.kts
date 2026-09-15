@@ -1,8 +1,24 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// §5/HANDOFF-2.md §5: release signing config, sourced from an untracked
+// keystore.properties (see keystore.properties.example) rather than any
+// key material committed here. Until that file exists with real values,
+// `release` builds stay unsigned exactly as before — this wires up the
+// plumbing without fabricating production credentials, which is a real
+// decision for whoever owns the actual signing key, not something to
+// generate blind.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) keystorePropertiesFile.inputStream().use { load(it) }
+}
+val hasReleaseSigning = keystorePropertiesFile.exists() &&
+    keystoreProperties.getProperty("storeFile") != null
 
 android {
     // The Java package the R/BuildConfig classes are generated into. NOT
@@ -22,6 +38,17 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             // No shrinking: the app has no server-driven code paths and the
@@ -29,6 +56,7 @@ android {
             // an aggressive default risks stripping the WebView JS bridge.
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
@@ -81,4 +109,18 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // HANDOFF-2.md §5: "zero tests in the native port... UrlPolicy.safeUrl
+    // named as highest-value first target — it's the actual security
+    // boundary." Plain JVM tests only (no Robolectric) — `safeUrl`/
+    // `isExternal` touch only `java.net`, not the Android framework, so a
+    // real unit-test module doesn't need the heavier instrumented setup to
+    // start covering the actual trust boundary.
+    testImplementation("junit:junit:4.13.2")
+
+    // §1.1: Jetpack Glance — the current (non-deprecated) home-screen-widget
+    // API, Compose-style code translated to RemoteViews. No INTERNET usage;
+    // reads the same locally-persisted "last opened doc" record §2.3's
+    // recent-files list already maintains.
+    implementation("androidx.glance:glance-appwidget:1.1.1")
 }

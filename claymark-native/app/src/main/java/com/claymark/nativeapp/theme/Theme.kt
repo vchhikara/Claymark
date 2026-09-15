@@ -82,7 +82,16 @@ class SettingsState(
     val setAutosaveEnabled: (Boolean) -> Unit,
     val amoledEnabled: Boolean,
     val setAmoledEnabled: (Boolean) -> Unit,
+    val textSizeStep: Int,
+    val setTextSizeStep: (Int) -> Unit,
 )
+
+/**
+ * §2.5's multiplier, consumed only by the reading surface's own body/heading
+ * text (`markdown/Blocks.kt`) — deliberately a separate local from anything
+ * chrome reads, so Settings/buttons/drawer text never scales with it.
+ */
+val LocalTextScale = staticCompositionLocalOf { 1f }
 
 @Composable
 fun ClaymarkTheme(content: @Composable () -> Unit) {
@@ -94,6 +103,7 @@ fun ClaymarkTheme(content: @Composable () -> Unit) {
     var preference by remember { mutableStateOf(themeController.storedPreference()) }
     var autosaveEnabled by remember { mutableStateOf(settingsStore.autosaveEnabled) }
     var amoledEnabled by remember { mutableStateOf(settingsStore.amoledEnabled) }
+    var textSizeStep by remember { mutableStateOf(settingsStore.textSizeStep) }
 
     val effective = when (preference) {
         ThemePreference.LIGHT -> Theme.LIGHT
@@ -123,12 +133,18 @@ fun ClaymarkTheme(content: @Composable () -> Unit) {
             amoledEnabled = next
             settingsStore.amoledEnabled = next
         },
+        textSizeStep = textSizeStep,
+        setTextSizeStep = { next ->
+            textSizeStep = next
+            settingsStore.textSizeStep = next
+        },
     )
 
     CompositionLocalProvider(
         LocalClaymarkColors provides resolvedColors,
         LocalThemeState provides themeState,
         LocalSettingsState provides settingsState,
+        LocalTextScale provides TextSizeSteps.SCALES[textSizeStep],
         content = content,
     )
 }

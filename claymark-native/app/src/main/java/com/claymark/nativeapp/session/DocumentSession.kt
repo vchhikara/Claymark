@@ -9,7 +9,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.claymark.nativeapp.documents.DocumentBackend
 import com.claymark.nativeapp.documents.DocumentRef
+import com.claymark.nativeapp.documents.DocumentSourceKind
 import com.claymark.nativeapp.documents.DraftStore
+import com.claymark.nativeapp.documents.DynamicShortcuts
+import com.claymark.nativeapp.documents.RecentFile
+import com.claymark.nativeapp.documents.RecentFilesStore
 import com.claymark.nativeapp.documents.PersistAction
 import com.claymark.nativeapp.documents.RecoveryDraft
 import kotlinx.coroutines.CompletableDeferred
@@ -51,6 +55,7 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
 
     private val backend = DocumentBackend(app)
     private val drafts = DraftStore(app)
+    private val recentFilesStore = RecentFilesStore(app)
 
     var mode by mutableStateOf(SessionMode.NO_DOCUMENT)
         private set
@@ -78,6 +83,15 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
 
     val hasDocument: Boolean get() = mode != SessionMode.NO_DOCUMENT
 
+    /**
+     * True for the brief window between `MainActivity` capturing a VIEW
+     * intent's URI (or a SEND intent's shared text) and [openLaunchDocument]
+     * finishing the async load — the welcome screen (§7.2) checks this so a
+     * cold "Open with"/"Share to Claymark" launch never flashes the welcome
+     * screen before the real content appears.
+     */
+    val hasPendingLaunch: Boolean get() = launchUri != null || pendingSharedText != null
+
     /** The last-known-saved text. Dirty is `text != persistedText`. */
     private var persistedText: String = ""
     private var draftJob: Job? = null
@@ -101,9 +115,21 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
     /** Awaited by an open that had to route through the open-document picker. */
     private var pendingOpen: CompletableDeferred<Uri?>? = null
 
+    /**
+     * Set by [openRecent] when a dirty buffer routes it through the same
+     * unsaved-changes prompt as [openFile] — non-null tells
+     * [resolveAbandon] which URI to reopen once the user decides, instead of
+     * launching the picker [openFile] would.
+     */
+    private var pendingRecentUri: String? = null
+
     /** Set once by MainActivity when a VIEW intent arrives. */
     private var launchUri: Uri? = null
     private var launchUriConsumed = false
+
+    /** Set once by MainActivity when a SEND (share-target) intent arrives. */
+    private var pendingSharedText: String? = null
+    private var pendingSharedTextConsumed = false
 
     // ---- drafts -----------------------------------------------------------
 
@@ -144,7 +170,13 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
 
     // ---- opening ----------------------------------------------------------
 
-    private fun applyOpenedDoc(newRef: DocumentRef, loaded: String) {
+    /**
+     * [recordRecent] must be false for a source whose URI grant isn't
+     * persisted (an "Open with" `openIncoming` URI) or that has no real
+     * handle at all (synthetic shared-text ref) — see [RecentFilesStore]'s
+     * own doc comment for why either would be a broken shortcut later.
+     */
+    private fun applyOpenedDoc(newRef: DocumentRef, loaded: String, recordRecent: Boolean = true) {
         persistedText = loaded
         val existing = drafts.get(newRef.id)
         val recovered = existing != null && existing.text != loaded
@@ -156,7 +188,22 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
         pendingAbandon = null
         persistAction = backend.persistAction(newRef)
         recoveredDraft = recovered
+        if (recordRecent && newRef.handle.isNotEmpty()) {
+            recentFilesStore.record(newRef.handle, newRef.name)
+            refreshDynamicShortcuts()
+        }
     }
+
+    /** §1.2/§1.1: keep the launcher's dynamic shortcuts and the §1.1 home
+     *  screen widget in sync with the MRU list every time it changes —
+     *  same data §2.3's drawer list reads, three surfaces off one store. */
+    private fun refreshDynamicShortcuts() {
+        val app = getApplication<Application>()
+        DynamicShortcuts.update(app, recentFilesStore.list())
+        viewModelScope.launch { com.claymark.nativeapp.widget.ClaymarkWidget.refreshAll(app) }
+    }
+
+    fun listRecentFiles(): List<RecentFile> = recentFilesStore.list()
 
     /**
      * The actual picker + load, with no dirty gate. Called directly by
@@ -183,10 +230,35 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
     fun openFile() {
         viewModelScope.launch {
             if (mode == SessionMode.EDITING && saveStatus == SaveStatus.DIRTY) {
+                pendingRecentUri = null
                 pendingAbandon = AbandonReason.OPEN_FILE
                 return@launch // resolveAbandon calls performOpen() once decided
             }
             performOpen()
+        }
+    }
+
+    /** A tap on a §2.3 recent-files row — same dirty gate as [openFile], but
+     *  reopens [uri] directly instead of launching the system picker. */
+    fun openRecent(uri: String) {
+        viewModelScope.launch {
+            if (mode == SessionMode.EDITING && saveStatus == SaveStatus.DIRTY) {
+                pendingRecentUri = uri
+                pendingAbandon = AbandonReason.OPEN_FILE
+                return@launch // resolveAbandon calls performOpenRecent() once decided
+            }
+            performOpenRecent(uri)
+        }
+    }
+
+    private suspend fun performOpenRecent(uri: String) {
+        try {
+            val snapshot = withContext(Dispatchers.IO) { backend.openRecent(uri) }
+            applyOpenedDoc(snapshot.ref, snapshot.text)
+        } catch (error: Exception) {
+            mode = if (ref == null) SessionMode.NO_DOCUMENT else mode
+            saveError = error.message ?: error.toString()
+            recentFilesStore.remove(uri)
         }
     }
 
@@ -195,25 +267,61 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
         launchUriConsumed = false
     }
 
+    fun setSharedText(text: String) {
+        pendingSharedText = text
+        pendingSharedTextConsumed = false
+    }
+
     /**
-     * "Open with" support: checked once on start for a just-launched external
-     * document URI. Never gated on dirty state — a cold-start VIEW intent
-     * only ever runs against the fresh NO_DOCUMENT state, so there is nothing
-     * to lose yet.
+     * "Open with" / share-target support: checked once on start for a
+     * just-launched external document URI or shared text. Never gated on
+     * dirty state — a cold-start VIEW/SEND intent only ever runs against the
+     * fresh NO_DOCUMENT state, so there is nothing to lose yet.
      */
     fun openLaunchDocument() {
         val uri = launchUri
-        if (uri == null || launchUriConsumed) return
-        launchUriConsumed = true
-        launchUri = null
-        viewModelScope.launch {
-            try {
-                val snapshot = withContext(Dispatchers.IO) { backend.openIncoming(uri) }
-                applyOpenedDoc(snapshot.ref, snapshot.text)
-            } catch (error: Exception) {
-                saveError = error.message ?: error.toString()
+        if (uri != null && !launchUriConsumed) {
+            launchUriConsumed = true
+            launchUri = null
+            viewModelScope.launch {
+                try {
+                    val snapshot = withContext(Dispatchers.IO) { backend.openIncoming(uri) }
+                    applyOpenedDoc(snapshot.ref, snapshot.text, recordRecent = false)
+                } catch (error: Exception) {
+                    saveError = error.message ?: error.toString()
+                }
             }
+            return
         }
+
+        val shared = pendingSharedText
+        if (shared != null && !pendingSharedTextConsumed) {
+            pendingSharedTextConsumed = true
+            pendingSharedText = null
+            openSharedText(shared)
+        }
+    }
+
+    /**
+     * Shared text has no backing file at all — a synthetic, non-writable
+     * [DocumentRef] with a stable id (so a crash mid-edit is still
+     * recoverable via [DraftStore], same as any other document) routes Save
+     * through the create-document picker on first save
+     * ([DocumentBackend.persistAction] returns SAVE_AS whenever `writable`
+     * is false), exactly like a document opened from a read-only provider.
+     * The ref's `handle` is never dereferenced before that picker supplies a
+     * real URI, so leaving it blank is safe.
+     */
+    private fun openSharedText(text: String) {
+        val newRef = DocumentRef(
+            id = "shared-text",
+            name = "Shared text.md",
+            mimeType = "text/markdown",
+            writable = false,
+            sourceKind = DocumentSourceKind.CONTENT_URI,
+            handle = "",
+        )
+        applyOpenedDoc(newRef, text, recordRecent = false)
     }
 
     // ---- editing ----------------------------------------------------------
@@ -305,6 +413,8 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
             drafts.remove(target.id)
             mode = SessionMode.VIEWING
             ref = nextRef
+            recentFilesStore.record(nextRef.handle, nextRef.name)
+            refreshDynamicShortcuts()
             saveStatus = if (text == snapshotText) SaveStatus.SAVED else SaveStatus.DIRTY
             persistAction = backend.persistAction(nextRef)
         } catch (error: Exception) {
@@ -349,14 +459,24 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
                 saveStatus = SaveStatus.CLEAN
                 pendingAbandon = null
                 if (reason == AbandonReason.BACK) mode = SessionMode.VIEWING
-                if (reason == AbandonReason.OPEN_FILE) viewModelScope.launch { performOpen() }
+                if (reason == AbandonReason.OPEN_FILE) {
+                    val recentUri = pendingRecentUri
+                    pendingRecentUri = null
+                    viewModelScope.launch {
+                        if (recentUri != null) performOpenRecent(recentUri) else performOpen()
+                    }
+                }
             }
 
             AbandonChoice.SAVE -> viewModelScope.launch {
                 doSave(target, text, asNew = false)
                 pendingAbandon = null
                 if (reason == AbandonReason.BACK) mode = SessionMode.VIEWING
-                if (reason == AbandonReason.OPEN_FILE) performOpen()
+                if (reason == AbandonReason.OPEN_FILE) {
+                    val recentUri = pendingRecentUri
+                    pendingRecentUri = null
+                    if (recentUri != null) performOpenRecent(recentUri) else performOpen()
+                }
             }
         }
     }

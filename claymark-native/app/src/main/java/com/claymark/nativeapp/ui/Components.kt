@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.claymark.nativeapp.ui
 
 import androidx.compose.foundation.BorderStroke
@@ -36,7 +38,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.claymark.nativeapp.theme.ClaymarkFonts
 import com.claymark.nativeapp.theme.Radius
 import com.claymark.nativeapp.theme.Space
@@ -45,8 +50,45 @@ import com.claymark.nativeapp.theme.TypeScale
 import com.claymark.nativeapp.theme.clayRaised
 import com.claymark.nativeapp.theme.colors
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlin.math.cos
 import kotlin.math.sin
+
+/**
+ * The real wordmark (`brand/logo/wordmark-light.svg` /
+ * `wordmark-dark.svg`), ported as live text rather than a rasterized or
+ * outlined-to-paths image — the SVG's own `<desc>` says as much: it's
+ * "text-based, not outlined to paths," meaning a faithful port just needs
+ * the same font/weight/spacing, which this app already bundles
+ * ([ClaymarkFonts.Ui] SemiBold is the exact same Inter 600 file). Lowercase
+ * "claymark", never the all-caps/serif treatment the drawer header used
+ * before this — that was a plain styled [Text], not the wordmark.
+ *
+ * `letterSpacing` of `-0.0125em` reproduces the SVG's `-2` tracking value at
+ * its `font-size="160"` (`-2/160 = -0.0125`), so it scales correctly at any
+ * [size] rather than being pinned to the SVG's specific pixel size.
+ */
+@Composable
+fun ClaymarkWordmark(
+    modifier: Modifier = Modifier,
+    size: TextUnit = 22.sp,
+    color: Color = colors.textPrimary,
+    text: String = "claymark",
+) {
+    Text(
+        text = text,
+        style = TextStyle(
+            fontFamily = ClaymarkFonts.Ui,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = size,
+            letterSpacing = (-0.0125).em,
+            color = color,
+        ),
+        modifier = modifier,
+    )
+}
 
 /**
  * `.claymark-button[data-variant='outline']`, the only button variant the
@@ -57,6 +99,15 @@ import kotlin.math.sin
  * visual priority over the chrome around it. The clay treatment adds depth,
  * not emphasis — the fill stays --surface-raised.
  */
+/**
+ * Every compact header control — label buttons and icon-only buttons alike
+ * — is pinned to this height. Left to intrinsic sizing, a text button (its
+ * height set by a ~14sp glyph) and an icon button (a fixed 24dp Material
+ * icon) come out visibly different heights in the same row; a shared fixed
+ * height is what actually guarantees they match, not matching padding.
+ */
+val HeaderControlHeight = 36.dp
+
 @Composable
 fun ClayButton(
     label: String,
@@ -71,13 +122,13 @@ fun ClayButton(
 
     Box(
         modifier = modifier
+            .then(if (compact) Modifier.height(HeaderControlHeight) else Modifier)
             .clayRaised(
                 base = c.surfaceRaised,
                 colors = c,
                 radius = Radius.md,
                 pressed = pressed,
             )
-            .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.md))
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -118,26 +169,33 @@ fun ClayIconButton(
     modifier: Modifier = Modifier,
     compact: Boolean = true,
     enabled: Boolean = true,
+    // Radix's Tooltip on web activates on hover; touch has no hover, so
+    // long-press on the trigger is the equivalent gesture. Only icon-only
+    // buttons need this — a labeled [ClayButton] already carries its own
+    // meaning in visible text.
+    tooltip: String? = null,
     content: @Composable () -> Unit,
 ) {
     val c = colors
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
+    var showTooltip by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
+            .then(if (compact) Modifier.height(HeaderControlHeight) else Modifier)
             .clayRaised(
                 base = c.surfaceRaised,
                 colors = c,
                 radius = Radius.md,
                 pressed = pressed,
             )
-            .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.md))
-            .clickable(
+            .combinedClickable(
                 interactionSource = interaction,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
+                onLongClick = tooltip?.let { { showTooltip = true } },
             )
             .padding(
                 horizontal = if (compact) 11.dp else Space.s3,
@@ -146,6 +204,9 @@ fun ClayIconButton(
         contentAlignment = Alignment.Center,
     ) {
         content()
+        if (tooltip != null) {
+            ClayTooltipPopup(text = tooltip, visible = showTooltip, onDismiss = { showTooltip = false })
+        }
     }
 }
 
@@ -160,7 +221,11 @@ fun ClayIconButton(
 fun ThemeToggle(theme: Theme, onToggle: (Theme) -> Unit) {
     val c = colors
     val next = if (theme == Theme.DARK) Theme.LIGHT else Theme.DARK
-    ClayIconButton(compact = true, onClick = { onToggle(next) }) {
+    ClayIconButton(
+        compact = true,
+        onClick = { onToggle(next) },
+        tooltip = if (theme == Theme.DARK) "Switch to light" else "Switch to dark",
+    ) {
         if (theme == Theme.DARK) MoonGlyph(c.textPrimary) else SunGlyph(c.textPrimary)
     }
 }
@@ -217,7 +282,7 @@ private fun MoonGlyph(tint: Color, size: androidx.compose.ui.unit.Dp = 18.dp) {
 @Composable
 fun DrawerMenuButton(onClick: () -> Unit) {
     val c = colors
-    ClayIconButton(compact = true, onClick = onClick) {
+    ClayIconButton(compact = true, onClick = onClick, tooltip = "Menu") {
         Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = c.textPrimary)
     }
 }
@@ -226,7 +291,7 @@ fun DrawerMenuButton(onClick: () -> Unit) {
 @Composable
 fun ClayBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = colors
-    ClayIconButton(compact = true, onClick = onClick, modifier = modifier) {
+    ClayIconButton(compact = true, onClick = onClick, modifier = modifier, tooltip = "Back") {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = c.textPrimary)
     }
 }
@@ -262,11 +327,15 @@ fun ClaySwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, enabled: Bo
 @Composable
 fun ReadingProgressRail(progress: Float, modifier: Modifier = Modifier) {
     val c = colors
+    // No unfilled track drawn here — it sits directly over the app's own
+    // drawer/page divider line (MainActivity's 1dp separator, or the
+    // drawer's own edge in phone mode), which already reads as the
+    // "unfilled" state. Drawing a second one on top just doubled its
+    // apparent thickness.
     Box(
         modifier = modifier
             .width(3.dp)
-            .fillMaxHeight()
-            .background(c.borderSubtle),
+            .fillMaxHeight(),
     ) {
         Box(
             modifier = Modifier
@@ -281,12 +350,12 @@ fun ReadingProgressRail(progress: Float, modifier: Modifier = Modifier) {
 @Composable
 fun ScrollTopButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = colors
+    var showTooltip by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .size(36.dp)
             .clayRaised(base = c.surfaceRaised, colors = c, radius = 18.dp)
-            .border(1.dp, c.borderDefault, CircleShape)
-            .clickable(onClick = onClick),
+            .combinedClickable(onClick = onClick, onLongClick = { showTooltip = true }),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -295,6 +364,36 @@ fun ScrollTopButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
                 fontFamily = ClaymarkFonts.Ui,
                 fontSize = TypeScale.small,
                 color = c.textPrimary,
+            ),
+        )
+        ClayTooltipPopup(text = "Scroll to top", visible = showTooltip, onDismiss = { showTooltip = false })
+    }
+}
+
+/**
+ * Port of shadcn's `Badge` (`rounded-full`, small, pill-shaped label; no
+ * Radix primitive underneath, pure markup/style on web). Used for the
+ * code-block language label in place of plain text — same idiom already
+ * established by the inline-code pill in `Inlines.kt` (`colors.pillBg`),
+ * just fully rounded instead of `Radius.sm`.
+ */
+@Composable
+fun ClayBadge(text: String, modifier: Modifier = Modifier) {
+    val c = colors
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(percent = 50))
+            .background(c.pillBg)
+            .padding(horizontal = Space.s2, vertical = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = TextStyle(
+                fontFamily = ClaymarkFonts.Mono,
+                fontSize = TypeScale.small,
+                fontWeight = FontWeight.Medium,
+                color = c.textSecondary,
             ),
         )
     }
@@ -317,10 +416,12 @@ fun NoticeRow(
             .fillMaxWidth()
             .padding(bottom = Space.s4)
             .clayRaised(base = c.surfaceRaised, colors = c, radius = Radius.md, elevation = 3.dp)
-            .border(
-                1.dp,
-                if (isError) c.danger else c.borderDefault,
-                RoundedCornerShape(Radius.md),
+            .then(
+                if (isError) {
+                    Modifier.border(1.dp, c.danger, RoundedCornerShape(Radius.md))
+                } else {
+                    Modifier
+                },
             )
             .padding(Space.s3),
         horizontalArrangement = Arrangement.SpaceBetween,

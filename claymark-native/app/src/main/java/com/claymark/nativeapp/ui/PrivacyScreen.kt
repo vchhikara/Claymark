@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.claymark.nativeapp.ui
 
 import androidx.compose.runtime.Composable

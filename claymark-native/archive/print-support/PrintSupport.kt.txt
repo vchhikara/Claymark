@@ -1,0 +1,127 @@
+package com.claymark.nativeapp.documents
+
+import android.content.Context
+import android.graphics.Typeface
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import android.print.PageRange
+import android.print.PrintAttributes
+import android.print.PrintDocumentAdapter
+import android.print.PrintDocumentInfo
+import android.print.PrintManager
+import android.print.pdf.PrintedPdfDocument
+import android.text.StaticLayout
+import android.text.TextPaint
+import java.io.FileOutputStream
+import kotlin.math.ceil
+
+/**
+ * Brainstorm §1.7: "Render the current parsed document to a
+ * `PrintDocumentAdapter`." Scoped to the document's plain source text laid
+ * out with [StaticLayout], monospaced — a real, working print/PDF-via-print
+ * path (`PrintManager` is a system service, no `INTERNET` permission
+ * involved), not a full port of the rendered-Markdown chrome (tables,
+ * syntax highlighting) to a second PDF layout engine. Upgrade path noted
+ * for later, not attempted here.
+ */
+object PrintSupport {
+    fun print(context: Context, documentTitle: String, content: String) {
+        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        printManager.print(
+            documentTitle,
+            MarkdownPrintAdapter(context, documentTitle, content),
+            PrintAttributes.Builder().build(),
+        )
+    }
+}
+
+private class MarkdownPrintAdapter(
+    private val context: Context,
+    private val title: String,
+    private val content: String,
+) : PrintDocumentAdapter() {
+    private var pdfDocument: PrintedPdfDocument? = null
+    private var layout: StaticLayout? = null
+    private var totalPages = 0
+    private var pageHeightPts = 0
+    private var marginPts = 0
+
+    override fun onLayout(
+        oldAttributes: PrintAttributes?,
+        newAttributes: PrintAttributes,
+        cancellationSignal: CancellationSignal?,
+        callback: LayoutResultCallback,
+        extras: Bundle?,
+    ) {
+        if (cancellationSignal?.isCanceled == true) {
+            callback.onLayoutCancelled()
+            return
+        }
+        pdfDocument = PrintedPdfDocument(context, newAttributes)
+
+        val widthMils = newAttributes.mediaSize?.widthMils ?: 8500
+        val heightMils = newAttributes.mediaSize?.heightMils ?: 11000
+        val pageWidthPts = widthMils * 72 / 1000
+        pageHeightPts = heightMils * 72 / 1000
+        marginPts = 54 // 0.75in
+
+        val paint = TextPaint().apply {
+            textSize = 11f
+            typeface = Typeface.MONOSPACE
+            color = android.graphics.Color.BLACK
+        }
+        val textWidth = (pageWidthPts - marginPts * 2).coerceAtLeast(100)
+        val builtLayout = StaticLayout.Builder.obtain(content, 0, content.length, paint, textWidth).build()
+        layout = builtLayout
+
+        val usableHeight = (pageHeightPts - marginPts * 2).coerceAtLeast(1)
+        totalPages = ceil(builtLayout.height.toDouble() / usableHeight).toInt().coerceAtLeast(1)
+
+        callback.onLayoutFinished(
+            PrintDocumentInfo.Builder("$title.pdf")
+                .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
+                .setPageCount(totalPages)
+                .build(),
+            oldAttributes != newAttributes,
+        )
+    }
+
+    override fun onWrite(
+        pageRanges: Array<out PageRange>,
+        destination: ParcelFileDescriptor,
+        cancellationSignal: CancellationSignal?,
+        callback: WriteResultCallback,
+    ) {
+        val document = pdfDocument
+        val builtLayout = layout
+        if (document == null || builtLayout == null) {
+            callback.onWriteFailed("Not laid out")
+            return
+        }
+        val usableHeight = pageHeightPts - marginPts * 2
+        for (pageIndex in 0 until totalPages) {
+            if (pageRanges.none { pageIndex in it.start..it.end }) continue
+            val page = document.startPage(pageIndex)
+            page.canvas.save()
+            page.canvas.translate(marginPts.toFloat(), (marginPts - pageIndex * usableHeight).toFloat())
+            builtLayout.draw(page.canvas)
+            page.canvas.restore()
+            document.finishPage(page)
+        }
+        try {
+            document.writeTo(FileOutputStream(destination.fileDescriptor))
+            callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+        } catch (error: Exception) {
+            callback.onWriteFailed(error.message)
+        } finally {
+            document.close()
+            pdfDocument = null
+        }
+    }
+
+    override fun onFinish() {
+        pdfDocument?.close()
+        pdfDocument = null
+    }
+}
