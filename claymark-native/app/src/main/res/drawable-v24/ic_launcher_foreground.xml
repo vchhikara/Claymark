@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive-icon foreground layer — was, until this change, the unmodified
+  Android Studio default template's teal/orange abstract mark. Matches
+  brand/logo/android/ic_launcher_foreground.svg's path exactly (the same
+  108/512-scaled "C" geometry, confirmed inside the 66dp safe-zone circle
+  by actually rendering it, not just computing that the numbers should work
+  — see LOGO-STRATEGY.md Checkpoint 11).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FAF9F5"
+        android:pathData="M79.92,72.15
+                           A31.64,31.64 0 1 1 79.92,35.85
+                           L69.20,43.35
+                           A18.56,18.56 0 1 0 69.20,64.65
+                           Z" />
+</vector>

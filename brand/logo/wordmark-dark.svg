@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" width="900" height="220">
+  <title>Claymark wordmark (dark surfaces)</title>
+  <desc>
+    Identical shape/weight/spacing to wordmark-light.svg — only the
+    color changes, per Checkpoint 6's finding that one static color was
+    never going to survive both themes. Color is the exact dark-theme
+    --text-primary token value (Neutral.n200, hsl(60,3.4%,96%) → #f5f5f4),
+    computed from the real HSL formula, not the "#e8e4dc" placeholder
+    used before this hex-lock pass.
+  </desc>
+  <text
+    x="20" y="165"
+    font-family="Inter, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="600"
+    letter-spacing="-2"
+    fill="#f5f5f4"
+  >claymark</text>
+</svg>

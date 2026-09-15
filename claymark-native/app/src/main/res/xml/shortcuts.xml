@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  §1.2: static shortcuts declared here, dynamic (recent-files) shortcuts are
+  pushed at runtime by DocumentSession via ShortcutManagerCompat — this file
+  only carries the one fixed entry, "Open file", since it's the same target
+  every time and doesn't need runtime data.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="open_file"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_open_file"
+        android:shortcutShortLabel="@string/shortcut_open_file_short"
+        android:shortcutLongLabel="@string/shortcut_open_file_long">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.claymark.nativeapp"
+            android:targetClass="com.claymark.nativeapp.MainActivity">
+            <extra
+                android:name="com.claymark.nativeapp.EXTRA_OPEN_FILE"
+                android:value="true" />
+        </intent>
+    </shortcut>
+</shortcuts>

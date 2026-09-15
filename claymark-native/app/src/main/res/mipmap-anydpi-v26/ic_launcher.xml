@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file did not exist before this change — AndroidManifest.xml's
+  android:icon="@mipmap/ic_launcher" was resolving straight to the
+  legacy per-density PNGs (Android Studio's own default template icon)
+  on every API level, API 26+ included, because there was no
+  mipmap-anydpi-v26 adaptive-icon entry to take priority. The
+  drawable/ic_launcher_background.xml and drawable-v24/
+  ic_launcher_foreground.xml vectors existed in the project the whole
+  time but were unreferenced from anywhere.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

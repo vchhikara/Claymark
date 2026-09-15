@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- No INTERNET permission, deliberately. The shipped product's contract
+         is "zero runtime network requests" (README §What it deliberately will
+         not do). The Tauri shell declared INTERNET because the WebView loaded
+         its own bundle over a localhost-style scheme; a native app needs no
+         such thing, and KaTeX/Mermaid are bundled in assets/ and loaded from
+         file:///android_asset. Omitting the permission makes the guarantee
+         enforceable by the platform rather than by convention. -->
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Claymark">
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+            android:exported="true"
+            android:label="@string/main_activity_title"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- "Open with" registration, ported verbatim from the Tauri
+                 shell's AndroidManifest.xml: a content:// URI carrying a
+                 Markdown mime type, or a file:// URI ending in .md/.markdown.
+                 MainActivity captures the intent's data URI and the session
+                 opens it through the same path as the in-app picker. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" android:mimeType="text/markdown" />
+                <data android:scheme="content" android:mimeType="text/x-markdown" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="file"
+                    android:host="*"
+                    android:pathPattern=".*\\.md" />
+                <data
+                    android:scheme="file"
+                    android:host="*"
+                    android:pathPattern=".*\\.markdown" />
+            </intent-filter>
+
+            <!-- Share-target registration (brainstorm §1.3): lets another
+                 app's Share sheet hand Claymark raw text, not just a file
+                 it can already be opened on via VIEW above. Plain
+                 ACTION_SEND only, not the Sharing Shortcuts/Direct Share
+                 machinery — this is a single-document reader, not a
+                 messaging-style "share to a specific person" surface. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/markdown" />
+            </intent-filter>
+
+            <!-- §1.2: the fixed "Open file" static shortcut. Dynamic
+                 (recent-files) shortcuts are pushed at runtime by
+                 DocumentSession, not declared here. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- §1.1: home-screen widget, passive/event-driven per Glance
+             guidance — no WorkManager job, updated only when
+             DocumentSession's MRU list changes. -->
+        <receiver
+            android:name=".widget.ClaymarkWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/claymark_widget_info" />
+        </receiver>
+    </application>
+</manifest>
