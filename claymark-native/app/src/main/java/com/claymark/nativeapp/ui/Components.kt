@@ -15,8 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +45,8 @@ import com.claymark.nativeapp.theme.TypeScale
 import com.claymark.nativeapp.theme.clayRaised
 import com.claymark.nativeapp.theme.colors
 import androidx.compose.foundation.clickable
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * `.claymark-button[data-variant='outline']`, the only button variant the
@@ -95,27 +105,130 @@ fun ClayButton(
 }
 
 /**
- * `ThemeToggle.tsx`. A manual choice is persisted and thereafter always wins
- * over the system setting.
+ * Icon-content sibling of [ClayButton] — same clay chrome (raised surface,
+ * pressed inset, border), but the content slot is a small vector glyph
+ * instead of a text label. Used wherever the label was previously a
+ * platform emoji (sun/moon/back-arrow): those render as full-color,
+ * OS-skinned pictures that clash with the claymorphism palette — a
+ * monochrome vector tinted from [colors] reads as UI, not a sticker on it.
  */
 @Composable
-fun ThemeToggle(theme: Theme, onToggle: (Theme) -> Unit) {
-    val next = if (theme == Theme.DARK) Theme.LIGHT else Theme.DARK
-    ClayButton(
-        label = if (theme == Theme.DARK) "\uD83C\uDF19" else "\u2600\uFE0F",
-        compact = true,
-        onClick = { onToggle(next) },
-    )
+fun ClayIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean = true,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val c = colors
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+
+    Box(
+        modifier = modifier
+            .clayRaised(
+                base = c.surfaceRaised,
+                colors = c,
+                radius = Radius.md,
+                pressed = pressed,
+            )
+            .border(1.dp, c.borderDefault, RoundedCornerShape(Radius.md))
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick,
+            )
+            .padding(
+                horizontal = if (compact) 11.dp else Space.s3,
+                vertical = if (compact) 7.65.dp else Space.s2,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
 }
 
 /**
- * The drawer trigger. Same unicode-glyph-in-a-ClayButton idiom as `←
- * Back` and [ThemeToggle]'s sun/moon — no icon-font dependency needed for a
- * single static glyph.
+ * `ThemeToggle.tsx`. A manual choice is persisted and thereafter always wins
+ * over the system setting. Drawn as flat single-color glyphs (a ring of
+ * rays for light, a crescent for dark) rather than the platform's
+ * full-color sun/moon emoji, so the toggle reads as UI chrome, not a
+ * sticker.
+ */
+@Composable
+fun ThemeToggle(theme: Theme, onToggle: (Theme) -> Unit) {
+    val c = colors
+    val next = if (theme == Theme.DARK) Theme.LIGHT else Theme.DARK
+    ClayIconButton(compact = true, onClick = { onToggle(next) }) {
+        if (theme == Theme.DARK) MoonGlyph(c.textPrimary) else SunGlyph(c.textPrimary)
+    }
+}
+
+@Composable
+private fun SunGlyph(tint: Color, size: androidx.compose.ui.unit.Dp = 18.dp) {
+    Canvas(modifier = Modifier.size(size)) {
+        val strokeWidth = 1.6.dp.toPx()
+        val center = Offset(this.size.width / 2f, this.size.height / 2f)
+        val coreRadius = this.size.minDimension * 0.24f
+        drawCircle(color = tint, radius = coreRadius, center = center, style = Stroke(strokeWidth))
+        val rayInner = coreRadius + strokeWidth * 1.6f
+        val rayOuter = this.size.minDimension / 2f
+        for (i in 0 until 8) {
+            val angle = (i * (360f / 8)) * (Math.PI.toFloat() / 180f)
+            val start = Offset(
+                center.x + rayInner * cos(angle),
+                center.y + rayInner * sin(angle),
+            )
+            val end = Offset(
+                center.x + rayOuter * cos(angle),
+                center.y + rayOuter * sin(angle),
+            )
+            drawLine(tint, start, end, strokeWidth = strokeWidth, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        }
+    }
+}
+
+@Composable
+private fun MoonGlyph(tint: Color, size: androidx.compose.ui.unit.Dp = 18.dp) {
+    Canvas(modifier = Modifier.size(size)) {
+        val radius = this.size.minDimension * 0.4f
+        val center = Offset(this.size.width / 2f, this.size.height / 2f)
+        // A crescent: the full disc minus an off-center circle of the same
+        // radius, via even-odd path fill — no clip/blend-mode needed.
+        val path = androidx.compose.ui.graphics.Path().apply {
+            addOval(androidx.compose.ui.geometry.Rect(center, radius))
+            addOval(
+                androidx.compose.ui.geometry.Rect(
+                    Offset(center.x + radius * 0.55f, center.y - radius * 0.25f),
+                    radius,
+                ),
+            )
+            fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
+        }
+        drawPath(path, color = tint)
+    }
+}
+
+/**
+ * The drawer trigger. Same clay-chrome idiom as [ThemeToggle] and the
+ * back-navigation button — a monochrome vector glyph, not a platform emoji.
  */
 @Composable
 fun DrawerMenuButton(onClick: () -> Unit) {
-    ClayButton(label = "☰", compact = true, onClick = onClick)
+    val c = colors
+    ClayIconButton(compact = true, onClick = onClick) {
+        Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = c.textPrimary)
+    }
+}
+
+/** Shared back-navigation glyph — replaces the bare "←" text label. */
+@Composable
+fun ClayBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val c = colors
+    ClayIconButton(compact = true, onClick = onClick, modifier = modifier) {
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = c.textPrimary)
+    }
 }
 
 /**

@@ -63,7 +63,7 @@ fun SubScreenScaffold(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Space.s3),
         ) {
-            ClayButton(label = "←", compact = true, onClick = onBack)
+            ClayBackButton(onClick = onBack)
             Text(
                 text = title,
                 style = TextStyle(
