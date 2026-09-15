@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 220" width="1400" height="220">
+  <title>Claymark — horizontal lockup (light surfaces)</title>
+  <desc>
+    Icon and wordmark geometry inlined directly (not referenced as
+    sibling files via &lt;image href&gt;) — nested external SVG
+    references inside an SVG that's itself loaded via &lt;img&gt; are
+    sandboxed and don't resolve in most browsers/renderers, confirmed
+    by testing the referenced version and finding it blank. A lockup
+    needs to work as a single portable file, so correctness here wins
+    over the single-source-of-truth convenience an external reference
+    would have given. Sizing/spacing matches the proportions confirmed
+    in LOGO-STRATEGY.md Checkpoint 7.
+  </desc>
+  <defs>
+    <linearGradient id="tileFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dd8562" />
+      <stop offset="100%" stop-color="#c8542d" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: icon-c.svg's own 512-unit geometry, scaled by 200/512 = 0.390625 and translated to (10,10). -->
+  <g transform="translate(10,10) scale(0.390625)">
+    <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#tileFill)" />
+    <path
+      d="M378.9,342.0
+         A150,150 0 1 1 378.9,170.0
+         L328.1,205.5
+         A88,88 0 1 0 328.1,306.5
+         Z"
+      fill="#faf9f5"
+    />
+  </g>
+
+  <text
+    x="250" y="165"
+    font-family="Inter, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="600"
+    letter-spacing="-2"
+    fill="#282825"
+  >claymark</text>
+</svg>

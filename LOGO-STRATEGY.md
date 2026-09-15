@@ -773,6 +773,66 @@ light-theme one recolored by eye), the outline-only and single-ink cuts,
 the maskable-icon safe-zone check, an actual 16px render, and the Android
 adaptive-icon foreground/background layer split.
 
+## 19. Checkpoint 11 — the full production set, hand-authored and verified
+
+Every item from §6's checklist and Checkpoint 10's remaining list, built
+by hand as real vector files (same approach as `icon-c.svg`, no further
+generator round-trips) and verified by rendering, not assumed. All live
+under `brand/`:
+
+| File | What it's for |
+|---|---|
+| `logo/icon-c.svg` | Primary icon (Checkpoint 10) |
+| `logo/icon-c-dark.svg` | On-dark-surface placement (README dark mode, dark hero sections) — tuned shadow, same tile |
+| `logo/icon-c-outline.svg` | Single-ink hairline cut, `currentColor` so the consuming context sets the one ink color |
+| `logo/icon-maskable.svg` | PWA maskable icon — full-bleed background, no baked-in corner rounding |
+| `logo/android/ic_launcher_background.svg` + `ic_launcher_foreground.svg` | Android adaptive-icon layers, coordinates scaled by the real 108/512 factor from `icon-c.svg`, not re-eyeballed at the smaller size |
+| `logo/wordmark-light.svg` / `wordmark-dark.svg` | Both theme colors, computed from the actual HSL token formula (`#282825` / `#f5f5f4`) rather than the earlier prompt-stage approximations (`#2a2420` / `#e8e4dc`) |
+| `logo/lockup-light.svg` / `lockup-dark.svg` | Icon+wordmark combined, matching Checkpoint 7's confirmed proportions |
+| `logo/raster/icon-{192,512}.png`, `icon-maskable-512.png` | PNG exports at the exact sizes `public/manifest.json` requires |
+
+**Verification performed, not skipped:**
+- Rendered every file via headless Chromium and inspected the actual
+  output, the same discipline as Checkpoints 6 and 8 — including catching
+  and fixing two real bugs found only by rendering, not by reading the
+  markup:
+  1. The first lockup attempt used `<image href="...">` to reference the
+     icon/wordmark as sibling files — renders blank when the lockup SVG is
+     itself loaded via `<img>`, since nested external resource references
+     inside an SVG are sandboxed in that context in most browsers/
+     renderers. Fixed by inlining the actual geometry directly.
+  2. Raster exports came out 532×532/212×212, not the requested 512/192 —
+     20px of extra margin from generous test-harness headroom being
+     captured as part of the viewport, not a crop. Confirmed via `file`
+     (ground truth, not the chat viewer's own display framing, which
+     turned out to be an unrelated red herring) and fixed by matching the
+     capture window exactly to the target size.
+- **16px legibility, actually rendered** (not inferred from the shape's
+  simplicity): 16px, 32px, and 48px renders, viewed at native pixel
+  scale — the "C" stays legible at all three.
+- **Maskable safe zone, actually checked** by clipping the maskable
+  export to a circle and confirming the letterform sits well inside it,
+  not just computing that the numbers should work.
+- **Android adaptive-icon safe zone, actually checked** the same way —
+  rendered the foreground layer against a mid-gray with the 66dp safe
+  circle drawn as a guide, confirmed the "C" sits inside it with margin.
+
+**One open item, not a blocker:** the outline cut's stroke width (6 units
+on the 512 canvas) reads cleanly at large sizes but may be too delicate
+for genuine small-scale single-ink use (embroidery, small print) — worth
+a thicker variant if that specific use case comes up, not addressed here
+since no such use case has been named yet.
+
+**Not yet done, and each is a real decision or requires tooling this
+session doesn't have, not an oversight:** `.ico`/`.icns` conversion for
+the Tauri desktop icon (needs platform-specific tooling beyond an SVG
+renderer); actually wiring any of this into `public/manifest.json`,
+`src-tauri/icons/`, or the Android mipmap folders — a production asset
+swap is a deliberate "ship it" action, kept separate from producing the
+assets themselves; the wordmark's text-based (not outlined-to-paths)
+construction means faithful reproduction elsewhere still needs the actual
+Inter font file available, same as any text-based wordmark SVG.
+
 ---
 
 ## Sources consulted

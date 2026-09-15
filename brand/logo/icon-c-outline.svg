@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Claymark icon (outline / single-ink)</title>
+  <desc>
+    One color, stroke only, no fill — for contexts needing a single-ink
+    mark that survives on any background color: an embossed/engraved
+    treatment, a letterhead watermark, a single-color print run. Uses
+    currentColor so the consuming context sets the one ink color rather
+    than this file assuming light-on-dark or dark-on-light.
+  </desc>
+  <g fill="none" stroke="currentColor" stroke-width="6">
+    <rect x="16" y="16" width="480" height="480" rx="96" ry="96" />
+    <path
+      d="M378.9,342.0
+         A150,150 0 1 1 378.9,170.0
+         L328.1,205.5
+         A88,88 0 1 0 328.1,306.5
+         Z"
+    />
+  </g>
+</svg>
