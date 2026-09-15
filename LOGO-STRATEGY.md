@@ -633,6 +633,35 @@ hex/dark-theme confirmation pass on both, then the icon+wordmark lockup
 test, then Stage 3's vector production pass and the full technical
 checklist in §6.
 
+## 14. Checkpoint 6 — transparency confirmed, dark-theme legibility fails
+
+Ran the wordmark through Ideogram's own background-swatch toggle
+(checkerboard / white / dark-gray / black) to actually check the two open
+items from Checkpoint 5, rather than assuming either:
+
+- **Transparency: confirmed genuine.** Toggling the background swatch
+  shows different colors coming through the letterforms — this is a real
+  alpha-channel export, not a filled canvas.
+- **Dark-theme legibility: fails, as expected once actually checked.**
+  Against the dark-gray swatch the wordmark is nearly invisible — same
+  dark charcoal color regardless of background. Not a generation defect:
+  the wordmark was only ever prompted with one static color, and one
+  static color was never going to survive both themes, exactly the same
+  way body text doesn't in the product itself.
+
+**The fix is not a new design, it's a second color pairing.** The app's
+own dark theme never reuses light-theme text color — `ClaymarkColors`'s
+`textPrimary` in dark mode is `Neutral.n200` (a light, warm off-white, not
+pure white, not the light theme's near-black). The wordmark should follow
+the identical rule its own body text already follows: one shape, two
+colors, chosen per theme, not one universal color.
+
+**Next:** generate the same wordmark (identical shape/spacing/typeface —
+do not re-roll the design) recolored to that light warm-neutral value for
+use on dark surfaces, the same way this document already treats the icon
+tile as needing both a light- and dark-theme check rather than one
+universal render.
+
 ---
 
 ## Sources consulted
