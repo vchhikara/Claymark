@@ -604,6 +604,35 @@ brown-charcoal, only the final period rendered as a solid terracotta
 No other icon, symbol, or decoration. Quiet, precise, editorial.
 ```
 
+## 13. Checkpoint 5 — plain wordmark lands clean
+
+The no-accent wordmark prompt from Checkpoint 4 came back clean: quiet,
+confident, genuinely reads as "a well-set book imprint mark" rather than a
+startup wordmark — no dot ambiguity, no decoration. This is the wordmark
+to carry forward; no need to also test the full-stop variant unless a
+future side-by-side comparison specifically calls for it.
+
+Two things still open, same "verify, don't eyeball" discipline as the
+icon in Checkpoint 3:
+
+1. **Color check.** The prompt specified warm dark brown-charcoal
+   (`#2a2420`-ish), not flat black — the render reads closer to true black
+   against a dark canvas. Confirm the actual exported hex once viewed
+   against a real transparency checkerboard, and confirm the export is
+   genuinely alpha-transparent rather than filled black.
+2. **Icon + wordmark pairing untested.** The "C" tile (Checkpoint 3) and
+   this wordmark were generated independently, in separate sessions. Their
+   weights and tone need to be checked side by side — the actual
+   horizontal-lockup use case — before either is called final on its own;
+   looking fine in isolation doesn't confirm they read as one family.
+
+**Status at this checkpoint:** icon direction and wordmark are both
+provisionally chosen (Checkpoint 3's "C" tile, this checkpoint's plain
+wordmark). Remaining before production per the pipeline in §4: Stage 4's
+hex/dark-theme confirmation pass on both, then the icon+wordmark lockup
+test, then Stage 3's vector production pass and the full technical
+checklist in §6.
+
 ---
 
 ## Sources consulted
