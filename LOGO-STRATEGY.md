@@ -713,6 +713,36 @@ by eye. What remains per the pipeline in §4 is production, not design:
   exports, maskable safe zone, 16px legibility actually rendered (not just
   inferred from how simple the shape is), both-theme contrast finalized.
 
+## 17. Checkpoint 9 — Stage 3 attempt regressed; procedural fix, not a design one
+
+A Stage 3 (vector production) attempt reintroduced every problem
+Checkpoints 2–3 already eliminated: a visible beveled edge/thickness along
+the tile's right and bottom sides (the 3D-extruded-slab look), a glossy
+diagonal highlight sweep top-left (the exact "sheen" Checkpoint 2's
+negative clause named and forbade), and a pronounced directional drop
+shadow well past "very faint ambient." **This is a regression, not a
+variant to weigh against the confirmed design — do not carry it forward.**
+
+**Root cause is almost certainly procedural, not a prompt-wording issue
+this time.** Every prior fix in this document (Checkpoints 1, 2, 6) worked
+by making a *text* prompt more specific. This result suggests Stage 3 was
+run as a fresh text re-description of the concept rather than built
+directly from the confirmed Checkpoint 3 image — and re-describing a
+design in words gives a generator room to reinterpret it against its own
+stylistic defaults, the same "3D icon" bias this whole document has been
+routing around from round one.
+
+**The correct Stage 3 procedure, restated from §3's own description of
+Recraft's role:** feed the actual confirmed flat image (Checkpoint 3's
+winning "C" tile) as a **style/image reference input**, not a text
+description of it. Recraft's reference-image feature exists specifically
+so output has to match a supplied image rather than reinterpret a brief
+from scratch — using it as a text-to-image tool for this step throws away
+the one advantage it has for this exact situation. If the tool/workflow
+being used doesn't support an image-reference input for this step, that's
+a reason to use a different tool for Stage 3, not to keep re-prompting in
+text.
+
 ---
 
 ## Sources consulted
