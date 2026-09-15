@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -104,6 +105,40 @@ fun ThemeToggle(theme: Theme, onToggle: (Theme) -> Unit) {
         label = if (theme == Theme.DARK) "\uD83C\uDF19" else "\u2600\uFE0F",
         compact = true,
         onClick = { onToggle(next) },
+    )
+}
+
+/**
+ * The drawer trigger. Same unicode-glyph-in-a-ClayButton idiom as `←
+ * Back` and [ThemeToggle]'s sun/moon — no icon-font dependency needed for a
+ * single static glyph.
+ */
+@Composable
+fun DrawerMenuButton(onClick: () -> Unit) {
+    ClayButton(label = "☰", compact = true, onClick = onClick)
+}
+
+/**
+ * A [androidx.compose.material3.Switch] explicitly recolored against our own
+ * tokens. This app deliberately never wraps content in `MaterialTheme`, so
+ * an un-colored M3 `Switch` would fall back to the M3 baseline scheme's
+ * purple — every use of it needs this wrapper, not the bare component.
+ */
+@Composable
+fun ClaySwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, enabled: Boolean = true) {
+    val c = colors
+    androidx.compose.material3.Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        enabled = enabled,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = c.surface,
+            checkedTrackColor = c.accentBrand,
+            checkedBorderColor = c.accentBrand,
+            uncheckedThumbColor = c.textMuted,
+            uncheckedTrackColor = c.surfaceRaised,
+            uncheckedBorderColor = c.borderDefault,
+        ),
     )
 }
 

@@ -3,16 +3,37 @@ package com.claymark.nativeapp
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.claymark.nativeapp.documents.DocumentBackend
 import com.claymark.nativeapp.session.DocumentSession
 import com.claymark.nativeapp.session.PickerRequest
 import com.claymark.nativeapp.theme.ClaymarkTheme
+import com.claymark.nativeapp.theme.colors
+import com.claymark.nativeapp.theme.settings
+import com.claymark.nativeapp.ui.AboutScreen
+import com.claymark.nativeapp.ui.ClaymarkDrawerContent
+import com.claymark.nativeapp.ui.HelpScreen
+import com.claymark.nativeapp.ui.PrivacyScreen
+import com.claymark.nativeapp.ui.SettingsScreen
+import kotlinx.coroutines.launch
 
 /**
  * "Open with" support (see the VIEW intent-filters in AndroidManifest.xml).
@@ -56,6 +77,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             ClaymarkTheme {
                 val backend = androidx.compose.runtime.remember { DocumentBackend(applicationContext) }
+                var route by rememberSaveable { mutableStateOf(Route.READER) }
+                val drawerState = rememberDrawerState(DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+
+                // The ViewModel has no Compose/CompositionLocal access of its
+                // own — this is the one bridge from the Settings-backed
+                // preference to the session's debounced autosave.
+                LaunchedEffect(settings.autosaveEnabled) {
+                    session.setAutosaveEnabled(settings.autosaveEnabled)
+                }
 
                 LaunchedEffect(Unit) { session.openLaunchDocument() }
 
@@ -73,7 +104,54 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                ClaymarkApp(session)
+                // Drawer and sub-screens are mutually exclusive with each
+                // other in practice (the hamburger only shows on the reader,
+                // and sub-screens have no hamburger of their own), so these
+                // two back-press handlers never actually compete for the
+                // same press.
+                BackHandler(enabled = drawerState.isOpen) {
+                    scope.launch { drawerState.close() }
+                }
+                BackHandler(enabled = route != Route.READER) {
+                    route = Route.READER
+                }
+
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    gesturesEnabled = route == Route.READER && !session.isEditing,
+                    scrimColor = Color.Black.copy(alpha = 0.5f),
+                    drawerContent = {
+                        // A bare re-skin: no M3 tonal elevation (it would tint
+                        // our surface with the unthemed baseline scheme's
+                        // primary) and no default rounded-end shape.
+                        ModalDrawerSheet(
+                            drawerShape = RectangleShape,
+                            drawerContainerColor = colors.surface,
+                            drawerContentColor = colors.textPrimary,
+                            drawerTonalElevation = 0.dp,
+                            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+                        ) {
+                            ClaymarkDrawerContent(
+                                currentRoute = route,
+                                onNavigate = { next ->
+                                    route = next
+                                    scope.launch { drawerState.close() }
+                                },
+                            )
+                        }
+                    },
+                ) {
+                    when (route) {
+                        Route.READER -> ClaymarkApp(
+                            session = session,
+                            onOpenDrawer = { scope.launch { drawerState.open() } },
+                        )
+                        Route.SETTINGS -> SettingsScreen(onBack = { route = Route.READER })
+                        Route.HELP -> HelpScreen(onBack = { route = Route.READER })
+                        Route.ABOUT -> AboutScreen(onBack = { route = Route.READER })
+                        Route.PRIVACY -> PrivacyScreen(onBack = { route = Route.READER })
+                    }
+                }
             }
         }
     }

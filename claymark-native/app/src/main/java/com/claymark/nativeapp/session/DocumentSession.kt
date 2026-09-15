@@ -45,6 +45,7 @@ sealed interface PickerRequest {
 }
 
 private const val DRAFT_DEBOUNCE_MS = 700L
+private const val AUTOSAVE_DEBOUNCE_MS = 1200L
 
 class DocumentSession(app: Application) : AndroidViewModel(app) {
 
@@ -80,6 +81,19 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
     /** The last-known-saved text. Dirty is `text != persistedText`. */
     private var persistedText: String = ""
     private var draftJob: Job? = null
+    private var autosaveJob: Job? = null
+
+    /**
+     * Settings-backed, defaults to the Settings screen's own default (on).
+     * Set from the Compose layer via [setAutosaveEnabled] once `SettingsStore`
+     * is read — this ViewModel has no Compose/CompositionLocal access of its
+     * own.
+     */
+    private var autosaveEnabled: Boolean = true
+
+    fun setAutosaveEnabled(enabled: Boolean) {
+        autosaveEnabled = enabled
+    }
 
     /** Awaited by a save that had to route through the create-document picker. */
     private var pendingCreate: CompletableDeferred<Uri?>? = null
@@ -228,6 +242,32 @@ class DocumentSession(app: Application) : AndroidViewModel(app) {
         text = next
         saveStatus = if (next == persistedText) SaveStatus.CLEAN else SaveStatus.DIRTY
         scheduleDraftFlush(target, next)
+        scheduleAutosave(target, next)
+    }
+
+    /**
+     * Debounced write to the actual open document — distinct from
+     * [scheduleDraftFlush]'s always-on crash-recovery buffer, which this
+     * setting does not gate.
+     *
+     * Guarded to targets that write in place ([backend.persistAction] ==
+     * `SAVE`): a target needing Save-as would otherwise pop the system
+     * "create document" picker unannounced, mid-keystroke, which is a much
+     * louder interruption than autosave is supposed to be. Such a document
+     * simply doesn't autosave; the explicit Save/Save-as buttons still work.
+     */
+    private fun scheduleAutosave(target: DocumentRef, value: String) {
+        if (!autosaveEnabled) return
+        if (backend.persistAction(target) != PersistAction.SAVE) return
+        autosaveJob?.cancel()
+        autosaveJob = viewModelScope.launch {
+            delay(AUTOSAVE_DEBOUNCE_MS)
+            // Re-check on wake: mode/target/text may have moved on (explicit
+            // Save, Save-as, a fresh edit already superseding this one).
+            if (ref?.id == target.id && text == value && saveStatus == SaveStatus.DIRTY) {
+                doSave(target, value, asNew = false)
+            }
+        }
     }
 
     // ---- saving -----------------------------------------------------------
