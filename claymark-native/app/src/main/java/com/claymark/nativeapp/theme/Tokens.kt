@@ -133,6 +133,19 @@ val DarkColors = ClaymarkColors(
 )
 
 /**
+ * The AMOLED variant: [DarkColors] with a true-black surface. Deliberately
+ * *not* a full re-derived palette — every other token here (text, borders,
+ * link, accent) was AA-contrast-verified against `hsl(0,0%,9.8%)`
+ * (`docs/THEMING.md` §9), and every one of those pairs is text/border
+ * *against the surface*, so a darker surface can only raise those ratios,
+ * never lower them. `surfaceRaised`/`surfaceCode` are left at their existing
+ * dark values on purpose: the elevation step between "surface" and "raised"
+ * reads as more pronounced on true black than on `9.8%` lightness, which is
+ * the expected, wanted effect of an AMOLED mode, not an oversight.
+ */
+val AmoledColors = DarkColors.copy(surface = Color.Black)
+
+/**
  * The 11-step spacing scale. Values are the CSS rem figures resolved at the
  * root font size the app actually uses (`--text-body: 18px`), so
  * `--space-4: 1rem` is 18dp here, not 16dp. Getting this wrong is the single

@@ -57,6 +57,7 @@ import com.claymark.nativeapp.theme.clayRaised
 import com.claymark.nativeapp.theme.colors
 import com.claymark.nativeapp.ui.AbandonDialog
 import com.claymark.nativeapp.ui.ClayButton
+import com.claymark.nativeapp.ui.DrawerMenuButton
 import com.claymark.nativeapp.ui.ImageLightbox
 import com.claymark.nativeapp.ui.NoticeRow
 import com.claymark.nativeapp.ui.ReadingProgressRail
@@ -106,7 +107,7 @@ Tap **Open file** above to open your own Markdown file.
  * never stacked with the preview.
  */
 @Composable
-fun ClaymarkApp(session: DocumentSession) {
+fun ClaymarkApp(session: DocumentSession, onOpenDrawer: () -> Unit) {
     val c = colors
     val scroll = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -136,7 +137,7 @@ fun ClaymarkApp(session: DocumentSession) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            Header(session = session)
+            Header(session = session, onOpenDrawer = onOpenDrawer)
 
             Box(modifier = Modifier.weight(1f)) {
                 Column(
@@ -225,7 +226,7 @@ fun ClaymarkApp(session: DocumentSession) {
  * filename gets the flexible space and ellipsises, the actions never shrink.
  */
 @Composable
-private fun Header(session: DocumentSession) {
+private fun Header(session: DocumentSession, onOpenDrawer: () -> Unit) {
     val c = colors
     val themeState = LocalThemeState.current
 
@@ -310,6 +311,8 @@ private fun Header(session: DocumentSession) {
                     },
                 )
             } else {
+                DrawerMenuButton(onClick = onOpenDrawer)
+
                 Text(
                     text = if (session.hasDocument) session.ref?.name.orEmpty() else "CLAYMARK",
                     style = TextStyle(
