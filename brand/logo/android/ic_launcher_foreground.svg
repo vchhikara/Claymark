@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <title>Claymark adaptive icon — foreground layer</title>
+  <desc>
+    108x108dp canvas, transparent background, the "C" scaled by
+    108/512 = 0.2109375 from icon-c.svg's coordinates and re-centered —
+    not re-eyeballed at this size. Outer radius 31.64dp sits inside the
+    33dp (66dp diameter / 2) safe-zone radius confirmed by the platform
+    spec, with margin to spare, so no OEM launcher mask shape clips it.
+  </desc>
+  <path
+    d="M79.92,72.15
+       A31.64,31.64 0 1 1 79.92,35.85
+       L69.20,43.35
+       A18.56,18.56 0 1 0 69.20,64.65
+       Z"
+    fill="#faf9f5"
+  />
+</svg>

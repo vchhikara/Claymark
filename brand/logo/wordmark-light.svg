@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" width="900" height="220">
+  <title>Claymark wordmark (light surfaces)</title>
+  <desc>
+    Text-based, not outlined to paths — reproducing it faithfully
+    elsewhere needs the actual Inter font available (the same
+    600-weight file this app already bundles at public/fonts/, or
+    src/main/assets in the native build), same as any text-based
+    wordmark SVG. Color is the exact light-theme --text-primary token
+    value (Neutral.n1000, hsl(60,3.4%,15%) → #282825), computed from
+    the real HSL formula rather than approximated — not the "#2a2420"
+    placeholder this document used before the icon's own hex-lock
+    discipline was applied here too.
+  </desc>
+  <text
+    x="20" y="165"
+    font-family="Inter, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="600"
+    letter-spacing="-2"
+    fill="#282825"
+  >claymark</text>
+</svg>
