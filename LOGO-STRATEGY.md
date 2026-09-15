@@ -511,6 +511,49 @@ subtle shadow afterward in a vector editor — per §3's own point, fighting
 a model's strong stylistic default past a certain point costs more than
 routing around it in a different tool.
 
+## 11. Checkpoint 3 — Direction F landed, first genuinely on-brand result
+
+Direction F's plain-C, shadow/sheen-explicitly-forbidden prompt produced
+the first result across three rounds with none of the recurring problems:
+no long diagonal shadow, no glossy sheen, no embossed frame/bezel, no
+texture, and (correctly, per Checkpoint 2's call) no dot device. A bold
+parchment "C" cut as negative space out of a solid terracotta rounded
+square, with only a soft, mostly-contained shadow beneath the tile and a
+subtle top-to-bottom tonal shift — close in spirit to `clayRaised`'s own
+restrained treatment.
+
+**Verdict: this is the strongest candidate so far and the one to carry
+into Stage 3/4** — but not yet confirmed, not yet final. Per §7's own
+evaluation criteria, still outstanding before treating it as done:
+
+1. **Hex accuracy unconfirmed.** Reads as somewhere between `clay-500`
+   (#d97757) and `clay-600` (#c8542d) by eye — exactly the "don't pick by
+   eye" case §7 exists for. Resolve via Stage 4 (Nano Banana Pro, fed the
+   real `tokens.css` swatches), not by looking harder at this one export.
+2. **Only tested against the light parchment surface.** Needs the same
+   render against the dark near-black surface before either theme can be
+   called confirmed — a mark that only reads well on one background isn't
+   done, per §3's contrast note and §7's both-theme test.
+3. **Small-size legibility not yet checked.** Likely fine given how bold
+   and simple the letterform is, but "likely fine" isn't the bar §7 sets —
+   actually render it at 16px before trusting it.
+4. **Shadow has a slight rightward bias**, not a true neutral bottom-only
+   falloff. Minor, but worth resolving one way or the other during vector
+   cleanup: either make it neutral, or commit fully to `clayRaised`'s
+   specific bottom-right-ambient-plus-top-left-rim convention rather than
+   landing between the two.
+5. **Only one fill polarity came back** (terracotta tile / parchment
+   letter) though the prompt asked for both. Generate the reverse
+   (parchment tile / terracotta letter) for a side-by-side comparison
+   before locking the direction — the two may not perform equally at
+   small sizes or in the maskable-icon safe zone.
+
+**Next step:** take this result into Stage 2 (a "claymark" wordmark lockup
+using this same C, via Ideogram) and Stage 4 (the hex-accuracy and
+dark-theme pass, via Nano Banana Pro) per the pipeline in §4 — not further
+iteration inside whichever tool produced this one, consistent with how
+this whole process has been run so far.
+
 ---
 
 ## Sources consulted
