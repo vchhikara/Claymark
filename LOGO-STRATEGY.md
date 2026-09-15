@@ -554,6 +554,56 @@ dark-theme pass, via Nano Banana Pro) per the pipeline in §4 — not further
 iteration inside whichever tool produced this one, consistent with how
 this whole process has been run so far.
 
+## 12. Checkpoint 4 — wordmark generated, dot device has no anchor in this word
+
+Stage 2 (wordmark) result reviewed: lowercase "claymark" in a clean
+humanist sans, warm dark brown-charcoal (not flat black) — genuinely
+on-brief, matches `brand_guidelines.md` §2's own lowercase-in-prose
+convention, quiet and confident without decoration.
+
+**One real problem, and it traces back to this document's own D-variant
+prompt, not a model misread.** §5 Stage 2's "dot above the l" instruction
+describes something that doesn't exist in typography — lowercase "l" has
+no dot (only i/j do), and "claymark" contains neither letter. The model's
+best-effort interpretation placed a terracotta circle floating above the
+"k" with no letterform to anchor to, which reads as a stray mark or a
+smudge at a glance, not a deliberate accent. **This is a prompt-authoring
+error to fix, not a generation quality problem to re-roll.**
+
+Two corrected paths, not a third attempt at the same instruction:
+
+1. **Drop the accent entirely** — plain "claymark," no mark. Consistent
+   with Checkpoint 2's identical call on the icon (the dot device wasn't
+   earning its complexity there either). Recommended default.
+2. **A deliberate terracotta full-stop after the word** — "claymark." — a
+   real, legible typographic device with precedent (a colored period as
+   a brand accent), rather than a floating mark with nothing to anchor to.
+
+Generate both for comparison; don't reuse the "dot above the l" prompt
+language again in either case.
+
+### Corrected Stage 2 prompts
+
+**Wordmark, no accent (recommended default):**
+```
+Minimal wordmark logo reading "claymark" in a clean modern humanist
+sans-serif typeface (similar to Inter), all lowercase, letter-spacing
+slightly tight, single warm dark brown-charcoal color (not flat black),
+on a transparent background. No icon, no symbol, no accent mark, no
+decoration, no tagline. Quiet, precise, editorial — like a well-set book
+imprint mark, not a bold startup wordmark.
+```
+
+**Wordmark with a deliberate terracotta full-stop:**
+```
+Minimal wordmark logo reading "claymark." (including a period/full-stop
+immediately after the k, no space) in a clean modern humanist sans-serif
+typeface (similar to Inter), all lowercase, the word itself in warm dark
+brown-charcoal, only the final period rendered as a solid terracotta
+#d97757 circle, letter-spacing slightly tight, transparent background.
+No other icon, symbol, or decoration. Quiet, precise, editorial.
+```
+
 ---
 
 ## Sources consulted
