@@ -357,6 +357,98 @@ time on it:
 
 ---
 
+## 9. Checkpoint — first generated round reviewed, 2026-09-15
+
+A first Midjourney-style batch came back as a monogram concept: a capital
+letterform in a rounded-square tile, with a small circle-and-stroke accent
+device. Review findings, kept here so the next round doesn't repeat the
+same misses:
+
+- **Letter locked to "C"** (for Claymark, not "M" for Markdown — the batch
+  reviewed used "M", ambiguous and not actually confirmed against either
+  reading). Every prompt below uses "C".
+- **The batch leaned straight into the exact cliché §1/§8 warn against**:
+  visible sculpted clay/paper texture, thick embossed bevels, one
+  saturated diagonal gradient fill, and one flat-design long-cast-shadow
+  treatment (a dated ~2015 icon style, not "editorial calm"). None of
+  these six is worth refining further — they came from a brief that read
+  as "3D icon," not "flat, quiet UI chrome."
+- **Colors drifted from the real tokens** — the batch's browns/chocolate
+  tones read noticeably duller and more desaturated than the actual
+  `clay-500 #d97757`/`clay-600 #c8542d`. Confirms §7's "don't pick by eye"
+  point is a real, not theoretical, risk — restating the literal hex in
+  every prompt (already the practice above) isn't sufficient on its own;
+  the *style* instructions ("flat," explicit material negatives) matter
+  just as much as stating the hex.
+- **Kept from the batch:** the small-circle-accent device (a dot joined to
+  the letterform) is worth carrying forward — same idea as this
+  document's own wordmark-accent suggestion in §5 Stage 2, just applied to
+  the icon mark instead. The rounded-square container shape is already
+  correct (matches the three-radius-step system) and doesn't need
+  revisiting.
+
+### Refined prompt set — Direction E, "C" monogram, flat only
+
+A shared negative clause, reused across all three variants below, made
+more specific than §5's originals given what the first batch actually did
+wrong:
+
+```
+--no 3D render, sculpted material, clay texture, paper grain, embossed
+bevel, glossy plastic, inner shadow, long cast shadow, saturated diagonal
+gradient, rainbow gradient, mascot, character, face, blob, photorealistic
+material, blue, purple, teal, ornate or decorative lettering
+```
+
+**E1 — plain flat monogram, soft rim-light tile (direction A's treatment, corrected):**
+```
+minimal flat app icon, a single geometric capital letter "C" centered in a
+rounded square tile, flat matte terracotta fill #d97757, a very soft
+low-contrast diffuse shadow to the bottom-right only (subtle, not a hard
+cast shadow), a thin subtle light rim highlight along the top-left inner
+edge, a shallow vertical gradient from a barely-lighter terracotta at the
+top to a barely-darker shade at the bottom with no visible banding, the
+letterform in a clean geometric sans-serif shape with no serifs or
+decoration, warm parchment-white background #faf9f5, quiet and
+restrained, absolutely no texture or material simulation, professional
+software icon, flat 2D vector illustration only
+[+ the shared negative clause above]
+```
+
+**E2 — "C" with the dot-accent device kept from the reviewed batch:**
+```
+minimal flat app icon, a bold geometric capital letter "C" in a rounded
+square tile, with one small solid circle positioned in the open gap of
+the C like a period or anchor point, the C in flat matte terracotta
+#d97757, the tile background in a slightly deeper terracotta #c8542d,
+strictly two-tone flat design, no gradient noise, no texture, only a very
+soft subtle bottom-right ambient shadow, warm parchment-white background
+#faf9f5 outside the tile, quiet, editorial, precise, professional
+developer-tool icon, flat vector illustration only
+[+ the shared negative clause above]
+```
+
+**E3 — "C" built from a document/page-fold silhouette (ties the letter back to what the product actually is):**
+```
+minimal flat app icon, a capital letter "C" shape formed by a simplified
+open-document or folded-page silhouette, single flat matte color
+terracotta #d97757, warm parchment-white background #faf9f5, extremely
+restrained, two or three shapes maximum, generous negative space, no
+gradient, no shadow beyond the standard soft bottom-right ambient light
+already used elsewhere in this brief, no texture, quiet and precise,
+professional software icon, flat vector illustration only
+[+ the shared negative clause above]
+```
+
+**Next step once one of E1–E3 lands closer to on-brand:** move it straight
+to Stage 2 (Ideogram, for a "claymark" wordmark lockup using the same C)
+and Stage 4 (Nano Banana Pro, fed the real `tokens.css` swatches) rather
+than iterating further inside whichever tool produced it — per §3's own
+reasoning, refining color/text accuracy inside an aesthetic-exploration
+tool fights that tool's weak point instead of routing around it.
+
+---
+
 ## Sources consulted
 
 - [Best AI Logo Generators: Updated for 2026 — Designlab](https://designlab.com/blog/top-best-ai-logo-generators-a-review)
