@@ -1,7 +1,6 @@
 node_modules/
 dist/
 coverage/
-docs/screenshots/
 .scratch/
 *.log
 .DS_Store
