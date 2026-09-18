@@ -1,3 +1,5 @@
+# Claymark
+
 <p align="center">
   <img src="brand/banner.jpg" alt="Claymark — a Markdown rendering engine built for text that is still arriving" width="100%">
 </p>
