@@ -1,6 +1,8 @@
 .archive/
 .claude/
 .opencode/
+.notion_sync_state.json
+scratch/
 node_modules/
 dist/
 coverage/
