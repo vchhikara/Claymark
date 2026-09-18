@@ -1,3 +1,6 @@
+.archive/
+.claude/
+.opencode/
 node_modules/
 dist/
 coverage/
