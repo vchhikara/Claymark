@@ -1,5 +1,7 @@
 # Claymark v1.0.0
 
+![Claymark banner](banner.jpg)
+
 **Functional and non-functional specification of the shipped product.**
 This document is the contract. Where the roadmap and this specification disagree, **this document wins** and the roadmap is corrected.
 
