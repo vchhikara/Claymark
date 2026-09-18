@@ -4,6 +4,52 @@ Canonical delivery task list required by the vargr-build-rules executor
 protocol. Complements, and does not replace, `plan/03-CHECKLIST.md` (the
 detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 
+## Desktop app — Android-parity chrome (2026-09-18 session)
+
+Implemented `android-to-desktop-checklist.md`'s full 6-phase plan on top of
+the Tauri desktop shell (`src/app/`), explicitly authorized to become a real
+document-editing app for this target only (the `claymark` library itself
+stays a renderer — see the flagged notes in `docs/CURRENT-STATE.md`/
+`docs/SPEC.md` §6/§7).
+
+- [x] Phase 1 — design-system corrections: quote-rule/danger tokens, AMOLED
+      theme, text-size stepper, claymorphism CSS system, brand mark
+- [x] Phase 2 — Tauri OS integration + document/session state machine,
+      open/save/save-as, autosave, crash-recovery drafts, recent files
+- [x] Phase 3 — app shell: routing, Welcome/Settings/Help/About/Privacy
+      screens, Drawer, Reader header, formatting toolbar
+- [x] Phase 4 — interactive chrome: search/replace, TOC dialog, theme-picker
+      stub, abandon-draft dialog, toasts, global keyboard shortcuts
+- [x] Phase 5 — OS integration: file-association "open with", window-wide
+      drag-and-drop, paste-as-new-document
+- [x] Phase 6 — Tauri bundle re-verified end-to-end (`.deb`/`.rpm`/AppImage
+      built and launched; AppImage needed `--appimage-extract` + `AppRun`,
+      no FUSE in this sandbox — not a build defect)
+- [x] Post-implementation bug fixes (found via user-supplied screenshots
+      comparing against the native Android app, not caught by the automated
+      test suite):
+  - Brand-mark "C" logo rendered as a solid blob (bad arc sweep-flags) — fixed
+    with a mask-based ring+wedge SVG construction
+  - App crashed entirely outside a real Tauri runtime (`onOpenFileFromOS`/
+    `onWindowFileDrop` called Tauri IPC eagerly on mount) — added an
+    `isTauriRuntime()` guard
+  - Claymorphism CSS was built in Phase 1 but never applied to the Phase 3+
+    chrome (Button/Dialog/ReaderHeader/SettingsScreen/FormattingToolbar) —
+    wired in
+  - Buttons rendered blank/invisible — `color-mix()` gradients had no solid
+    `background-color` fallback, so a webview without `color-mix()` support
+    dropped the whole background declaration — added fallbacks in
+    `button.css`/`dialog.css`/`claymark.css`
+  - "Discard" in the abandon-draft dialog navigated away without reverting
+    the in-memory edit — added `lastCommittedSourceRef` tracking in
+    `main.tsx`
+  - Back from Settings (reached via the Welcome-screen drawer, no document
+    loaded) landed on an empty "Untitled" reader — `routeContextValue.back()`
+    now redirects to Welcome when no document is open
+- [x] Full walkthrough screenshot set captured (`docs/screenshots/`, not
+      pushed to git — local verification artifact only)
+- [x] Committed (`8f1bda7`) and pushed to `origin/master`
+
 ## v1.0.0 core delivery
 
 - [x] Phases P0–P8 (104 tasks), gates G0–G8 — see `plan/03-CHECKLIST.md`
@@ -16,6 +62,24 @@ detailed v1.0.0 task ledger — 104/104 checked, see there for full history).
 - [ ] Close `DEF-007` — 8 devDependency-only `pnpm audit` findings
 - [ ] Close `DEF-008` — Android APK signing/release keystore
 - [ ] macOS/Windows Tauri desktop cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)
+
+## Next up — Claymark web (browser) extension
+
+Not started. No scaffolding, manifest, or code exists yet anywhere in this
+repo — this is a new product surface, not a resumed one. Per the user
+(2026-09-18): with the desktop app now at Android parity, the browser
+extension is the next major platform target after the npm library, PWA,
+Tauri desktop app, and native Android app already shipped.
+
+- [ ] Scope the extension: what it does (render Markdown found on a page?
+      a popup/side-panel editor using the `claymark` library? both?) —
+      needs a decision with the user before implementation, not assumed
+- [ ] Decide Manifest V3 architecture (background service worker vs. content
+      script vs. popup/side panel) once scope is set
+- [ ] Reuse the existing `claymark` npm library (`dist/claymark.js`/`.cjs`,
+      root of this repo) as the rendering engine — don't reimplement
+      Markdown parsing/sanitization for the extension
+- [ ] Chrome Web Store / Firefox Add-ons packaging and store listings
 
 ## This session (vargr-build-rules pass) — environment & commit hygiene
 
