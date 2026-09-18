@@ -1,221 +1,99 @@
-# Claymark v1.0.0
-
 ![Claymark banner](brand/banner.jpg)
 
-**Functional and non-functional specification of the shipped product.**
-This document is the contract. Where the roadmap and this specification disagree, **this document wins** and the roadmap is corrected.
+# Claymark
 
->For people **using** claymark to read documents. If you are integrating it into an application, read `API.md` instead.
+**A pixel-faithful, security-hardened Markdown rendering engine, built for text that is still arriving.**
+
+Most Markdown renderers assume they're handed a finished document. Claymark assumes the opposite: a stream of tokens arriving from an LLM, one chunk at a time, that has to become a stable, typeset page *while it's still incomplete*, without flickering, without breaking, and without ever executing anything the document contains. That constraint shaped everything downstream of it, from the diff-based render path to the sanitizer that runs on every single frame.
+
+It ships four ways: as a React library, a Progressive Web App, a native Android app, a Tauri desktop app, and a Manifest V3 browser extension. One rendering core, one security model, five surfaces.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](package.json)
+[![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB?logo=tauri&logoColor=white)](desktop/tauri.conf.json)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](android/build.gradle.kts)
+[![Manifest V3](https://img.shields.io/badge/Extension-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](web-extension/public/manifest.json)
+[![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-4C1?logo=accessibility&logoColor=white)](docs/SPEC.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Offline First](https://img.shields.io/badge/offline-first-blueviolet)](docs/SPEC.md)
+[![Zero Runtime Network](https://img.shields.io/badge/runtime%20network-zero-critical)](SECURITY.md)
 
 ---
+
+## Why this exists
+
+Rendering trusted, complete Markdown is a solved problem. Rendering *untrusted, incomplete* Markdown, streamed token by token from a language model, while guaranteeing it can never execute a single line of what it renders, is a different problem entirely. It sits at the intersection of typography, incremental parsing, and a threat model where the attacker's payload arrives disguised as your own output.
+
+Claymark treats the renderer as the trust boundary. Not a linter pass, not a "sanitize on save" step, a boundary the untrusted content can never cross, on every frame, by construction.
 
 ## What it does
 
-claymark turns Markdown into a clean reading surface: serif body type on a comfortable measure, syntax-highlighted code, typeset mathematics, rendered diagrams, and readable tables. It works offline, follows your system theme, and never executes anything a document asks it to.
+- Renders GitHub-Flavored Markdown into a serif reading surface with syntax-highlighted code (34 languages), typeset mathematics (KaTeX), diagrams (Mermaid), and readable tables.
+- Streams. Partial fences, half-closed bold, mid-token math delimiters, none of it breaks the render or flashes unstyled content.
+- Refuses to execute. Raw HTML in a document is shown as text, never rendered. No `dangerouslySetInnerHTML` path exists for document content, anywhere, on any surface.
+- Works offline, everywhere. Zero runtime network requests is a shipped guarantee, not an aspiration, because a renderer that can silently call home isn't a renderer you can trust with someone else's stream.
+- Follows the system theme, respects `prefers-reduced-motion`, and holds WCAG 2.2 AA in both themes, including MathML for screen readers and text alternatives for diagrams.
 
----
-
-## Supported syntax
-
-### Text
-
-| You write | You get |
-|---|---|
-| `**bold**` | **bold** |
-| `*italic*` | *italic* |
-| `~~struck~~` | ~~struck~~ |
-| `` `code` `` | inline code |
-| `[text](url)` | a link, underlined |
-| `> quoted` | an indented quotation |
-| `---` | a horizontal rule |
-
-### Headings
-
-Six levels, `#` through `######`. Each gets an anchor you can link to.
-
-### Lists
-
-```markdown
-- unordered
-- items
-  - nest with two spaces
-
-1. ordered
-2. items
-
-- [x] completed task
-- [ ] pending task
-```
-
-Task checkboxes are display-only — they show state but are not clickable, because the document is a rendering, not a form.
-
-### Code
-
-Tag the fence with a language for highlighting:
-
-````markdown
-```python
-def greet(name: str) -> str:
-    return f"Hello, {name}"
-```
-````
-
-Thirty-four languages are supported. Anything else renders as plain preformatted text — that is expected, not a failure.
-
-**Highlighting specific lines** — add a range in braces:
-
-````markdown
-```js {2,4-6}
-```
-````
-
-Every code block has a **copy button** in its header. It copies exactly the source, without line numbers or highlighting artifacts.
-
-### Tables
-
-```markdown
-| Left | Center | Right |
-|:-----|:------:|------:|
-| a    |   b    |     c |
-```
-
-Wide tables scroll horizontally inside their own container. The page itself never scrolls sideways.
-
-### Mathematics
-
-Inline with single dollars, display with double:
-
-```markdown
-Euler's identity is $e^{i\pi} + 1 = 0$.
-
-$$
-\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-$$
-```
-
-Malformed TeX shows an error inline rather than breaking the page.
-
-### Diagrams
-
-Use a `mermaid` fence:
-
-````markdown
-```mermaid
-flowchart LR
-    A[Input] --> B[Parse]
-    B --> C[Sanitize]
-    C --> D[Render]
-```
-````
-
-Flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, Gantt charts, and pie charts are supported. Invalid syntax falls back to showing the diagram source as a code block.
-
-### Images
-
-```markdown
-![alt text](image.png "Caption text")
-```
-
-Alt text is used by screen readers; the title becomes a visible caption. Click any image to open it in a lightbox — Escape closes it.
-
----
-
-## Reading features
-
-**Theme.** Follows your system light/dark setting automatically. Use the toggle to override; your choice is remembered.
-
-**Lightbox.** Click an image to enlarge. Escape or clicking outside closes it and returns focus to where you were.
-
-**Copy.** Every code block copies with one click.
-
-**Offline.** After the first load, everything works without a network connection.
-
----
-
-## Keyboard
-
-| Key | Action |
-|---|---|
-| `Tab` / `Shift+Tab` | Move between links, buttons, and scrollable regions |
-| `Enter` / `Space` | Activate the focused control |
-| `Escape` | Close the lightbox |
-| `←` `→` | Scroll a focused code block or table horizontally |
-
-Everything is reachable without a mouse. Focus is always visible and, after a dialog closes, always restored.
-
----
-
-## Accessibility
-
-- Conforms to WCAG 2.2 Level AA
-- Semantic HTML throughout — headings, lists, and tables are announced correctly
-- Math is exposed as MathML to screen readers
-- Diagrams carry text alternatives
-- Contrast meets AA in both themes
-- Animations are suppressed when your system requests reduced motion
-
----
-
-## What it deliberately will not do
-
-Some of these look like missing features. They are decisions.
+## What it deliberately refuses to do
 
 | Behavior | Why |
 |---|---|
-| Raw HTML in a document is shown as text, not rendered | HTML in untrusted documents is the primary attack surface. It is disabled entirely, without an override. |
-| Task checkboxes are not clickable | This is a renderer, not a form. State lives in the source. |
-| Documents cannot load remote resources | Zero runtime network requests, by design. This is what makes offline reliable and tracking impossible. |
-| Unregistered code languages are not highlighted | Bundling every grammar would multiply the download size. |
-| Documents cannot supply their own styles | A document that can style itself can disguise itself. |
+| Render raw HTML from a document | HTML in untrusted input is the primary attack surface. Disabled entirely, no override. |
+| Let a document load a remote resource | Zero runtime network requests is what makes offline reliable and tracking structurally impossible. |
+| Let a document style itself | A document that can restyle itself can disguise itself. |
+| Make task checkboxes interactive | This is a renderer, not a form. State lives in the source, not in the DOM. |
+| Highlight an unregistered language | Bundling every grammar multiplies the download size for a feature most documents never use. |
 
----
+These read like missing features. They're decisions, and they're load-bearing ones.
 
-## Troubleshooting
+## The four surfaces
 
-| Symptom | Explanation |
-|---|---|
-| Code block is not colored | Language is outside the 34-language registry, or the fence has no language tag |
-| Math shows as raw `$…$` | The math runtime is still loading, or the TeX has a syntax error |
-| Diagram shows as a code block | The Mermaid syntax is invalid — check for a missing diagram-type keyword on the first line |
-| HTML appears as literal text | Working as intended, see §6 |
-| Image does not display | The URL scheme is blocked; only `http`, `https`, and image `data:` URIs are permitted |
-| Theme resets on reload | Browser storage is blocked or cleared — check private-browsing settings |
-
----
-
-## Users and use cases
-
-| User | Use case | Primary surface |
+| Surface | What it is | Where it lives |
 |---|---|---|
-| Application developer | Embed a rendering surface in an existing React app | Library (`npm`) |
-| End user | Read and interact with rendered documents | PWA / desktop app |
-| Designer | Restyle the surface without touching logic | Token layer |
-| Security reviewer | Audit the trust boundary | `SECURITY.md` + test suite |
+| **Library** | The rendering engine itself, published as an npm package for embedding in an existing React app | [`src/`](src/) |
+| **Desktop** | A native app built on Tauri 2.0, Rust shell around the same rendering core | [`desktop/`](desktop/) |
+| **Android** | A native Jetpack Compose app (Kotlin 2.0, min SDK 26) with its own document backend | [`android/`](android/) |
+| **Web extension** | A Manifest V3 extension that turns any `.md` URL into a rendered reading surface, closed-shadow-DOM isolated from the host page | [`web-extension/`](web-extension/) |
 
----
+Every surface shares the same non-negotiable: it renders, it never executes.
 
 ## Performance budgets
 
-Measured on a mid-tier 2020 laptop, Chromium, cold cache.
+Not targets. Budgets, measured on a mid-tier 2020 laptop, cold cache, and enforced by the test suite.
 
 | Metric | Budget |
 |---|---|
 | First render, 2 KB document | < 16 ms |
 | First render, 100 KB document | < 250 ms |
 | Streaming append, per token | < 4 ms |
-| Highlighter lazy chunk | < 300 KB gzipped |
 | Initial bundle, core only | < 120 KB gzipped |
-| Cache hit | < 1 ms |
-| Memory, 10k-render soak | < 150 MB steady state |
 | Cumulative layout shift | 0 |
+| Memory, 10k-render soak | < 150 MB steady state |
 
-### Accessibility
-WCAG 2.2 AA. Zero axe-core violations. Body contrast ≥ 4.5:1 and large text ≥ 3:1 in both themes. Text alternatives for math and diagrams. `prefers-reduced-motion` honoured.
+## Security model
 
-### Compatibility
-Chromium 120+, Firefox 121+, Safari 17+. React 18.3+ as a peer dependency. ESM and CJS builds with TypeScript declarations.
+The full threat model and audit trail live in [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md) and [`plan/`](plan/). The short version: every document is treated as hostile input, sanitization runs on every render pass rather than once at parse time, and the extension surface additionally isolates itself from the host page behind a closed shadow root so the page it's reading can't reach in and the extension can't leak out. See [`SECURITY.md`](SECURITY.md) for how to report a vulnerability.
 
-### Reliability
-No input crashes the renderer. Malformed math, invalid diagrams, pathological nesting, and truncated streams all degrade gracefully. Error boundaries isolate subsystem failures to the affected block.
+## Getting started
 
----
+```bash
+pnpm install
+pnpm build       # library build
+pnpm test        # full test suite
+pnpm lint
+```
+
+Platform-specific setup lives in each surface's own README: [`desktop/README.md`](desktop/README.md), [`android/README.md`](android/README.md), [`web-extension/README.md`](web-extension/README.md).
+
+## Documentation
+
+- [`docs/SPEC.md`](docs/SPEC.md) — the functional and non-functional contract this product ships against
+- [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md) — dependency and vulnerability audit trail
+- [`plan/`](plan/) — the original roadmap and build checklist (historical, frozen)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — how to propose a change
+- [`SECURITY.md`](SECURITY.md) — how to report a vulnerability
+
+## License
+
+MIT, see [`LICENSE`](LICENSE).
