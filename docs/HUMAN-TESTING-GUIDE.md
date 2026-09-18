@@ -41,15 +41,15 @@ a browser. Try installing it via the browser's "Install app" prompt (address bar
 Chrome/Edge desktop) — it should work offline after the first load.
 
 **Desktop app (Tauri):**
-Prebuilt Linux artifacts are at `src-tauri/target/release/bundle/`:
+Prebuilt Linux artifacts are at `desktop/target/release/bundle/`:
 - `deb/claymark_1.0.0_amd64.deb` — `sudo dpkg -i` on Debian/Ubuntu
 - `rpm/claymark-1.0.0-1.x86_64.rpm` — on Fedora/RHEL-family systems
 - `appimage/claymark_1.0.0_amd64.AppImage` — `chmod +x` then run directly, no install needed
 
 The AppImage is the easiest to try with zero commitment:
 ```bash
-chmod +x src-tauri/target/release/bundle/appimage/claymark_1.0.0_amd64.AppImage
-./src-tauri/target/release/bundle/appimage/claymark_1.0.0_amd64.AppImage
+chmod +x desktop/target/release/bundle/appimage/claymark_1.0.0_amd64.AppImage
+./desktop/target/release/bundle/appimage/claymark_1.0.0_amd64.AppImage
 ```
 A window should open showing the rendered app. Requires a desktop session with a display
 (won't produce a visible window over SSH/headless — see §4 for what to check instead).
@@ -125,8 +125,8 @@ Unplug the mouse (mentally) and Tab through the rendered page — every interact
 
 You can still confirm the binary itself is sound:
 ```bash
-file src-tauri/target/release/app         # should say "ELF 64-bit ... executable"
-DISPLAY=:0 timeout 6 src-tauri/target/release/app   # should produce no error/crash output
+file desktop/target/release/app         # should say "ELF 64-bit ... executable"
+DISPLAY=:0 timeout 6 desktop/target/release/app   # should produce no error/crash output
 ```
 This confirms the binary starts without crashing, but it does **not** confirm the GUI
 actually renders correctly — that needs a real desktop session per §2–3.

@@ -23,7 +23,7 @@ See `CHANGELOG.md` `[1.0.0]` for the authoritative, as-built feature list. In su
 | Unit + integration suite | 117/118 passing; 1 known-flaky stress assertion (`DEF-005`, S-01) | `plan/04-STATE-LEDGER.md` DEF-005, this session's `vitest run` output |
 | Library build | `pnpm build` — `dist/claymark.js` (282.65 kB, gzip 71.75 kB), `dist/claymark.cjs` (176.91 kB, gzip 54.23 kB), `.d.ts` | this session |
 | PWA build | `pnpm build:app` — `dist/app/*`, service worker present | this session |
-| Desktop binary | `pnpm tauri build` re-run at version 1.0.0 (prior artifacts were stale at 0.1.0) | `src-tauri/target/release/bundle/` |
+| Desktop binary | `pnpm tauri build` re-run at version 1.0.0 (prior artifacts were stale at 0.1.0) | `desktop/target/release/bundle/` |
 | Security | XSS corpus, sanitizer schema, CSP compatibility — `bench/results/security-final.json` | `SECURITY.md` |
 | Backtest | 250-document corpus, `bench/results/backtest.json`, baselines in `bench/results/backtest-baseline/` | `SPEC.md §7.4` |
 | Stress matrix | `bench/results/stress.json`, S-01…S-12 | `SPEC.md §7.5`, `DEF-005` |

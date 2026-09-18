@@ -59,7 +59,7 @@ alternatives for math and diagrams, and `prefers-reduced-motion` honoured.
 |---|---|---|
 | `claymark` (npm) | The library — ESM + CJS + TypeScript types | `dist/` |
 | PWA | An installable web app version, works offline once cached | `dist/app/` |
-| Desktop app | Tauri-packaged native binary — Linux `.deb`/`.rpm`/AppImage built and confirmed this cycle; macOS/Windows build the same way but weren't cross-built in this Linux session | `src-tauri/target/release/bundle/` |
+| Desktop app | Tauri-packaged native binary — Linux `.deb`/`.rpm`/AppImage built and confirmed this cycle; macOS/Windows build the same way but weren't cross-built in this Linux session | `desktop/target/release/bundle/` |
 
 ## 6. What is explicitly NOT in this release
 

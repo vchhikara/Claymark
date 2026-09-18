@@ -1,16 +1,16 @@
 # Claymark — handoff: Linux + Windows desktop installables (2026-09-18)
 
 Written for the next session, whose scope is **only** the Linux and Windows
-desktop installables (`src-tauri/`, the Tauri wrapper around the `claymark`
+desktop installables (`desktop/`, the Tauri wrapper around the `claymark`
 web app). Android is done — see `handoff.md` for that (native
-`claymark-native/` app: v1.0.0 tagged, signed release APK committed, merged
+`android/` app: v1.0.0 tagged, signed release APK committed, merged
 to `master`). A browser extension is also still outstanding but is explicitly
 **not** this session's job — don't scope-creep into it.
 
 ## The one-line status
 
 **Nobody has successfully built the desktop app in this environment.** Not
-"it built and then rotted" — a from-scratch `cargo check` in `src-tauri/`
+"it built and then rotted" — a from-scratch `cargo check` in `desktop/`
 fails immediately because required system libraries aren't installed. Treat
 any doc claiming otherwise (see below) as unverified until you personally
 reproduce a green build.
@@ -21,7 +21,7 @@ reproduce a green build.
 cd "/home/vipul/My Projects/Claymark/claymark"
 pnpm install --frozen-lockfile   # succeeded, 5.6s, reconciled some node_modules drift
 pnpm build:app                   # succeeded — the PWA/frontend build is fine, 53.8s
-cd src-tauri
+cd desktop
 cargo check                      # FAILS
 ```
 
@@ -52,8 +52,8 @@ compiles — the blocker is purely the missing dev headers for the compile
 step, not the packaging tooling.
 
 There is also **no evidence any bundle was ever produced on disk**:
-`find src-tauri/target -path "*bundle*"` returns nothing, and
-`src-tauri/target/release/` contains only dependency build-script artifacts
+`find desktop/target -path "*bundle*"` returns nothing, and
+`desktop/target/release/` contains only dependency build-script artifacts
 (`.cargo-lock` etc.), no linked binary, no `bundle/` directory.
 
 ## The documentation says something different — it's wrong, or stale, or both
@@ -61,7 +61,7 @@ There is also **no evidence any bundle was ever produced on disk**:
 - `docs/CURRENT-STATE.md` §5 claims: *"Desktop app | Tauri-packaged native
   binary — Linux `.deb`/`.rpm`/AppImage built and confirmed this cycle;
   macOS/Windows build the same way but weren't cross-built in this Linux
-  session | `src-tauri/target/release/bundle/`"* — that directory does not
+  session | `desktop/target/release/bundle/`"* — that directory does not
   exist right now.
 - `progress.md` (root) lists as an open item: *"macOS/Windows Tauri desktop
   cross-builds (only Linux `.deb`/`.rpm`/AppImage exist)"* — same false
@@ -115,32 +115,32 @@ sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
 cd "/home/vipul/My Projects/Claymark/claymark"
 pnpm install --frozen-lockfile
 pnpm build:app
-cd src-tauri
+cd desktop
 cargo check          # must go green before attempting a full bundle
 cd ..
 
 # 3. Actual bundle (uses tauri.conf.json's "bundle.targets": "all")
 pnpm tauri build      # or: npx tauri build
-# bundles land under src-tauri/target/release/bundle/{deb,rpm,appimage}/
+# bundles land under desktop/target/release/bundle/{deb,rpm,appimage}/
 
 # 4. Verify, don't just trust exit code 0
-ls -la src-tauri/target/release/bundle/*/
+ls -la desktop/target/release/bundle/*/
 # install the .deb somewhere disposable and confirm the app actually launches
 ```
 
 ## Relevant config already in place (don't rediscover this)
 
-- `src-tauri/tauri.conf.json`: `productName: "claymark"`, `version: "1.0.0"`,
+- `desktop/tauri.conf.json`: `productName: "claymark"`, `version: "1.0.0"`,
   identifier `com.claymark.app`, `bundle.targets: "all"`, icons already
-  reference `.icns`/`.ico`/PNG variants under `src-tauri/icons/` (confirm
+  reference `.icns`/`.ico`/PNG variants under `desktop/icons/` (confirm
   they still exist — Android icon cleanup this session only touched
-  `src-tauri/icons/android/`, not the root `src-tauri/icons/` set, but verify
+  `desktop/icons/android/`, not the root `desktop/icons/` set, but verify
   before assuming).
 - `@tauri-apps/cli` is `2.0.0` (Tauri v2) — bundling commands and config
   schema are v2-shaped, not v1.
-- Android-specific Tauri build artifacts (`src-tauri/gen/android/`,
-  `src-tauri/icons/android/`) were **deliberately removed** in the previous
-  session (2026-09-15) — the native Android app (`claymark-native/`) replaced
+- Android-specific Tauri build artifacts (`desktop/gen/android/`,
+  `desktop/icons/android/`) were **deliberately removed** in the previous
+  session (2026-09-15) — the native Android app (`android/`) replaced
   that path entirely. Don't recreate them; that's settled, not an oversight.
 - The Rust toolchain itself is fine: `cargo 1.98.0`, and only
   `x86_64-unknown-linux-gnu` + the four Android NDK targets are installed via
@@ -150,8 +150,8 @@ ls -la src-tauri/target/release/bundle/*/
 ## Two-products reminder (same note as `handoff.md`, repeated because it matters here)
 
 This repo root is the `claymark` **library + Tauri desktop shell**. It is a
-separate product line from `claymark-native/` (the finished Android app).
-Nothing you do here should touch `claymark-native/`, and nothing there is
+separate product line from `android/` (the finished Android app).
+Nothing you do here should touch `android/`, and nothing there is
 relevant to this work beyond "Android is done, don't worry about it."
 
 ## Also still outstanding (not this session, just so you know it exists)

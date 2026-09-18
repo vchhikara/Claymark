@@ -71,11 +71,66 @@ repo — this is a new product surface, not a resumed one. Per the user
 extension is the next major platform target after the npm library, PWA,
 Tauri desktop app, and native Android app already shipped.
 
-- [ ] Scope the extension: what it does (render Markdown found on a page?
-      a popup/side-panel editor using the `claymark` library? both?) —
-      needs a decision with the user before implementation, not assumed
-- [ ] Decide Manifest V3 architecture (background service worker vs. content
-      script vs. popup/side panel) once scope is set
+- [x] Scope the extension — **locked 2026-09-18**, confirmed by the user:
+      all three modes in v1 (content-script reader mode, popup/side-panel
+      viewer, popup/side-panel editor); Chrome/Chromium MV3 **and** Firefox;
+      persistence of the last pasted/edited doc (non-goal override,
+      viewer/editor only). Full detail in `web-extension-checklist.md` §0.
+- [x] Stage reusable assets for implementation in `_web-extension-staging/`
+      (temporary — built `claymark` library, theme CSS, fonts, `url-policy.ts`,
+      `toc.ts` reference, `docs/SPEC.md`; deleted once a real extension
+      package exists and has pulled in what it needs).
+- [x] A separate agent session built a working Chrome MV3 extension in
+      `_web-extension-staging/claymark-extension/` (source in `source/`) —
+      full-tab surface, editor + persistence, engine parity (Shiki/KaTeX/
+      Mermaid), 40/40 engine tests + 32/32 e2e at the time. Diverged from
+      the locked scope: no content-script reader mode, no popup/side-panel
+      (full tab only), Firefox deferred.
+- [x] Closed two of those three gaps (2026-09-18, "Session 2" in the
+      staging folder's own ledger): added a popup surface (420×600, reuses
+      the same `App` component, "Open in tab ↗" to reach the full-tab
+      surface) and a content-script reader mode (auto-renders raw `.md`
+      URLs / `raw.githubusercontent.com` / `gist.githubusercontent.com` in
+      a closed shadow root — checklist §2 Trap 1 threat model). Verified:
+      `npm run build`/`typecheck`/`test` clean, manual browser verification
+      of all three surfaces (Playwright not installed in this checkout, so
+      `tests/e2e.py` itself wasn't re-run — flagged as a real gap, not
+      silently skipped).
+- [x] Ported shadcn/ui components (2026-09-18, "Session 3"/"Session 5" —
+      staging folder + repo ledgers respectively): hand-ported Button/Dialog/
+      Badge/Separator/Tooltip from `scratch/shadcn-prototype/` (real Radix
+      primitives, hand-written CSS against the extension's own tokens, no
+      Tailwind/cva) and replaced every emoji/glyph icon with `lucide-react`
+      icons across the welcome screen, reader header, editing toolbar,
+      drawer, and search bar. `Dialog.tsx` now wraps Radix internally with
+      the exact same external prop API — no call-site changes needed.
+      Verified: `npm run build`/`typecheck`/`test` (40/40) clean; manual
+      browser-pane verification of welcome, reader header (no overflow at
+      800px or 1200px), edit toolbar, drawer, Outline dialog, and popup
+      surface. Content-script reader mode not re-verified (untouched by
+      this port).
+- [x] Fixed the bundle-size regression (2026-09-18, ledger L-051): scoped
+      Radix imports + lazy-loaded the Dialog chunk. 127.00 KB → 115.50 KB gz,
+      back under the 120 KB NFR-2 budget.
+- [x] Closed the tooltip gap (L-052) — with native `title` attributes
+      instead of the scaffolded Radix Tooltip, since wiring that back in
+      reopened the bundle-size regression for no functional gain over
+      `title`. Deleted the unused `pb/tooltip.tsx` scaffolding.
+- [x] Found and fixed a real bug while fixing the above (L-050): Radix
+      Dialog's scroll-lock injected a `<style>` tag that violated the
+      extension's strict `style-src 'self'` CSP — 3 console errors per
+      dialog open. Overlay now renders a plain div instead of Radix's.
+- [x] Wrote `tests/e2e.py` coverage for the popup surface and reader mode
+      (L-053) — 32/32 → 42/42 Playwright checks. Reader mode's closed shadow
+      root needed a CDP session (`DOM.getDocument({pierce:true})`) since
+      Playwright's own selectors can't see into closed shadow trees.
+- [ ] Firefox build — still not started, the one remaining §0 scope gap
+- [ ] Reader mode has no syntax highlighting/KaTeX/Mermaid yet (flagged
+      scope limit, not a bug — see the staging folder's `docs/LEDGER.md` X-039)
+- [ ] Decide Manifest V3 architecture details still open beyond what's
+      built: e.g. whether reader mode should also offer an "upgrade
+      GitHub's own rendered Markdown" mode (checklist §0 first bullet,
+      second half — not attempted, only the raw-file case was built)
 - [ ] Reuse the existing `claymark` npm library (`dist/claymark.js`/`.cjs`,
       root of this repo) as the rendering engine — don't reimplement
       Markdown parsing/sanitization for the extension

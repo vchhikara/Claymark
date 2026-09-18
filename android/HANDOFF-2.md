@@ -2,7 +2,7 @@
 
 **State:** written, never compiled. Treat every file as a first draft that has been carefully read but not machine-checked.
 **Last session:** 15 September 2026
-**Deliverable:** `claymark-native-android.zip` → project root `claymark-native/`
+**Deliverable:** `claymark-native-android.zip` → project root `android/`
 
 Read `PROCESS.md` for how this was built and why. This file is what to do next.
 

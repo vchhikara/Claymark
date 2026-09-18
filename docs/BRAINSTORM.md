@@ -1,7 +1,7 @@
 # Claymark — project brainstorm
 
 **Date: 2026-09-15**
-**Scope: whole project, with a deep, Android-specific pass on `claymark-native`**
+**Scope: whole project, with a deep, Android-specific pass on `android`**
 
 Not a plan, not a roadmap, not commitments. Ideas only, organized so a later
 session can lift any section into `plan/01-ROADMAP.md`-style tasks or a
@@ -12,10 +12,10 @@ analytics SDK, or a raw-HTML escape hatch. Sourced from three kinds of input:
 this repo's own disclosed gaps (`HANDOFF-2.md`, `PROCESS.md`,
 `plan/04-STATE-LEDGER.md`'s deferred-work register,
 `scratch/shadcn-prototype/FINDINGS.md`), the actual `AndroidManifest.xml`/
-`build.gradle.kts` in `claymark-native/` (so recommendations are grounded in
+`build.gradle.kts` in `android/` (so recommendations are grounded in
 the real `minSdk`/`targetSdk`, not assumed), and external research (cited).
 
-**One standing tension to keep in view:** `claymark-native/HANDOFF-2.md` §6
+**One standing tension to keep in view:** `android/HANDOFF-2.md` §6
 recorded *"No new features, screens, or settings. Scope discipline was
 explicit"* as a ground rule for that port. The drawer/Settings/Help/About/
 Privacy work already shipped on this branch (`kotlin-native-port`,
@@ -30,7 +30,7 @@ building, not just "is this cool."
 
 | Fact | Value | Where confirmed |
 |---|---|---|
-| `minSdk` | 26 (Android 8.0) | `claymark-native/app/build.gradle.kts` |
+| `minSdk` | 26 (Android 8.0) | `android/app/build.gradle.kts` |
 | `targetSdk` / `compileSdk` | 35 (Android 15) | same |
 | `applicationId` | `com.claymark.nativeapp` | same |
 | `INTERNET` permission | **Not declared, deliberately** | `AndroidManifest.xml` — enforces NFR-1.6 at the platform level, not by convention |
@@ -239,7 +239,7 @@ Sources: [Learn about foldables — Android Developers](https://developer.androi
 | **Quick Settings tile** ("Open Claymark" / jump to last doc) | `TileService`, small, but a QS tile is usually reserved for genuinely frequent toggles (Wi-Fi, flashlight) — a document-reader tile is a marginal fit; listed for completeness, not recommended. |
 | **Print support** (`PrintManager`, "Print" from the header menu) | Render the current parsed document to a `PrintDocumentAdapter`. No network, no new permission (printing is a system service, not `INTERNET`). Real utility for anyone wanting a hard copy or PDF-via-print-to-PDF. |
 | **Text-to-speech "read aloud"** | `TextToSpeech` API, reads the parsed plain-text content. Genuinely useful for accessibility and hands-free use; needs a decision on how it should treat code blocks/tables (skip vs. read literally) and math (skip vs. describe). Non-trivial content-model work, but zero network/permission cost. |
-| **Per-app language preference** (Android 13+ `LocaleConfig`) | Only matters once claymark-native ships more than one UI locale — currently English-only throughout, so this is a placeholder for whenever localization is considered, not actionable today. |
+| **Per-app language preference** (Android 13+ `LocaleConfig`) | Only matters once android ships more than one UI locale — currently English-only throughout, so this is a placeholder for whenever localization is considered, not actionable today. |
 | **Themed (Material You) adaptive icon** | API 33+ monochrome icon layer so the launcher icon tints to match the device theme alongside dynamic color (§1.5) — purely cosmetic, cheap, and *doesn't* carry the same brand-identity tension as §1.5 since it's just the launcher icon, not the app's reading surface. |
 | **Baseline Profiles** (startup/jank optimization) | `androidx.profileinstaller`, precompiles hot code paths. Pure performance, no visible feature, but directly answers `HANDOFF-2.md` §5's "Performance: nothing has been measured here" gap with a concrete, low-risk first step. |
 
@@ -507,4 +507,4 @@ of §1/§2's items — first impressions compound.
 - [Provide Direct Share targets — Compose](https://developer.android.com/develop/ui/compose/sharing/direct-share-targets)
 - [Sharing Shortcuts sample — android/storage-samples](https://github.com/android/storage-samples/tree/main/SharingShortcuts)
 - [Create shortcuts — Compose](https://developer.android.com/develop/ui/compose/system/shortcuts/creating-shortcuts)
-- Internal: `claymark-native/README.md`, `claymark-native/HANDOFF-2.md`, `claymark-native/PROCESS.md`, `claymark-native/app/build.gradle.kts`, `claymark-native/app/src/main/AndroidManifest.xml`, `scratch/shadcn-prototype/FINDINGS.md`, `plan/04-STATE-LEDGER.md`
+- Internal: `android/README.md`, `android/HANDOFF-2.md`, `android/PROCESS.md`, `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`, `scratch/shadcn-prototype/FINDINGS.md`, `plan/04-STATE-LEDGER.md`

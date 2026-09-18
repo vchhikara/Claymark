@@ -1,0 +1,73 @@
+{
+  "manifest_version": 3,
+  "name": "Claymark",
+  "short_name": "Claymark",
+  "version": "1.0.0",
+  "description": "A Markdown reader and editor built for streamed, untrusted LLM output. Offline, private, sandboxed.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Open Claymark",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "commands": {
+    "open-full-tab": {
+      "suggested_key": {
+        "default": "Alt+Shift+M"
+      },
+      "description": "Open Claymark in a new tab"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*.md",
+        "https://*/*.md",
+        "http://*/*.markdown",
+        "https://*/*.markdown",
+        "https://raw.githubusercontent.com/*",
+        "https://gist.githubusercontent.com/*"
+      ],
+      "js": ["content/reader.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/reader.css"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; frame-src 'self'; base-uri 'none'; form-action 'none'",
+    "sandbox": "sandbox allow-scripts; default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'"
+  },
+  "sandbox": {
+    "pages": [
+      "sandbox/mermaid.html"
+    ]
+  }
+}

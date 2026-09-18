@@ -1,0 +1,74 @@
+/* Engine styles added by the extension (things the desktop CSS lacked). */
+.claymark-root h1, .claymark-root h2, .claymark-root h3,
+.claymark-root h4, .claymark-root h5, .claymark-root h6 {
+  margin-block: 1.1em 0.55em;
+  scroll-margin-top: var(--space-6);
+}
+.claymark-root > :first-child { margin-top: 0; }
+.claymark-root .claymark-p + .claymark-p,
+.claymark-root .claymark-p { margin-block: 0 var(--space-4); }
+.claymark-root .claymark-li > .claymark-p { margin: 0; }
+.claymark-root .claymark-list { padding-inline-start: var(--space-6); }
+
+/* Line breaks inside tokenised code: each line is its own span. */
+.claymark-line { display: inline; }
+.claymark-pre[data-numbers] .claymark-line::before {
+  content: attr(data-line);
+  display: inline-block;
+  width: 2.5em;
+  margin-inline-end: var(--space-3);
+  text-align: right;
+  color: hsl(var(--text-muted));
+  user-select: none;           /* FR-4.3: numbers never copied */
+}
+.claymark-line--hl {
+  display: inline-block;
+  min-width: 100%;
+  background: color-mix(in srgb, var(--accent-brand) 14%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent-brand);
+}
+.claymark-pre { line-height: 1.6; padding-top: calc(var(--space-4) + 0.25rem); }
+.claymark-codeblock-lang { font-size: var(--text-small); opacity: 0.8; }
+.claymark-copy-button { font-family: var(--font-ui); font-size: var(--text-small); border-color: transparent; background: transparent; }
+.claymark-copy-button:hover { border-color: hsl(var(--border-subtle)); }
+.claymark-copy-button:focus-visible { outline: 2px solid var(--accent-brand); outline-offset: 2px; }
+
+.claymark-th[data-align='center'], .claymark-td[data-align='center'] { text-align: center; }
+.claymark-th[data-align='right'], .claymark-td[data-align='right'] { text-align: right; }
+.claymark-table-scroll:focus-visible, .claymark-pre:focus-visible { outline: 2px solid var(--accent-brand); outline-offset: 2px; }
+
+.claymark-task-item { margin-inline-start: calc(var(--space-5) * -1); }
+.claymark-task-checkbox { accent-color: var(--accent-brand); margin-inline-end: var(--space-2); }
+
+.claymark-img-button { display: block; margin: 0 auto; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.claymark-img-button:focus-visible { outline: 2px solid var(--accent-brand); outline-offset: 4px; }
+.claymark-img-button .claymark-img { display: block; }
+.claymark-lightbox-img { max-width: 92vw; max-height: 86vh; display: block; border-radius: var(--radius-md); }
+.claymark-lightbox-caption { color: #fff; font-family: var(--font-ui); font-size: var(--text-small); text-align: center; margin-top: var(--space-3); }
+.claymark-img-placeholder {
+  font-family: var(--font-ui); font-size: var(--text-small); color: hsl(var(--text-muted));
+  border: 1px dashed hsl(var(--border-default)); border-radius: var(--radius-md);
+  padding: var(--space-4); text-align: center; display: grid; gap: var(--space-1);
+}
+.claymark-img-placeholder-url { font-family: var(--font-mono); word-break: break-all; font-size: 0.75rem; }
+.claymark-img-blocked { font-family: var(--font-ui); font-size: var(--text-small); color: hsl(var(--text-muted)); }
+
+.claymark-mermaid { text-align: center; overflow-x: auto; }
+.claymark-mermaid .claymark-img { max-width: 100%; height: auto; }
+.claymark-mermaid-skeleton { height: 8rem; margin-block: var(--space-4); }
+.claymark-mermaid--error { display: grid; gap: var(--space-2); margin-block: var(--space-4); }
+
+.katex-display { overflow-x: auto; overflow-y: hidden; padding-block: var(--space-2); }
+.claymark-root .katex { font-size: 1.05em; }
+.claymark-block-error { white-space: pre-wrap; }
+
+/* Search highlights via the CSS Custom Highlight API — no DOM mutation. */
+::highlight(cm-search) { background: color-mix(in srgb, var(--clay-500) 35%, transparent); color: inherit; }
+::highlight(cm-search-current) { background: var(--clay-500); color: #111; }
+
+/* claymark.css sets .claymark-code-figure{margin:0} after the codeblock margin; restore spacing. */
+.claymark-codeblock.claymark-code-figure { margin: var(--space-4) 0; }
+
+/* TeX source shown for the moment before KaTeX's lazy chunk arrives. */
+.claymark-math-pending { font-family: var(--font-mono); font-size: 0.85em; color: hsl(var(--text-muted)); }
+.claymark-math-pending--display { display: block; text-align: center; padding-block: var(--space-3); white-space: pre-wrap; }

@@ -13,8 +13,8 @@ context and without re-deriving anything below.
 |---|---|---|
 | `claymark` npm library (rendering engine) | repo root, `src/pipeline/`, `src/components/`, `src/theme/` | v1.0.0 shipped. Pure renderer — parses/sanitizes/renders Markdown, no editing, no network calls. See `docs/SPEC.md`/`docs/CURRENT-STATE.md` |
 | PWA | `src/app/` built in `app` Vite mode | Shipped, `dist/app/` |
-| Tauri desktop app | `src/app/` + `src-tauri/` | **This session's work.** Now a real document editor (explicit user override of the library's "not an editor" non-goal, for this target only) — see below |
-| Native Android app | `claymark-native/` (Kotlin/Jetpack Compose) | v1.0.0 shipped, signed release APK, see `claymark-native/`'s own docs. Unrelated codebase to everything else in this table — don't conflate |
+| Tauri desktop app | `src/app/` + `desktop/` | **This session's work.** Now a real document editor (explicit user override of the library's "not an editor" non-goal, for this target only) — see below |
+| Native Android app | `android/` (Kotlin/Jetpack Compose) | v1.0.0 shipped, signed release APK, see `android/`'s own docs. Unrelated codebase to everything else in this table — don't conflate |
 | **Web (browser) extension** | **does not exist yet** | **Next task.** No manifest, no scaffolding, nothing — see below |
 
 ## This session's work (desktop app, now done)

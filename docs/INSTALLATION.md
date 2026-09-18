@@ -136,7 +136,7 @@ Additionally requires the Rust toolchain (stable 1.77+):
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-pnpm tauri build    # binary in src-tauri/target/release/bundle/
+pnpm tauri build    # binary in desktop/target/release/bundle/
 ```
 
 ### Full verification suite

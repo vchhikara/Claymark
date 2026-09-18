@@ -1,0 +1,137 @@
+:root {
+  font-size: var(--text-body);
+  --neutral-100: 60 3.4% 98%;
+  --neutral-200: 60 3.4% 96%;
+  --neutral-300: 60 3.4% 93%;
+  --neutral-400: 60 3.4% 88%;
+  --neutral-500: 60 3.4% 80%;
+  --neutral-600: 60 3.4% 68%;
+  --neutral-700: 60 3.4% 56%;
+  --neutral-800: 60 3.4% 44%;
+  --neutral-900: 60 3.4% 30%;
+  --neutral-1000: 60 3.4% 15%;
+  --neutral-1100: 60 3.4% 10%;
+  --neutral-1200: 60 3.4% 7%;
+  --clay-400: #e29981;
+  --clay-500: #d97757;
+  --clay-600: #c8542d;
+  /* T-P8-02: same hue/sat as clay-600/clay-500, darkened so the light
+     theme's link (default + hover) clears WCAG AA 4.5:1 as text against
+     --surface (neutral-100) — clay-600 measured 4.23:1, clay-500 2.99:1,
+     both failing; clay-700 measures ~4.73:1. */
+  --clay-700: #bd4d28;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-ui: Inter, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  --text-body: 18px;
+  --leading-body: 1.4;
+  --text-code: 15px;
+  /* The fenced code block ("boxed" code) reads 1pt smaller than inline
+     code and the rest of the prose — same convention as most code-heavy
+     reading UIs (denser monospace block vs. inline mentions). */
+  --text-code-block: 12px;
+  --text-h1: 2rem;
+  --leading-h1: 1.2;
+  --weight-h1: 600;
+  --text-h2: 1.6rem;
+  --leading-h2: 1.25;
+  --weight-h2: 600;
+  --text-h3: 1.35rem;
+  --leading-h3: 1.3;
+  --weight-h3: 600;
+  --text-h4: 1.15rem;
+  --leading-h4: 1.35;
+  --weight-h4: 600;
+  --text-h5: 1rem;
+  --leading-h5: 1.4;
+  --weight-h5: 600;
+  --text-h6: 0.9rem;
+  --leading-h6: 1.4;
+  --weight-h6: 600;
+  --measure: 48rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3rem;
+  --space-10: 4rem;
+  --space-11: 5rem;
+  --space-12: 6rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --z-lightbox: 1000;
+  /* android-to-desktop-checklist.md §6 claymorphism system. Scope is chrome
+     only (buttons/header/dialogs/code-block container/editor field) — never
+     the reading surface. Light values first, dark overrides below. */
+  --clay-elevation-rest: 6px;
+  --clay-elevation-pressed: 1px;
+  --clay-inset-h: 1.5px;
+  --clay-inset-v: 1.5px;
+  --clay-shadow-alpha: 0.16;
+  --clay-rim-light-alpha: 0.85;
+  --clay-rim-dark-alpha: 0.05;
+  --clay-fill-lighten: 0.035;
+  --clay-fill-darken: -0.03;
+  --clay-pot-alpha: 0.1;
+  --clay-inset-gradient-alpha: 0.07;
+  --surface: 48 45% 98%;
+  --surface-raised: var(--neutral-200);
+  --surface-code: 48 45% 98%;
+  --pill-bg: 0 0% 94%;
+  --text-primary: var(--neutral-1000);
+  --text-secondary: var(--neutral-900);
+  --text-muted: var(--neutral-800);
+  --border-subtle: var(--neutral-400);
+  --border-default: var(--neutral-500);
+  --link: var(--clay-700);
+  /* android-to-desktop-checklist.md §6: literal hex #0550AE (reused from the
+     syntax highlighter's light "number" token) — an HSL-equivalent triple so
+     it stays compatible with the existing hsl(var(--quote-rule)) call site
+     in claymark.css, not a neutral-ramp alias. */
+  --quote-rule: 213.4 94.4% 35.1%;
+  --accent-brand: var(--clay-700);
+  --danger: 0 70% 50%;
+  --text-button: 0.875rem;
+  --text-button-compact: 0.75rem;
+  --text-small: 0.8125rem;
+}
+
+[data-theme='dark'] {
+  --surface: 0 0% 9.8%;
+  --surface-raised: var(--neutral-1100);
+  --surface-code: 0 0% 18%;
+  --pill-bg: 0 0% 18%;
+  --text-primary: var(--neutral-200);
+  --text-secondary: var(--neutral-400);
+  --text-muted: var(--neutral-600);
+  --border-subtle: var(--neutral-800);
+  --border-default: var(--neutral-700);
+  --link: var(--clay-400);
+  /* android-to-desktop-checklist.md §6: literal hex #6CB6FF (dark "number"
+     token) as an HSL-equivalent triple, same rationale as light above. */
+  --quote-rule: 209.8 100% 71.2%;
+  --accent-brand: var(--clay-500);
+  --danger: 0 70% 50%;
+  --clay-shadow-alpha: 0.55;
+  --clay-rim-light-alpha: 0.06;
+  --clay-rim-dark-alpha: 0.18;
+  --clay-fill-lighten: 0.05;
+  --clay-fill-darken: -0.04;
+  --clay-pot-alpha: 0.3;
+  --clay-inset-gradient-alpha: 0.28;
+}
+
+/* android-to-desktop-checklist.md §6 AMOLED theme: exact copy of dark, only
+   `surface` overridden to pure black. surface-raised/surface-code are
+   deliberately NOT re-derived here — they fall through to the dark-theme
+   values above so the elevation step reads more pronounced against true
+   black. Applied only when effective theme = dark AND the AMOLED toggle is
+   on (see ThemeProvider.tsx). */
+[data-theme='dark'][data-amoled='true'] {
+  --surface: 0 0% 0%;
+}

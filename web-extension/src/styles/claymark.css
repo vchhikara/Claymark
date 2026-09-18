@@ -1,0 +1,788 @@
+/* Ported from staging theme/claymark.css. Changes (LEDGER X-004, X-005):
+   - hsl(var(--accent-brand)) -> var(--accent-brand)  (token is hex)
+   - color-mix percentages now real percentages via calc(* 100%)
+   Nothing else altered. */
+/* T-UI-01: the native scrollbar defaults to the platform's light chrome
+ * (white track/thumb) regardless of `--surface`/`--border-*`, reading as
+ * broken against this app's dark theme. Themed via both standard
+ * `scrollbar-color` (Firefox, Chromium ≥121) and the WebKit pseudo-elements
+ * (Safari, older Chromium) so it tracks the same tokens as the rest of the
+ * UI and repaints correctly on theme toggle.
+ */
+html {
+  scrollbar-color: hsl(var(--border-subtle)) hsl(var(--surface));
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--surface));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-subtle));
+  border-radius: var(--radius-md);
+  border: 3px solid hsl(var(--surface));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-default));
+}
+
+.claymark-root {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-block: var(--space-6);
+  padding-inline: var(--space-5);
+  font-family: var(--font-body);
+  /* android-to-desktop-checklist.md §5: the Settings text-size stepper
+     (--text-scale, default 1) scales body + headings only — it must never
+     reach spacing/chrome, which is why it's multiplied in here rather than
+     applied to the document :root's font-size (spacing tokens are also
+     rem-based off :root and must stay fixed). */
+  font-size: calc(var(--text-body) * var(--text-scale, 1));
+  line-height: var(--leading-body);
+  color: hsl(var(--text-primary));
+}
+
+.claymark-h1 {
+  font-size: calc(var(--text-h1) * var(--text-scale, 1));
+  line-height: var(--leading-h1);
+  font-weight: var(--weight-h1);
+}
+
+.claymark-h2 {
+  font-size: calc(var(--text-h2) * var(--text-scale, 1));
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-h2);
+}
+
+.claymark-h3 {
+  font-size: calc(var(--text-h3) * var(--text-scale, 1));
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-h3);
+}
+
+.claymark-h4 {
+  font-size: calc(var(--text-h4) * var(--text-scale, 1));
+  line-height: var(--leading-h4);
+  font-weight: var(--weight-h4);
+}
+
+.claymark-h5 {
+  font-size: calc(var(--text-h5) * var(--text-scale, 1));
+  line-height: var(--leading-h5);
+  font-weight: var(--weight-h5);
+}
+
+.claymark-h6 {
+  font-size: calc(var(--text-h6) * var(--text-scale, 1));
+  line-height: var(--leading-h6);
+  font-weight: var(--weight-h6);
+}
+
+.claymark-p {
+  margin: 0;
+  text-align: justify;
+}
+
+.claymark-text {
+  font-family: inherit;
+}
+
+.claymark-strong {
+  font-weight: 700;
+}
+
+.claymark-scroll-top {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--border-default));
+  background: hsl(var(--surface-raised));
+  color: hsl(var(--text-primary));
+  font-size: 0.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  z-index: var(--z-lightbox);
+}
+
+.claymark-scroll-top:hover {
+  background: hsl(var(--surface));
+  transform: translateY(-2px);
+}
+
+.claymark-em {
+  font-style: italic;
+}
+
+.claymark-link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--border-default));
+  text-underline-offset: 0.15em;
+}
+
+.claymark-link:hover {
+  color: var(--accent-brand);
+  text-decoration-color: currentColor;
+}
+
+.claymark-list {
+  padding-inline-start: var(--space-5);
+  margin-block: var(--space-4);
+}
+
+.claymark-ul { list-style-type: disc; }
+.claymark-ul .claymark-ul { list-style-type: circle; }
+.claymark-ul .claymark-ul .claymark-ul { list-style-type: square; }
+
+.claymark-ol { list-style-type: decimal; }
+.claymark-ol .claymark-ol { list-style-type: lower-alpha; }
+.claymark-ol .claymark-ol .claymark-ol { list-style-type: lower-roman; }
+
+.claymark-li { margin-block: var(--space-1); }
+
+.claymark-task-item {
+  list-style: none;
+}
+
+.claymark-task-label-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  cursor: default;
+}
+
+.claymark-blockquote {
+  border-left: var(--space-1) solid hsl(var(--quote-rule));
+  color: hsl(var(--text-secondary));
+  padding-inline-start: var(--space-4);
+  margin-inline: 0;
+  margin-block: var(--space-4);
+}
+
+/* Pill styling — used only for in-body code that's a literal value
+   (numbers, CSS values, hex colors), per InlineCode.tsx's heuristic. */
+.claymark-code-inline {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: #a84545;
+  background: hsl(var(--pill-bg));
+  border: 1px solid hsl(var(--border-subtle));
+  border-radius: var(--radius-md);
+  padding: 0.15em var(--space-2);
+}
+
+/* Reference styling — file paths and filenames render as plain inline
+   code, no pill, so they don't compete visually with value pills. */
+.claymark-code-ref {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: #3367d6;
+}
+
+.claymark-rule {
+  border: 0;
+  height: 1px;
+  background: hsl(var(--border-subtle));
+  margin-block: var(--space-6);
+}
+
+.claymark-del {
+  text-decoration: line-through;
+}
+
+.claymark-pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-code-block);
+  background: hsl(var(--surface-code));
+  border: 1px solid hsl(var(--border-default));
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+
+.claymark-code-block {
+  font-family: inherit;
+  background: none;
+}
+
+.claymark-codeblock {
+  position: relative;
+  margin-block: var(--space-4);
+}
+
+.claymark-codeblock-scroll {
+  display: block;
+}
+
+.claymark-codeblock .claymark-pre {
+  margin-block: 0;
+}
+
+.claymark-codeblock-header {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.claymark-codeblock-lang {
+  font-family: var(--font-mono);
+  font-size: var(--text-code);
+  color: hsl(var(--text-secondary));
+}
+
+.claymark-copy-button {
+  font-family: inherit;
+  font-size: var(--text-code);
+  color: hsl(var(--text-secondary));
+  background: hsl(var(--surface-code));
+  border: 1px solid hsl(var(--border-subtle));
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+}
+
+.claymark-copy-button:hover {
+  color: hsl(var(--text-primary));
+}
+
+.claymark-copy-button[data-state='copied'] {
+  color: hsl(var(--text-primary));
+}
+
+/* rehype-pretty-code (code.ts, keepBackground: false) marks each highlighted
+   `pre`/`code` with `data-theme` and emits every token as
+   <span style="--shiki-light:#..;--shiki-dark:#..">, but never sets `color`
+   itself — that's left to the consumer (see rehype-pretty-code's dist/index.js,
+   the two-theme branch). Without this rule the custom properties sit on the
+   DOM unused and every highlighted line renders in the surrounding text
+   color, i.e. completely uncolored, regardless of platform/device. Themed
+   off the app's own [data-theme] attribute (ThemeProvider.tsx), not
+   rehype-pretty-code's same-named attribute on pre/code (which always holds
+   "light dark", both theme names at once, and is not what to switch on). */
+.claymark-root[data-theme='light'] .claymark-pre code[data-theme] span,
+[data-theme='light'] .claymark-root .claymark-pre code[data-theme] span {
+  color: var(--shiki-light);
+}
+.claymark-root[data-theme='dark'] .claymark-pre code[data-theme] span,
+[data-theme='dark'] .claymark-root .claymark-pre code[data-theme] span {
+  color: var(--shiki-dark);
+}
+
+.claymark-code-figure {
+  margin: 0;
+}
+
+.claymark-table-scroll {
+  position: relative;
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+
+/* T-P7-02: scroll-edge shadows, present only while the corresponding
+   data-overflow-* attribute is set (i.e. only while there is unseen
+   content in that direction — see Table.tsx). */
+.claymark-table-scroll::before,
+.claymark-table-scroll::after {
+  content: '';
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 0;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.claymark-table-scroll::before {
+  left: 0;
+  margin-right: -1px;
+  box-shadow: inset 8px 0 8px -8px hsl(var(--shadow-color, 0 0% 0%) / 0.3);
+}
+
+.claymark-table-scroll::after {
+  right: 0;
+  margin-left: -1px;
+  box-shadow: inset -8px 0 8px -8px hsl(var(--shadow-color, 0 0% 0%) / 0.3);
+}
+
+.claymark-table-scroll[data-overflow-left='true']::before,
+.claymark-table-scroll[data-overflow-right='true']::after {
+  opacity: 1;
+}
+
+/* T-P8-06: this is the only animated property in the whole stylesheet — a
+   fade on the scroll-edge shadow indicators (T-P7-02). A user who has
+   requested reduced motion still gets the indicator (it's informational,
+   not decorative), just without the transition's motion. */
+@media (prefers-reduced-motion: reduce) {
+  .claymark-table-scroll::before,
+  .claymark-table-scroll::after {
+    transition: none;
+  }
+}
+
+/* Table design ported from shadcn/ui's <Table> primitive (registry: @shadcn/table)
+   — row-separator borders instead of a full grid, a muted-background hover per
+   row, and tighter padding than a full-prose table — re-expressed against this
+   project's own tokens (no Tailwind/cn() here). */
+.claymark-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-block: 0;
+  font-size: var(--text-code);
+}
+
+/* shadcn: `[&_tr]:border-b` on <TableHeader> */
+.claymark-thead .claymark-tr {
+  border-bottom: 1px solid hsl(var(--border-default));
+}
+
+/* shadcn: `[&_tr:last-child]:border-0` on <TableBody> */
+.claymark-tbody .claymark-tr:last-child {
+  border-bottom: none;
+}
+
+/* shadcn: `border-b transition-colors hover:bg-muted/50` on <TableRow> */
+.claymark-tr {
+  border-bottom: 1px solid hsl(var(--border-default));
+  transition: background-color 0.15s ease;
+}
+
+.claymark-tbody .claymark-tr:hover {
+  background: hsl(var(--surface-raised));
+}
+
+/* shadcn: `h-10 px-2 text-left align-middle font-medium` on <TableHead> */
+.claymark-th {
+  height: 2.5rem;
+  padding: 0 var(--space-3);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 600;
+  color: hsl(var(--text-primary));
+}
+
+/* shadcn: `p-2 align-middle` on <TableCell> */
+.claymark-td {
+  padding: var(--space-2) var(--space-3);
+  vertical-align: middle;
+  text-align: left;
+}
+
+.claymark-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.claymark-figure {
+  margin-block: var(--space-4);
+  margin-inline: 0;
+}
+
+.claymark-figcaption {
+  font-size: var(--text-code);
+  color: hsl(var(--text-muted));
+  text-align: center;
+  margin-block-start: var(--space-2);
+}
+
+.claymark-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(0 0% 0% / 0.7);
+  padding: var(--space-4);
+}
+
+.claymark-lightbox {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  outline: none;
+}
+
+/* Defensive fallback: a fenced code block that hasn't been highlighted yet
+   (pipeline/plugins/code-lazy.ts's skeleton state — a bare, unclassed
+   `pre`) has no scroll container of its own. Without this, a long line in
+   that placeholder forces the whole page to scroll horizontally instead of
+   just the block. Scoped to descendants of the render root so it never
+   leaks into a consumer's own unrelated `pre` elements. */
+.claymark-root pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.claymark-theme-toggle {
+  font: inherit;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: hsl(var(--surface-raised));
+  border: 1px solid hsl(var(--border-default));
+  border-radius: var(--radius-md);
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.claymark-theme-toggle:hover {
+  background: hsl(var(--surface));
+  border-color: var(--accent-brand);
+  box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
+}
+
+.claymark-theme-toggle:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* App shell (src/app/main.tsx): toolbar buttons and the source textarea.
+   Base appearance is set via inline style (matches this file's existing
+   inline-style convention for main.tsx) — these classes only add the
+   interactive states (:hover/:focus-visible/:active) inline style can't
+   express, plus reset the UA default button/textarea chrome. */
+.cm-toolbar-btn {
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.cm-toolbar-btn:hover {
+  background: hsl(var(--surface)) !important;
+  border-color: var(--accent-brand) !important;
+  box-shadow: 0 2px 6px hsl(var(--shadow-color, 0 0% 0%) / 0.1);
+}
+
+.cm-toolbar-btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.cm-toolbar-btn:focus-visible,
+.claymark-theme-toggle:focus-visible,
+.cm-source-textarea:focus-visible {
+  outline: 2px solid var(--accent-brand);
+  outline-offset: 2px;
+}
+
+.cm-source-textarea {
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06) inset;
+}
+
+.cm-source-textarea::placeholder {
+  color: hsl(var(--text-muted));
+}
+
+/* ---- Button / Alert / Skeleton / Tooltip ----
+   Ported from scratch/shadcn-prototype/prototype.css (see FINDINGS.md) and
+   renamed pb-* -> claymark-* to match this file's naming convention. Every
+   value is a tokens.css custom property, no Tailwind/cva. */
+
+.claymark-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
+}
+
+.claymark-button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.claymark-button:focus-visible {
+  outline: 2px solid var(--accent-brand);
+  outline-offset: 2px;
+}
+
+.claymark-button:active {
+  transform: translateY(1px);
+}
+
+.claymark-button[data-variant='default'] {
+  background: var(--accent-brand);
+  color: hsl(var(--surface));
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+}
+.claymark-button[data-variant='default']:hover {
+  background: color-mix(in srgb, var(--accent-brand) 90%, transparent);
+}
+
+.claymark-button[data-variant='destructive'] {
+  background: hsl(var(--danger));
+  color: hsl(var(--surface));
+}
+.claymark-button[data-variant='destructive']:hover {
+  background: hsl(var(--danger) / 0.9);
+}
+
+/* variant="outline" — mirrors .cm-toolbar-btn's existing look */
+.claymark-button[data-variant='outline'] {
+  background: hsl(var(--surface-raised));
+  color: hsl(var(--text-primary));
+  border-color: hsl(var(--border-default));
+  box-shadow: 0 1px 2px hsl(var(--shadow-color, 0 0% 0%) / 0.06);
+}
+.claymark-button[data-variant='outline']:hover {
+  background: hsl(var(--surface));
+  border-color: var(--accent-brand);
+}
+
+.claymark-button[data-variant='secondary'] {
+  background: hsl(var(--surface-code));
+  color: hsl(var(--text-primary));
+}
+.claymark-button[data-variant='secondary']:hover {
+  background: hsl(var(--surface-code) / 0.8);
+}
+
+.claymark-button[data-variant='ghost'] {
+  background: transparent;
+  color: hsl(var(--text-primary));
+}
+.claymark-button[data-variant='ghost']:hover {
+  background: hsl(var(--surface-raised));
+}
+
+.claymark-button[data-variant='link'] {
+  background: transparent;
+  color: var(--link);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.claymark-button[data-variant='link']:hover {
+  color: var(--accent-brand);
+}
+
+.claymark-button[data-size='sm'] {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8125rem;
+}
+.claymark-button[data-size='lg'] {
+  padding: var(--space-3) var(--space-5);
+  font-size: 0.9375rem;
+}
+.claymark-button[data-size='icon'] {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* 0.6x of the default .claymark-button size (font-size 0.875rem, padding
+   var(--space-2) var(--space-4)) — used by the header's Write/Browse
+   buttons. Scales font-size and padding directly rather than a CSS
+   `transform: scale()`, which would leave the pre-scale layout box behind. */
+.claymark-button--compact {
+  font-size: 0.525rem;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Icon buttons (fixed width/height, not font-driven) need their own
+   override — the width/height rule above doesn't touch them. Sized by
+   padding instead of a fixed box so the resulting height matches
+   .claymark-button--compact's text buttons exactly (same padding + font-size
+   -> same line box), rather than an independently-guessed pixel size. */
+.claymark-button--compact[data-size='icon'] {
+  width: auto;
+  height: auto;
+  padding: 0.3rem;
+  font-size: 0.525rem;
+}
+
+/* ---- Alert ---- */
+
+.claymark-alert {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.125rem;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid hsl(var(--border-default));
+  background: hsl(var(--surface-raised));
+  padding: var(--space-4);
+  font-size: 0.875rem;
+}
+.claymark-alert[data-variant='destructive'] {
+  color: hsl(var(--danger));
+  border-color: hsl(var(--danger) / 0.4);
+}
+.claymark-alert-title {
+  font-weight: 600;
+  color: hsl(var(--text-primary));
+}
+.claymark-alert[data-variant='destructive'] .claymark-alert-title {
+  color: inherit;
+}
+.claymark-alert-description {
+  color: hsl(var(--text-secondary));
+}
+.claymark-alert-description p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Skeleton ---- */
+
+.claymark-skeleton {
+  border-radius: var(--radius-md);
+  background: hsl(var(--surface-code));
+  animation: claymark-skeleton-pulse 1.5s ease-in-out infinite;
+}
+@keyframes claymark-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .claymark-skeleton { animation: none; opacity: 0.75; }
+}
+
+/* ---- Tooltip ----
+   Reuses --z-lightbox (only z-index token in tokens.css) for the portal
+   layer — no dedicated tooltip layer token exists (see FINDINGS.md). */
+
+.claymark-tooltip {
+  z-index: var(--z-lightbox);
+  width: fit-content;
+  max-width: 16rem;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--text-primary));
+  color: hsl(var(--surface));
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+}
+.claymark-tooltip-arrow {
+  fill: hsl(var(--text-primary));
+}
+
+/* ---- Claymorphism system (android-to-desktop-checklist.md §6) ----
+   Scope is CHROME ONLY: buttons, header, dialogs, code-block container,
+   editor field. NEVER apply .pb-clay-* to the reading surface (prose,
+   headings, lists, quotes, tables) — see tests/claymorphism.spec.ts's scope
+   guard. Elevation values come from tokens.css's --clay-* custom properties,
+   which flip between light/dark alpha sets automatically via the cascade.
+
+   Plain-CSS approximation notes (documented deviation from a from-scratch
+   native-rendering engine like Android's Canvas):
+   - The spec's "diagonal linear-gradient rim-light, white-alpha top-left
+     fading to black-alpha bottom-right" is approximated here as a single
+     top inset highlight + bottom-right shadow, since a true diagonal
+     rim-light stroke around a rounded-rect border isn't expressible with
+     plain box-shadow. Close enough visually; revisit with border-image or
+     an SVG filter if a pixel-exact match is required later.
+   - Fill lighten/darken uses color-mix() (same technique FINDINGS.md
+     recommends for opacity variants of pre-composed tokens). */
+
+.pb-clay-raised {
+  background-color: hsl(var(--surface-raised));
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, hsl(var(--surface-raised)), white calc(var(--clay-fill-lighten) * 100%)),
+    hsl(var(--surface-raised)),
+    color-mix(
+      in srgb,
+      hsl(var(--surface-raised)), black calc(var(--clay-fill-darken) * -100%)
+    )
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / var(--clay-rim-light-alpha)),
+    0 var(--clay-elevation-rest) calc(var(--clay-elevation-rest) * 2)
+      hsl(0 0% 0% / var(--clay-shadow-alpha));
+  border-radius: var(--radius-md);
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.pb-clay-raised--pressed,
+.pb-clay-raised:active {
+  /* Pressed flattens (elevation drops to 1px), rim-light skipped entirely —
+     matches a CSS :active, never inverts the shadow. */
+  box-shadow: 0 var(--clay-elevation-pressed) calc(var(--clay-elevation-pressed) * 2)
+    hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+
+/* "Pot" treatment: raised outer lip (above) plus an inner sunken basin.
+   Used on tables and the drawer's Recent panel. Inset = 4x the base
+   ClayInsets default (--clay-inset-h/v), skipped by callers on controls too
+   small to hold both bands legibly (a layout decision, not CSS's to make). */
+.pb-clay-pot {
+  background-color: hsl(var(--surface-raised));
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, hsl(var(--surface-raised)), white calc(var(--clay-fill-lighten) * 100%)),
+    hsl(var(--surface-raised)),
+    color-mix(
+      in srgb,
+      hsl(var(--surface-raised)), black calc(var(--clay-fill-darken) * -100%)
+    )
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / var(--clay-rim-light-alpha)),
+    0 var(--clay-elevation-rest) calc(var(--clay-elevation-rest) * 2)
+      hsl(0 0% 0% / var(--clay-shadow-alpha));
+  border-radius: var(--radius-md);
+  padding: calc(var(--clay-inset-h) * 4) calc(var(--clay-inset-v) * 4);
+  position: relative;
+}
+.pb-clay-pot::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--clay-inset-h) * 4) calc(var(--clay-inset-v) * 4);
+  border-radius: calc(var(--radius-md) - 2px);
+  box-shadow: inset 0 2px 4px hsl(0 0% 0% / var(--clay-pot-alpha));
+  pointer-events: none;
+}
+
+/* "Inset" treatment: flat background + top-down black gradient fading to
+   transparent by 18% of height. Used on the editor textarea and search
+   fields. */
+.pb-clay-inset {
+  background-color: hsl(var(--surface-raised));
+  background-image: linear-gradient(
+    to bottom,
+    hsl(0 0% 0% / var(--clay-inset-gradient-alpha)),
+    transparent 18%
+  );
+  border-radius: var(--radius-sm);
+}

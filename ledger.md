@@ -143,3 +143,132 @@ target only.
 | D-009 | Did not fix `checklist §2`/`§8` (core rendering / explicitly-not-required items) | Out of the approved 6-phase plan's scope |
 | D-010 | Left `routeReducer`'s `BACK` contract and its test (`tests/routing.spec.tsx`) unchanged; fixed the Settings→empty-reader bug one layer up in `main.tsx` instead | The reducer's "sub-screen → reader" rule is correct and tested when a document is loaded — the actual bug was reachable only from the no-document Welcome-screen path, which the reducer has no way to know about (pure function of `Route` alone) |
 | D-011 | Excluded `docs/screenshots/2026-09-18-app-walkthrough/` from the commit | User explicitly asked not to push the screenshot folder — kept as a local-only verification artifact |
+
+## Session 3 — web extension scoping (§0 lock) + asset staging, 2026-09-18
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-029 | Staged reusable assets for the (not-yet-built) web extension into `_web-extension-staging/` — built `claymark` library (`dist/claymark.js`/`.cjs`/`.d.ts`), `theme/tokens.css`+`claymark.css`, the three OFL fonts, `src/pipeline/plugins/url-policy.ts`, `src/app/toc.ts` (reference), `docs/SPEC.md` — per `web-extension-checklist.md` §1 | Files copied and listed via `find`; a `README.md` was added inside the folder explaining each item and flagging the `color-mix()` caveat (checklist §2 Trap 2) before reuse | PASS |
+| L-030 | Asked the user to resolve `web-extension-checklist.md` §0's three open scope gates (extension surfaces, browser targets, persistence) rather than assuming | `AskUserQuestion` — answered: all three surfaces (reader mode + viewer + editor) in v1; Chrome MV3 **and** Firefox; persist last pasted/edited doc (non-goal override) | PASS |
+| L-031 | Locked §0 in `web-extension-checklist.md`, checked off the three gates with the decision recorded, and updated `progress.md`'s "Next up" section to reflect the resolved scope and the new staging folder | Diffs applied via `Edit`, not re-read back (file state already current per tool contract) | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-012 | Did not begin actual extension implementation (manifest, build config, source tree) this pass | User's instruction was explicitly staged: stage assets first, lock scope second, implementation is separate follow-on work |
+
+## Session 4 — user-installed the extension, requested popup + reader mode, 2026-09-18
+
+Between Session 3 and this one, a separate agent session (not this
+conversation) built a full Chrome MV3 extension into
+`_web-extension-staging/claymark-extension/`. The user loaded it unpacked
+and asked to keep the full-tab surface, add a popup, and add the
+content-script reader mode that build shipped without.
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-032 | Audited `_web-extension-staging/` against the locked `web-extension-checklist.md` §0 scope before touching anything | Read `build-report/01-OVERVIEW.md`, `manifest.json` — confirmed: full-tab-only (no popup, no content script), Chrome-only (Firefox explicitly deferred per its own `docs/TODO.md`) | PASS |
+| L-033 | Fixed a pre-existing build-blocking bug: `scripts/postbuild.mjs` used `new URL(...).pathname`, which stays percent-encoded for this repo's own space-containing path | Switched to `fileURLToPath` | PASS |
+| L-034 | Added popup surface: `src/popup.html`/`popup.tsx` (second Vite entry, reuses `App` with a `popup` prop), `styles/popup.css` (fixed 420×600), manifest `action.default_popup`, renamed `_execute_action` → `open-full-tab` command (`Alt+Shift+M`) since a popup pre-empts `action.onClicked` | `npm run build`/`typecheck` clean; manually verified in the browser pane at http://localhost:8934/popup.html — correct size, "Open in tab ↗" bar, no console errors, sample doc renders (headings/lists/code fence/table) | PASS |
+| L-035 | Added content-script reader mode: `src/content/reader.ts`, matches `*.md`/`*.markdown`/raw GitHub/Gist hosts, activates only when `document.contentType` is `text/plain`/`text/markdown` and the page looks like a raw-file view; renders into `attachShadow({mode:'closed'})` (checklist §2 Trap 1 threat model — host page is untrusted, must not reach in or have our output reach it); reused `toHast`+`hast-util-to-html` (already-sanitized tree) rather than a raw innerHTML write | Manually verified against a local `text/plain`-served `.md` file: heading/bold/list/code fence render correctly in the shadow root; View raw ↔ View rendered toggle round-trips | PASS |
+| L-036 | `postbuild.mjs` extended: bundles `content/reader.ts` as an IIFE (same pattern as the existing Mermaid sandbox bundle) and generates a standalone `content/reader.css` by concatenating `tokens.css`/`claymark.css`/`engine-ext.css`/`fonts.css` with `:root` rewritten to `:host` (a shadow tree's bare `:root` selector matches the page's real document root, not the shadow host) | `npm run build` passes postbuild's own file-existence + no-inline-script/style checks | PASS |
+| L-037 | Full regression: `npm run build`/`typecheck` clean, `npm test` (engine) still 40/40 unchanged | Command output captured this session | PASS |
+| L-038 | `tests/e2e.py` (Playwright, 32 checks in the prior build) could not be re-run — no Playwright install survived in this checkout (`pip`/venv absent) | Flagged as an open gap in both the staging folder's own `docs/LEDGER.md` (X-041) and `progress.md`, not silently treated as passing | DEFERRED |
+| L-039 | Replaced `_web-extension-staging/claymark-extension/` (the loadable unpacked build) with a fresh `npm run build` output reflecting all of the above | `diff -rq` against `source/dist` before overwrite confirmed only expected differences (missing popup/content files, stale hashes) | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-013 | Did not attempt the Firefox build in this pass | User's ask was specifically "keep full tab, add popup, add content-script reader mode" — Firefox is a separate, still-open §0 gap, not requested this turn |
+| D-014 | Did not add Shiki/KaTeX/Mermaid to the content-script reader mode | Keeps the content-script bundle small and avoids shipping a second copy of those engines; flagged as a known v1 limit for reader mode specifically, not the full-tab/popup surfaces (which already have them) |
+
+## Session 5 — shadcn/ui component port + lucide icons, 2026-09-18
+
+User asked to "make it look pretty" with shadcn components after confirming
+the popup + reader mode build worked; clarified to hand-port the existing
+`scratch/shadcn-prototype/` components (real Radix primitives, hand-written
+CSS against the extension's own tokens, no Tailwind/cva) and replace every
+emoji/glyph icon with lucide-react icons.
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-040 | Ported Button/Dialog/Badge/Separator/Tooltip from `scratch/shadcn-prototype/` into `_web-extension-staging/source/src/app/ui/pb/*.tsx`; `radix-ui` pinned to 1.6.7 to match the prototype | `npm install` + `npm run typecheck` clean | PASS |
+| L-041 | `Dialog.tsx` rewritten on top of `PortedDialog`/`PortedDialogContent` while preserving the exact external prop API (`title`/`onClose`/`children`/`actions`/`labelledBy`), so no `App.tsx` call site changed; old `[data-autofocus]` autofocus contract preserved via `onOpenAutoFocus` + `preventDefault()` | Manually verified in browser pane: Outline dialog opens with correct overlay/focus, lucide `X` close icon works | PASS |
+| L-042 | Replaced every emoji/glyph icon (`☰`, `←`, `<b>B</b>`, `<i>I</i>`, `</>`, bullet, `🔗`, `↑`, `−`/`+`, `✕`) with `lucide-react` icons across `App.tsx`, `Drawer.tsx`, `SearchBar.tsx` | Verified visually: welcome hamburger, back arrow, editing toolbar Bold/Italic/Code/List/Link, scroll-to-top, text-size steppers, drawer/search icon buttons all render lucide icons, not glyphs | PASS |
+| L-043 | Full regression: `npm run typecheck`/`build` clean after each round, `npm test` (engine) still 40/40 unchanged | Command output captured this session | PASS |
+| L-044 | Manual browser-pane verification of restyled surfaces: welcome screen, full-tab reader header at 800px and 1200px width, edit-mode toolbar, Drawer, Outline dialog, popup surface (fixed 420×600) | Screenshots taken at each step; header showed no overflow at either width (an earlier capture that looked cut off was a transient/mid-navigation artifact, not a real layout bug) | PASS |
+| L-045 | Content-script reader mode (`content/reader.ts`) was **not** touched by this port and was **not** re-verified this pass | Doesn't import any of the changed files, but flagged rather than silently assumed still-working | DEFERRED |
+| L-046 | Bundle size regressed from 110.75 KB gz to 127.00 KB gz (408.41 KB raw) after adding `radix-ui` + `lucide-react`, exceeding NFR-2's 120 KB core budget by ~7 KB | `npm run build` output captured this session | FLAGGED, not fixed |
+| L-047 | `PortedTooltip`/`IconButtonTip` (`src/app/ui/pb/tooltip.tsx`) ported but not wired into any icon-only button — those buttons still rely on `aria-label`/`title` only | Grepped for `IconButtonTip` usage — zero call sites | FLAGGED, not fixed |
+| L-048 | Refreshed `_web-extension-staging/claymark-extension/` (the loadable unpacked build) with the new build output | `cp -r source/dist claymark-extension` after final verification | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-015 | Left `PortedTooltip` unwired rather than adding it to every icon-only button | User's ask was specifically icon replacement ("make it look pretty... use icons from shadcn"), not new interaction affordances — wiring tooltips is a scope addition, flagged as a follow-up instead of performed silently |
+| D-016 | Did not address the bundle-size regression (127 KB vs. 120 KB budget) this pass | Not requested by the user this turn; a real fix (e.g. dynamic-importing Dialog-only code) is nontrivial enough to warrant its own pass rather than a rushed change bundled into a styling request |
+
+## Session 6 — closed L-045/L-046/L-047 and the pre-existing X-041 e2e gap, 2026-09-18
+
+User asked to fix every open gap (old and new) rather than leave them flagged.
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-049 | Got a real Playwright run working again (`tests/e2e.py` was un-runnable in this checkout — no Python package, no browser binary): `uv venv` + `uv pip install playwright` + `playwright install chromium` into a scratch venv | 32/32 pre-existing checks passed once two selectors broken by the shadcn/icon port were fixed (`text=← Back` → `.cm-header .cm-back`, since Back is now an icon+text button not a literal glyph; `.cm-btn-danger` → text-based selector, since Discard is now a `PortedButton variant="destructive"`) | PASS |
+| L-050 | Found and fixed a real CSP violation the Radix Dialog port introduced: Radix's `Dialog.Overlay` wraps children in `react-remove-scroll`, which injects a `<style>` tag to compensate for the removed scrollbar — blocked by the extension's `style-src 'self'` policy (no unsafe-inline), 3 console errors per dialog open | `PortedDialogOverlay` (`src/app/ui/pb/dialog.tsx`) now renders a plain `<div>` instead of `DialogPrimitive.Overlay` — Content's own `DismissableLayer` still closes on outside click, only the scroll-lock behavior is lost. `zero console errors/warnings` e2e check went from FAIL to PASS | FIXED |
+| L-051 | Closed L-046 (bundle-size regression): switched `pb/dialog.tsx`/`pb/separator.tsx` from the `radix-ui` umbrella package to scoped `@radix-ui/react-dialog`/`@radix-ui/react-separator` imports (no measurable size change — Rollup was already tree-shaking the barrel correctly) and lazy-loaded `Dialog.tsx` itself via `React.lazy`/`Suspense` (Outline/Theme/Discard/Draft-restore dialogs all go through one lazy chunk, `Dialog-*.js`, fetched on first open) | `npm run build`: 408.41 KB/127.00 KB gz → 373.02 KB/115.47 KB gz, under NFR-2's 120 KB budget. `Outline jump scrolls` e2e check (exercises the lazy chunk under the extension's own CSP) still passes | FIXED |
+| L-052 | Closed L-047 (unwired tooltips) — but not the way it was scaffolded: wiring `PortedTooltip`/`IconButtonTip` into the icon-only buttons (`Open menu`, page `Back`, text-size steppers, scroll-to-top) pulled Radix's Tooltip/Popper machinery back into the initial bundle and pushed it to 133.09 KB gz, over budget again. Deleted the unused `src/app/ui/pb/tooltip.tsx` scaffolding and its `.pb-tooltip` CSS (dead code, never referenced) and uninstalled `@radix-ui/react-tooltip`; added native `title` attributes to the same buttons instead — same hover-discoverability outcome, zero bundle cost | `npm run build` back to 115.50 KB gz. Buttons now carry both `aria-label` and `title` | FIXED, by different means than scaffolded |
+| L-053 | Closed X-041 (missing e2e coverage for the popup surface and content-script reader mode, open since the popup/reader-mode session): added 10 new checks to `tests/e2e.py` — popup renders welcome/sample, `data-popup` flag set, "Open in tab" bar present, zero console errors; reader mode mounts its shadow host against a locally-served raw `.md` file (own `http.server.HTTPServer` spun up in-process), renders heading/bold text, and the raw↔rendered toggle works. Reader mode's shadow root is `mode:'closed'` by design, which Playwright's own selectors cannot pierce (confirmed empirically) — used a CDP session (`DOM.getDocument({pierce:true})`) instead, the same escape hatch DevTools itself uses for closed shadow trees | `tests/e2e.py`: 32/32 → 42/42, including the new popup/reader-mode cases. This is also the first re-verification of reader mode (L-045) since the shadcn/icon port — confirmed unaffected | FIXED |
+| L-054 | Fixed the `radix-ui`/`lucide-react` caret-range dependency violation flagged but not actually corrected in Session 5 (L-040 claimed "pinned to 1.6.7" but `package.json` still had `^1.6.7`/`^1.47.0`) | `package.json` now pins exact versions for all Radix/lucide deps, per the repo's zero-range-specifier convention | FIXED |
+| L-055 | Refreshed `_web-extension-staging/claymark-extension/` with the final build | `cp -r source/dist claymark-extension` | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-017 | Chose native `title` over wiring the scaffolded Radix Tooltip | Both close the same UX gap (hover label on icon-only buttons); Radix Tooltip's Popper/floating-ui weight reopened the NFR-2 budget violation the Dialog lazy-load had just closed, for no functional gain `title` doesn't already provide |
+| D-018 | Did not touch reader mode's missing syntax highlighting (X-039) or start the Firefox build (X-032) this pass | Both are pre-existing, explicitly-scoped-out limitations from earlier sessions, not regressions from the shadcn/icon port — re-verified reader mode still works as originally shipped (L-053) but left its known feature gap and the Firefox target as-is, consistent with how they were always flagged (deferred, not broken) |
+
+## Session 7 — top-level repo reorg: android/, desktop/, web-extension/, 2026-09-18
+
+User asked for a per-platform folder layout. Confirmed scope via AskUserQuestion first (three questions, all answered before touching anything): core lib/PWA stays at repo root; `claymark-native/` and `src-tauri/` rename in place rather than relocate under a new parent; the temporary `_web-extension-staging/` graduates into a permanent `web-extension/`.
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-056 | `git mv src-tauri desktop` — verified first that Tauri CLI doesn't require the literal folder name `src-tauri` (it discovers `tauri.conf.json` by walking the tree, not by a hardcoded folder-name match) | `npx tauri info` ran clean post-rename; `frontendDist: "../dist/app"` in `desktop/tauri.conf.json` is a relative path, unaffected by the rename | PASS |
+| L-057 | `git mv claymark-native android` — checked `settings.gradle.kts`/`build.gradle.kts` first for hardcoded path strings (none; Gradle project name comes from `rootProject.name`, not the directory) | `./gradlew -q projects` resolved the project structure correctly post-rename; failed only on an unrelated, pre-existing JDK version mismatch (system JDK 25 vs. the Kotlin compiler's version parser, already documented in `plan/03-CHECKLIST.md` from the original Android setup as needing JDK 21) — confirmed via stacktrace this is not caused by the rename | PASS |
+| L-058 | Promoted `_web-extension-staging/source` → `web-extension/` (plus its `docs/` and `README.md`); dropped `build-report/` (superseded by this ledger) and the staging-only `_web-extension-staging.zip`; deleted the now-empty staging folder | `npm run build` in `web-extension/` still produces the same 115.50 KB gz bundle as before the move (all its internal paths are relative) | PASS |
+| L-059 | Fixed the one *functional* stale-path reference the renames broke: `eslint.config.js`'s `ignores` list still said `src-tauri/**` | `npm run lint` from repo root runs clean against the new ignore list (`desktop/**`, `android/**`, `web-extension/**`); the 6 pre-existing lint errors it reports are unrelated (missing `react-hooks` plugin rule defs, one `prefer-const`) — confirmed pre-existing, not introduced by this session | PASS |
+| L-060 | Updated path references across the *live* docs (`README.md`, `handoff.md`, `handoff-installables.md`, `BRAINSTORM.md`, `LOGO-STRATEGY.md`, `web-extension-checklist.md`, `android-to-desktop-checklist.md`, `docs/CURRENT-STATE.md`, `docs/INSTALLATION.md`, `docs/HANDOFF.md`, `docs/HUMAN-TESTING-GUIDE.md`) from `src-tauri/`/`claymark-native/` to `desktop/`/`android/` | Left two categories of reference untouched on purpose: (1) `plan/*.md` — frozen build-session audit trail describing what literally happened at those old paths on 2026-08-28, rewriting them would be revisionist; (2) literal historical filenames (`claymark-native-android.zip`, `claymark-native-port-prompt.md`) that name a delivered artifact, not a live path | PASS |
+| L-061 | Verified nothing broke: root `npm run build` (core lib) still succeeds; `web-extension/` build + its `claymark-extension/` unpacked copy refreshed; `desktop/tauri.conf.json`'s relative paths intact; `android/`'s Gradle project structure resolves | Command output captured this session | PASS |
+| L-062 | `.gitignore` updated: `src-tauri/target/` → `desktop/target/`, added `web-extension/claymark-extension/` (build-artifact copy, same treatment as the repo's other `dist/` outputs) | — | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-019 | Left the core npm library/PWA at repo root instead of moving it under a `platforms/`/`apps/` parent | User's explicit choice when asked — smallest blast radius, since every root-level build config (`vite.config.ts`, `tsconfig.json`, `package.json`) stays exactly where every existing tool already expects it |
+| D-020 | Did not touch `.notion_sync_state.json`'s embedded `src-tauri`/`claymark-native` mentions | It's a sync-state cache regenerated by the notion-sync skill from live content, not a hand-maintained doc — the next sync run will pick up the new paths naturally; hand-editing a cache file risks it drifting from what Notion actually has |
+
+## Session 8 — repo-root file cleanup, 2026-09-18
+
+Follow-up to Session 7's folder reorg: tidy the remaining loose/misplaced files at repo root.
+
+| ID | Check / change | Evidence | Verdict |
+|---|---|---|---|
+| L-063 | Found `Claymark.apk` (150 MB, root) was a *different*, much larger file than the curated `android/releases/claymark-v1.0.0.apk` (10 MB) — different MD5s, and `unzip -l` showed a multi-dex unshrunk build (958 files) consistent with a debug build, not the signed release | Moved to `android/builds/claymark-debug.apk` (new `builds/` subfolder, distinct from the curated `releases/`) rather than deleted — origin/currency unclear, not mine to discard unilaterally |
+| L-064 | `claymark-android-src.zip` (gitignored, the original delivered Android source archive, already fully extracted into `android/`) — redundant now, historical | Moved to `.archive/`, alongside the repo's other superseded delivered zip |
+| L-065 | `claymark-native-port-prompt.md` (root) — single-platform historical prompt document, only ever referenced by bare filename in `ledger.md`, not a live path anyone resolves | Moved into `android/`, alongside its siblings (`HANDOFF-2.md`, `PROCESS.md`) |
+| L-066 | `banner.jpg` (root) — the only asset floating outside `brand/`'s existing logo/asset structure, referenced once from `README.md` | Moved to `brand/banner.jpg`; `README.md`'s `![Claymark banner](banner.jpg)` updated to the new relative path; confirmed nothing else (`index.html`, `public/`, `src/`) references it |
+| L-067 | `docs/screenshots/screenshots desktop app/` — a nested nonsense-named folder (space in the name), holding a walkthrough screenshot set the user had earlier explicitly asked *not* be committed (D-011, prior session), but `.gitignore` never actually enforced that — it just stayed untracked by omission | Renamed to `docs/screenshots/desktop-app/`; added `docs/screenshots/` to `.gitignore` to make the "local-only" intent durable instead of relying on remembering not to `git add` it |
+| L-068 | Left `SECURITY-AUDIT.md` and `web-extension-checklist.md` at root despite initially considering moving them into `docs/`/`web-extension/` | `plan/01-ROADMAP.md` names `SECURITY-AUDIT.md` as its literal mandated root-level deliverable path (same convention as `spec.md`/`progress.md`/`ledger.md`) — moving it would break that documented contract. `web-extension-checklist.md` is paired with `android-to-desktop-checklist.md` as a matched pair of root-level platform-planning docs; moving one without the other would be inconsistent, so both stay |
+| L-069 | Verified nothing broke: root build still succeeds, README's banner image resolves at its new path, no other file references any of the moved paths | `grep` sweep across `*.md`/`.notion_sync_state.json`/`index.html`/`public/`/`src/` for each old path, confirmed clean | PASS |
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| D-021 | Did not delete the 150 MB `Claymark.apk`, only relocated it | It's gitignored (no git-history cost either way) but its origin and whether it's still needed is genuinely unclear — a large binary the user didn't create this session isn't mine to discard without asking; moving it out of the way is reversible, deleting it isn't |
