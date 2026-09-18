@@ -82,3 +82,50 @@ as their own future task, not folded into this one.
   `tests/stress.spec.ts` in isolation, where it passes cleanly (130s, 2/2).
 - `npx eslint .` — clean of new issues (only the 2 pre-existing errors
   flagged at CP-016, unrelated and out of scope here).
+
+## Session — secret scan and repo hardening, 2026-09-18
+
+Requested: check for accidentally leaked secrets/API keys, harden the repo.
+
+### Secret scan
+
+Ran `detect-secrets scan --all-files` over the working tree, plus a direct
+`git log --all -p` grep for common live-credential shapes (`sk-…`, `ghp_…`,
+`AKIA…`, `AIza…`, `xox[baprs]-…`, PEM private-key headers, `npm_…`) across
+every commit in history.
+
+**Result: clean.** No API keys, tokens, or private key material found,
+in the working tree or anywhere in git history (including the pre-rewrite
+history purged earlier this session). Findings that did surface, triaged:
+
+| Finding | Verdict |
+|---|---|
+| `.notion_sync_state.json` — dozens of "Hex High Entropy String" hits | False positive — these are Notion page/database UUIDs, not credentials. Tracked in git; the file does incidentally embed the maintainer's local absolute path and full name in a body-text field, low-severity info disclosure, not a secret. Left as-is (functional data for the notion-sync skill; not this session's call to rewrite). |
+| `android/keystore.properties` — "Secret Keyword" (real plaintext store/key passwords) | Confirmed **never tracked**, no history entry. On-disk only. Tightened to `chmod 600`; path corrected (it still pointed at the pre-reorg `claymark-native/` location — a Session 7 miss, since this untracked file wasn't touched by that session's path-reference sweep). |
+| `android/keystore/claymark-release.jks` — the actual signing key | Confirmed never tracked. `chmod 600` applied. |
+| `web-extension/claymark-extension/assets/*.js` — "AWS Access Key" hits | False positive — base64/WASM blob noise inside the bundled Shiki highlighter, in an untracked build-output directory. |
+| `desktop/target/**`, `android/app/build/**` — various entropy hits | Untracked build artifacts, never in git. |
+
+### Hardening applied
+
+- `.gitignore`: added explicit defense-in-depth patterns for secret-shaped
+  files that happened not to be a problem this time but would be if anyone
+  ever ran `git add -A` in the wrong directory — `.env(.*)`, `*.pem`,
+  `*.p12`, `*.jks`, `*.keystore`, `keystore.properties` (and nested),
+  `*.mobileprovision`, `google-services.json`,
+  `GoogleService-Info.plist`, `*_rsa`, `*.pfx`.
+- `android/keystore.properties` and `android/keystore/claymark-release.jks`
+  set to `600` (owner read/write only).
+- Re-ran `pnpm audit --audit-level=high`: 15 advisories (7 moderate / 7
+  high / 1 critical), all in dev-only tooling (`vite`, `vitest`,
+  `playwright`, `esbuild`, `minimatch`, `ajv`, `lodash`, `js-yaml`,
+  `uuid`), same category the prior audit round already scoped out. Checked
+  for available same-major patches: `vite@5.4.21` and `vitest@1.6.1` are
+  already the newest releases in their current majors, the critical
+  (`vitest` UI server arbitrary file read) and high (`vite` `server.fs.deny`
+  bypass) fixes require major bumps (vite 5→6/7, vitest 1→2/3). Not
+  attempted blind in this session, none of these ship in `dist/`, all
+  require either a malicious local dev-server request or a compromised
+  install source. Left as a scoped follow-up, consistent with the prior
+  audit's own decision to treat major-version toolchain bumps as separate,
+  risk-assessed work.

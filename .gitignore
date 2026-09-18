@@ -12,3 +12,19 @@ web-extension/claymark-extension/
 Claymark.apk
 claymark-android-src.zip
 plan/.claude/settings.local.json
+
+# Secrets and signing material — never commit these
+.env
+.env.*
+*.pem
+*.p12
+*.jks
+*.keystore
+keystore.properties
+**/keystore.properties
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+*_rsa
+*_rsa.pub
+*.pfx
