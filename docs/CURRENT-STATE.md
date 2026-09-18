@@ -81,6 +81,13 @@ None of these are bugs — they're scoped-out-for-now, tracked as deferred work 
 
 ## 7. Non-goals (permanent, not just "not yet")
 
+> **FLAGGED FOR REVIEW (2026-09-18):** the user explicitly authorized the Tauri desktop app
+> (`src/app/`) to become a real document-editing application built on top of the `claymark`
+> library, overriding the "not a Markdown editor" and "no persistence beyond theme" lines below
+> for that app specifically. The `claymark` **library** itself (the npm package / rendering
+> engine) is unchanged — it still only renders. This note flags the wording below as stale for
+> the desktop app; it has not been rewritten pending the user's sign-off on the exact language.
+
 - It is not a Markdown editor or WYSIWYG authoring tool.
 - It does not include a chat client, model integration, or network calls of its own.
 - It does not execute MDX/JSX or any embedded component from a document — that's a hard

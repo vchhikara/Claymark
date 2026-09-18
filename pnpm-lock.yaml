@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@tauri-apps/api':
+        specifier: ^2.0.0
+        version: 2.11.1
+      '@tauri-apps/plugin-dialog':
+        specifier: ^2.0.0
+        version: 2.7.3
+      '@tauri-apps/plugin-fs':
+        specifier: ^2.0.0
+        version: 2.5.2
       dompurify:
         specifier: 3.4.14
         version: 3.4.14
@@ -1985,6 +1994,9 @@ packages:
   '@sinclair/typebox@0.27.12':
     resolution: {integrity: sha512-hhyNJ+nbR6ZR7pToHvllEFun9TL0sbL+tk/ON75lo+Xas054uez98qRbsuNt7MBCyZKK4+8Yli/OAGZhmfBZ/g==}
 
+  '@tauri-apps/api@2.11.1':
+    resolution: {integrity: sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==}
+
   '@tauri-apps/cli-darwin-arm64@2.0.0':
     resolution: {integrity: sha512-+agYqg2c77imaMfKw7mzqecVIDGcwr6bZMdglJ808O2UjTFzMwnAam1sU26YBYU+IyIjwOu00fm9Azpal+N/Ew==}
     engines: {node: '>= 10'}
@@ -2049,6 +2061,12 @@ packages:
     resolution: {integrity: sha512-xxmPllRa6w/LRRcPczST3yHrYoi8l6ZZmzwabEmM0cgDdhVDmX+Y4oDJkiKD+8cVdxwwEzIuIKuaCwsX8iNsgA==}
     engines: {node: '>= 10'}
     hasBin: true
+
+  '@tauri-apps/plugin-dialog@2.7.3':
+    resolution: {integrity: sha512-CRgE+7TP4tvq9MjBU6f04NLTFIqVMLKHk3hAqlhil00ngK9ACTrXPH3oHpKMProxILodd3YjBoKbMwSI4IEcfA==}
+
+  '@tauri-apps/plugin-fs@2.5.2':
+    resolution: {integrity: sha512-XXvMSnFiob+G1H+YHCDf+bzWVumseQuEIhzpbOJzevUfL4k0U+sTApZWJHpoLiamggnVPJm5dJ5sDsniRyWxlg==}
 
   '@testing-library/dom@10.4.1':
     resolution: {integrity: sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==}
@@ -6748,6 +6766,8 @@ snapshots:
 
   '@sinclair/typebox@0.27.12': {}
 
+  '@tauri-apps/api@2.11.1': {}
+
   '@tauri-apps/cli-darwin-arm64@2.0.0':
     optional: true
 
@@ -6790,6 +6810,14 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.0.0
       '@tauri-apps/cli-win32-ia32-msvc': 2.0.0
       '@tauri-apps/cli-win32-x64-msvc': 2.0.0
+
+  '@tauri-apps/plugin-dialog@2.7.3':
+    dependencies:
+      '@tauri-apps/api': 2.11.1
+
+  '@tauri-apps/plugin-fs@2.5.2':
+    dependencies:
+      '@tauri-apps/api': 2.11.1
 
   '@testing-library/dom@10.4.1':
     dependencies:

@@ -10,6 +10,7 @@ export type SemanticToken =
   | 'link'
   | 'quote-rule'
   | 'accent-brand'
+  | 'danger'
 
 export const SEMANTIC_LIGHT: Record<SemanticToken, string> = {
   surface: 'neutral-100',
@@ -23,6 +24,9 @@ export const SEMANTIC_LIGHT: Record<SemanticToken, string> = {
   // T-P8-02: clay-600/clay-500 both fail 4.5:1 as text against this
   // theme's surface — see clay700's comment in tokens/accent.ts.
   link: 'clay-700',
-  'quote-rule': 'neutral-500',
+  // android-to-desktop-checklist.md §6: literal hex #0550AE (reused from the
+  // syntax highlighter's light "number" token), not a neutral-ramp step.
+  'quote-rule': '213.4 94.4% 35.1%',
   'accent-brand': 'clay-700',
+  danger: '0 70% 50%',
 }

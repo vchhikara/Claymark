@@ -393,7 +393,14 @@ describe('P7 — Interaction behaviors', () => {
     )
     run(fakeDocumentElement && { documentElement: fakeDocumentElement }, fakeWindow, fakeLocalStorage)
 
-    expect(setAttrCalls).toEqual([['data-theme', 'dark']])
+    // Phase 1.4 (android-to-desktop-checklist.md §6 AMOLED): the same
+    // blocking script also sets data-amoled synchronously (no stored
+    // preference here, so it resolves to 'false'), for the same
+    // no-flash-on-cold-load reason as data-theme.
+    expect(setAttrCalls).toEqual([
+      ['data-theme', 'dark'],
+      ['data-amoled', 'false'],
+    ])
   })
 
   // T-P8-06: the only animated CSS property in the stylesheet (the

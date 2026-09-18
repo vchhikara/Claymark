@@ -24,6 +24,8 @@
                 ? 'dark'
                 : 'light'
           document.documentElement.setAttribute('data-theme', theme)
+          var amoled = localStorage.getItem('claymark-amoled') === 'true'
+          document.documentElement.setAttribute('data-amoled', String(amoled))
         } catch (e) {
           // localStorage/matchMedia can throw (private mode, disabled
           // storage) — fall back to the light default already in the CSS.

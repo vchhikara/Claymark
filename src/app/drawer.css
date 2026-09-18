@@ -1,0 +1,18 @@
+/* Phase 3.3: below 600px the drawer is a modal overlay (scrim visible,
+   drawer slides over content); at/above 600px it's a permanent two-pane
+   layout (scrim hidden, drawer always occupies its 240px column). */
+
+.claymark-drawer-scrim {
+  display: block;
+}
+
+@media (min-width: 600px) {
+  .claymark-drawer-scrim {
+    display: none;
+  }
+
+  .claymark-drawer {
+    position: static;
+    z-index: auto;
+  }
+}

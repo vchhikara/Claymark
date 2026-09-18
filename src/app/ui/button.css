@@ -1,0 +1,137 @@
+.pb-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
+}
+
+.pb-button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.pb-button:focus-visible {
+  outline: 2px solid var(--accent-brand);
+  outline-offset: 2px;
+}
+
+.pb-button:active {
+  transform: translateY(1px);
+}
+
+/* default/outline/secondary get the claymorphism raised treatment
+   (android-to-desktop-checklist.md §6) — ghost/link stay flat, matching
+   the Android reference's text-button treatment. */
+.pb-button[data-variant='default'] {
+  background: var(--accent-brand);
+  color: hsl(var(--surface));
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / var(--clay-rim-light-alpha)),
+    0 var(--clay-elevation-rest) calc(var(--clay-elevation-rest) * 2)
+      hsl(0 0% 0% / var(--clay-shadow-alpha));
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
+}
+.pb-button[data-variant='default']:hover {
+  background: color-mix(in srgb, var(--accent-brand) 90%, transparent);
+}
+.pb-button[data-variant='default']:active {
+  box-shadow: 0 var(--clay-elevation-pressed) calc(var(--clay-elevation-pressed) * 2)
+    hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+
+.pb-button[data-variant='destructive'] {
+  background: hsl(var(--danger, 0 65% 50%));
+  color: hsl(var(--surface));
+}
+.pb-button[data-variant='destructive']:hover {
+  background: hsl(var(--danger, 0 65% 50%) / 0.9);
+}
+
+.pb-button[data-variant='outline'] {
+  background-color: hsl(var(--surface-raised));
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, hsl(var(--surface-raised)) 100%, white var(--clay-fill-lighten)),
+    hsl(var(--surface-raised)),
+    color-mix(in srgb, hsl(var(--surface-raised)) 100%, black calc(var(--clay-fill-darken) * -1))
+  );
+  color: hsl(var(--text-primary));
+  border-color: hsl(var(--border-default));
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / var(--clay-rim-light-alpha)),
+    0 var(--clay-elevation-rest) calc(var(--clay-elevation-rest) * 2)
+      hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+.pb-button[data-variant='outline']:hover {
+  border-color: var(--accent-brand);
+}
+.pb-button[data-variant='outline']:active {
+  box-shadow: 0 var(--clay-elevation-pressed) calc(var(--clay-elevation-pressed) * 2)
+    hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+
+.pb-button[data-variant='secondary'] {
+  background-color: hsl(var(--surface-code));
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, hsl(var(--surface-code)) 100%, white var(--clay-fill-lighten)),
+    hsl(var(--surface-code)),
+    color-mix(in srgb, hsl(var(--surface-code)) 100%, black calc(var(--clay-fill-darken) * -1))
+  );
+  color: hsl(var(--text-primary));
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / var(--clay-rim-light-alpha)),
+    0 var(--clay-elevation-rest) calc(var(--clay-elevation-rest) * 2)
+      hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+.pb-button[data-variant='secondary']:hover {
+  filter: brightness(1.05);
+}
+.pb-button[data-variant='secondary']:active {
+  box-shadow: 0 var(--clay-elevation-pressed) calc(var(--clay-elevation-pressed) * 2)
+    hsl(0 0% 0% / var(--clay-shadow-alpha));
+}
+
+.pb-button[data-variant='ghost'] {
+  background: transparent;
+  color: hsl(var(--text-primary));
+}
+.pb-button[data-variant='ghost']:hover {
+  background: hsl(var(--surface-raised));
+}
+
+.pb-button[data-variant='link'] {
+  background: transparent;
+  color: var(--link);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.pb-button[data-variant='link']:hover {
+  color: var(--accent-brand);
+}
+
+.pb-button[data-size='sm'] {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8125rem;
+}
+.pb-button[data-size='lg'] {
+  padding: var(--space-3) var(--space-5);
+  font-size: 0.9375rem;
+}
+.pb-button[data-size='icon'] {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}

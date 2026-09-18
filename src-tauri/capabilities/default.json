@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimum permissions for a single-window webview shell with no IPC surface: the frontend calls no Tauri API (no @tauri-apps/api import, no invoke()), so only the core window/webview/app/event permissions needed to open and run the window are granted. `core:default` also bundles menu/tray/image/resources permissions this app never uses (no tray icon, no native menu, no image or resource APIs) — narrowed to just what's needed. No filesystem, shell, dialog, or process capability is present: this project's Cargo.toml has no tauri-plugin-fs/shell/dialog/process dependency at all, so those permission namespaces don't exist to grant.",
+  "description": "Phases 2/6 (android-to-desktop-checklist.md §3 document management): the app opens/saves user-chosen files via tauri-plugin-fs + tauri-plugin-dialog, scoped to user-selected paths only (dialog-granted, not a blanket filesystem allow). Drafts/recent-files/theme/autosave settings are all localStorage-backed, not filesystem — no app-data-dir grant is needed or held.",
   "windows": [
     "main"
   ],
@@ -9,6 +9,11 @@
     "core:window:default",
     "core:webview:default",
     "core:app:default",
-    "core:event:default"
+    "core:event:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-exists"
   ]
 }

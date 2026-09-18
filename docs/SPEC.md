@@ -118,6 +118,11 @@ No input crashes the renderer. Malformed math, invalid diagrams, pathological ne
 
 ## 6. Explicit non-goals
 
+> **FLAGGED FOR REVIEW (2026-09-18):** the user explicitly authorized the Tauri desktop app
+> (`src/app/`) to become a real document-editing application, overriding the "Markdown editing"
+> and "persistence beyond a theme preference" lines below for that app specifically. The
+> `claymark` library/engine itself is unchanged. Flagged, not rewritten — pending sign-off.
+
 Stated so they are never quietly added:
 
 - Markdown **editing**, WYSIWYG, or live preview authoring

@@ -10,6 +10,9 @@ export const SEMANTIC_DARK: Record<SemanticToken, string> = {
   'border-subtle': 'neutral-800',
   'border-default': 'neutral-700',
   link: 'clay-400',
-  'quote-rule': 'neutral-700',
+  // android-to-desktop-checklist.md §6: literal hex #6CB6FF (dark "number"
+  // token), not a neutral-ramp step.
+  'quote-rule': '209.8 100.0% 71.2%',
   'accent-brand': 'clay-500',
+  danger: '0 70% 50%',
 }

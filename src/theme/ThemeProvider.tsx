@@ -6,11 +6,23 @@ export type Theme = 'light' | 'dark'
 export interface ThemeContextValue {
   theme: Theme
   setTheme: (theme: Theme) => void
+  // android-to-desktop-checklist.md §6: AMOLED is modeled as a toggle layered
+  // on top of dark theme (not a third peer Theme value) — it only takes
+  // visual effect when the *effective* theme is 'dark' (see tokens.css's
+  // [data-theme='dark'][data-amoled='true'] rule).
+  amoled: boolean
+  setAmoled: (amoled: boolean) => void
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', setTheme: () => {} })
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: 'light',
+  setTheme: () => {},
+  amoled: false,
+  setAmoled: () => {},
+})
 
 const STORAGE_KEY = 'claymark-theme'
+const AMOLED_STORAGE_KEY = 'claymark-amoled'
 
 function getSystemTheme(): Theme {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light'
@@ -41,10 +53,20 @@ export interface ThemeProviderProps {
   children: ReactNode
 }
 
+function getStoredAmoled(): boolean {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return false
+  try {
+    return window.localStorage.getItem(AMOLED_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
 export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
   const stored = getStoredTheme()
   const [theme, setThemeState] = useState<Theme>(stored ?? getSystemTheme)
   const [manual, setManual] = useState(stored !== undefined)
+  const [amoled, setAmoledState] = useState<boolean>(getStoredAmoled)
 
   useEffect(() => {
     if (manual) return // an explicit manual choice overrides system changes
@@ -81,9 +103,23 @@ export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.setAttribute('data-amoled', String(amoled))
+  }, [amoled])
+
+  const setAmoled = (next: boolean): void => {
+    setAmoledState(next)
+    try {
+      window.localStorage.setItem(AMOLED_STORAGE_KEY, String(next))
+    } catch {
+      // Storage can throw — the in-memory choice still applies this session.
+    }
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      <div className="claymark-root" data-theme={theme}>
+    <ThemeContext.Provider value={{ theme, setTheme, amoled, setAmoled }}>
+      <div className="claymark-root" data-theme={theme} data-amoled={amoled}>
         {children}
       </div>
     </ThemeContext.Provider>
